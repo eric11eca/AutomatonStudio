@@ -1,0 +1,30 @@
+{
+  "name": "logictoolbox",
+  "version": "1.0.0",
+  "description": "Toolbox for computational logic",
+  "main": "main.js",
+  "repository": "https://github.com/eric11eca/computational-logic-toolbox.git",
+  "directories": {
+    "lib": "lib",
+    "assets": "assests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron .",
+    "package-win": "electron-packager . logictoolbox --overwrite --platform=win32 --arch=ia32 --icon=assets/icons/logic.ico --prune=true --out=release-builds --version-string.CompanyName=RHIT --version-string.FileDescription=CE --version-string.ProductName=\"Computational Logic Toolbox\""
+  },
+  "keywords": [
+    "logic"
+  ],
+  "author": "Zeming Chen",
+  "license": "MIT",
+  "dependencies": {
+    "stats.js": "^0.17.0"
+  },
+  "devDependencies": {
+    "electron": "^9.1.0",
+    "electron-packager": "^15.0.0",
+    "electron-winstaller": "^4.0.1",
+    "electron-wix-msi": "^2.2.0"
+  }
+}
