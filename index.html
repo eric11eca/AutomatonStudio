@@ -3,8 +3,8 @@
 
 <head>
   <title>Logic Truth Table</title>
-  <link rel="icon" href="img/logic1.png">
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="assets/img/logic1.png">
+  <link rel="stylesheet" href="assets/css/styles.css">
   <link href="https://fonts.googleapis.com/css?family=Baloo+Bhaina" rel="stylesheet">
 </head>
 
@@ -15,7 +15,7 @@
       <div class="title-banner">
         
         <a class="title-bage" herf="/">
-          <img class="head-icon" src="img/logic1.png"></img>
+          <img class="head-icon" src="assets/img/logic1.png"></img>
           Computational Logic Toolbox 
         </a>
 
@@ -47,14 +47,13 @@
       
       <h2 class="intro-content">A generator for logical expressions that automatically generates and displays a truth table for the given statement.</h2>
       
-      <div class=premises>
-        <input class='premises-input' onpaste='dosanitize(this)'></input>
-        <button class="generate" type="button">Generate</button>
+      <div class=editor>
+        <textarea class='premises' placeholder="Type logic statement here" onpaste='dosanitize(this)'></textarea>
+        <div class='conclusion' wrap='soft'>
+          <h2>Truth Table Display</h2>
+        </div>
       </div>
-      
-      <div class='conclusion' wrap='soft'>
-        <h2>Truth Table Display</h2>
-      </div>
+      <button class="generate" type="button">Generate</button>
     
     </div>
   </div>
@@ -62,7 +61,7 @@
 </body>
 
 <script type='text/javascript' src='js/logic.js'></script>
-<script type='text/javascript' src='js/boole.js'></script>
+<script type='text/javascript' src='js/truth_table.js'></script>
 <script src="lib/particles.min.js"></script>
 <script src="js/partical.js"></script>
 
