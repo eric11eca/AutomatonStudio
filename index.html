@@ -3,6 +3,7 @@
 
 <head>
   <title>Logic Truth Table</title>
+  <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/js/all.min.js"></script>
   <link rel="icon" href="assets/img/logic1.png">
   <link rel="stylesheet" href="assets/css/styles.css">
   <link href="https://fonts.googleapis.com/css?family=Baloo+Bhaina" rel="stylesheet">
@@ -49,12 +50,11 @@
       
       <div class=editor>
         <textarea class='premises' placeholder="Type logic statement here" onpaste='dosanitize(this)'></textarea>
-        <div class='conclusion' wrap='soft'>
+        <div class='conclusion'>
           <h2>Truth Table Display</h2>
         </div>
+        <button class="generate btn"><i class="fas fa-hammer"></i></button>
       </div>
-      <button class="generate" type="button">Generate</button>
-    
     </div>
   </div>
 

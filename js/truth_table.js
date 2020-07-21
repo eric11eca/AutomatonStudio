@@ -21,15 +21,20 @@ let generate = document.querySelector(".generate"),
     premises = document.querySelector(".premises"),
     result = document.querySelector(".conclusion");
 
-console.log(generate);
-
 generate.addEventListener('click', queryLogicSentence);
 
 function queryLogicSentence(e) {
   e.preventDefault();
+  if (premises.value == "") {
+    return;
+  }
+
+  result.innerHTML = "";
   var sentences = premises.value.split('\n');
   for (var i=0; i < sentences.length; i++) {
-    dotruthtable(sentences[i]);
+    if (sentences[i] != "") {
+      dotruthtable(sentences[i]);
+    }
   }
 }
 
@@ -84,7 +89,6 @@ function formattruthtable(cl,pl) {
       exp = exp + '<td align="center">' + pretty(evaluate(pl[j],nl[i])) + '</td>';
     }
     
-    exp = exp + '<td></td>';
     exp = exp + '</tr>';
   }
 
