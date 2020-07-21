@@ -11,7 +11,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "electron .",
-    "package-win": "electron-packager . logictoolbox --overwrite --platform=win32 --arch=ia32 --icon=assets/icons/logic.ico --prune=true --out=release-builds --version-string.CompanyName=RHIT --version-string.FileDescription=CE --version-string.ProductName=\"Computational Logic Toolbox\""
+    "package-windows": "electron-packager . logictoolbox --overwrite --platform=win32 --arch=ia32 --icon=assets/icons/logic.ico --prune=true --out=release-builds --version-string.CompanyName=RHIT --version-string.FileDescription=CE --version-string.ProductName=\"Computational Logic Toolbox\"",
+    "package-mac": "electron-packager . logictoolbox --overwrite --platform=darwin --arch=x64 --icon=assets/icons/logic.icns --prune=true --out=release-builds",
+    "package-linux": "electron-packager . logictoolbox --overwrite --platform=linux --arch=x64 --icon=assets/img/logic1.png --prune=true --out=release-builds",
+    "installer-windows": "node release-builds/windows_installer.js",
+    "installer-mac": "electron-installer-dmg ./release-builds/logictoolbox-darwin-x64/logictoolbox.app logictoolbox --out=release-builds --overwrite --icon=assets/icons/logic.icns"
   },
   "keywords": [
     "logic"
@@ -19,6 +23,7 @@
   "author": "Zeming Chen",
   "license": "MIT",
   "dependencies": {
+    "electron-installer-dmg": "^3.0.0",
     "stats.js": "^0.17.0"
   },
   "devDependencies": {
