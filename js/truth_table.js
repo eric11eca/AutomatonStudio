@@ -1,6 +1,6 @@
 function dosanitize (widget) {
   var data = window.event.clipboardData.getData('text');
-  widget.value = sanitize(data);
+  widget.value += sanitize(data);
   window.event.preventDefault();
   return false;
 }
@@ -18,29 +18,30 @@ function sanitize (x) {
 }
 
 let generate = document.querySelector(".generate"),
-    premises = document.querySelector(".premises-input"),
+    premises = document.querySelector(".premises"),
     result = document.querySelector(".conclusion");
 
 console.log(generate);
 
-generate.addEventListener('click', dotruthtable);
+generate.addEventListener('click', queryLogicSentence);
 
-function dotruthtable (e) {
+function queryLogicSentence(e) {
   e.preventDefault();
-  console.log("generate truth table");
-  var pl = readdata(premises.value);
-  //var rl = readdata(conclusions.value);
+  var sentences = premises.value.split('\n');
+  for (var i=0; i < sentences.length; i++) {
+    dotruthtable(sentences[i]);
+  }
+}
+
+function dotruthtable (premise) {
+  var pl = readdata(premise);
   var cl = seq();
   
   for (var i=0; i < pl.length; i++) {
     cl = getconstants(pl[i], cl);
   }
 
-  //for (var j=0; j < rl.length; j++) {
-  //  cl = getconstants(rl[j], cl);
-  //}
-
-  result.innerHTML = formattruthtable(cl,pl);
+  result.innerHTML += formattruthtable(cl,pl);
 }
 
 function formattruthtable(cl,pl) {
@@ -52,12 +53,8 @@ function formattruthtable(cl,pl) {
   if (pl.length>0) {
     exp = exp + '<th colspan="' + pl.length + '">Premises</th>';
   }
+  
   exp = exp + '<td></td>';
-  
-  //if (rl.length>0) {
-  //  exp = exp + '<th colspan="' + rl.length + '">Conclusions</th>';
-  //}
-  
   exp = exp + '</tr>';
   exp = exp + '<tr bgcolor="#455767">';
 
@@ -71,11 +68,6 @@ function formattruthtable(cl,pl) {
   }
   
   exp = exp + '<td></td>';
-
-  //for (var j=0; j<rl.length; j++) {
-  //  exp = exp + '<th style="min-width:40px">' + grind(rl[j]) + '</th>';
-  //}
-
   exp = exp + '</tr>';
   var nl = databases(cl);
 
@@ -93,11 +85,6 @@ function formattruthtable(cl,pl) {
     }
     
     exp = exp + '<td></td>';
-    
-    //for (var j=0; j<rl.length; j++) {
-    //  exp = exp + '<td align="center">' + pretty(evaluate(rl[j],nl[i])) + '</td>';
-    //}
-
     exp = exp + '</tr>';
   }
 
@@ -195,19 +182,15 @@ function evalreduction (p,facts)
 function evalequivalence (p,facts)
  {return (evaluate(p[1],facts)==evaluate(p[2],facts))}
 
-//------------------------------------------------------------------------------
-// toggleinstructions
-//------------------------------------------------------------------------------
 
-function toggleinstructions (toggle)
- {if (toggle.innerHTML == 'Hide Instructions')
-     {toggle.innerHTML = 'Show Instructions';
-      document.getElementById('instructions').style.display='none';
-      return true};
+function toggleinstructions (toggle) {
+  if (toggle.innerHTML == 'Hide Instructions') {
+    toggle.innerHTML = 'Show Instructions';
+    document.getElementById('instructions').style.display='none';
+    return true;
+  }
+
   toggle.innerHTML='Hide Instructions';
   document.getElementById('instructions').style.display='';
-  return true}
-
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
+  return true;
+}

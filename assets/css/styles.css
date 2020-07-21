@@ -172,7 +172,7 @@ body {
 
 .premises {
     width: 50%;
-    height: 50%;
+    height: 70%;
     font-family:courier; 
     font-size:medium;
     background-color: #283745;
@@ -195,10 +195,14 @@ body {
     border: none;
     padding: 15px;
     width: 50%;
-    height: 50%;
+    height: 70%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     overflow: auto;
+}
+
+.conclusion table {
+    margin: 10px;
 }
