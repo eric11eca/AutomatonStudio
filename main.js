@@ -4,7 +4,6 @@ function createWindow () {
     const win = new BrowserWindow({
         width: 800,
         height: 600,
-        icon:'assets/img/logic1.png',
         webPreferences: {
             nodeIntegration: true
         }

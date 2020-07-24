@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Finite State Automota Simulator</title>
+  <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/js/all.min.js"></script>
+  <link rel="icon" href="assets/img/logic1.png">
+	<link rel="stylesheet" href="assets/css/style_fsm.css">
+	<link rel="stylesheet" href="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/css/bootstrap-combined.min.css" />
+  <link href="https://fonts.googleapis.com/css?family=Baloo+Bhaina" rel="stylesheet">
+</head>
+
+<body>
+	<div class="header">
+			<nav class="title-nav">
+				<div class="title-banner">
+					
+					<a class="title-bage" herf="/">
+						<img class="head-icon" src="assets/img/logic1.png"></img>
+						Computational Logic Toolbox 
+					</a>
+	
+					<ul class="nav-items"> 
+						<li>
+							<button type="button">Truth Table</button>
+							<svg width="6" height="4" fill="none" viewBox="0 0 6 4" class="Navigation___StyledSvg-h33bys-0 gPHFcz"><path fill="#999" d="M.471 0L0 .471 2.828 3.3 5.657.47 5.185 0 2.828 2.357.471 0z"></path></svg>
+						</li>
+						
+						<li>
+							<button type="button">Automota</button>
+							<svg width="6" height="4" fill="none" viewBox="0 0 6 4" class="Navigation___StyledSvg-h33bys-0 gPHFcz"><path fill="#999" d="M.471 0L0 .471 2.828 3.3 5.657.47 5.185 0 2.828 2.357.471 0z"></path></svg>
+						</li>
+	
+						<li>
+							<button type="button">Fitch</button>
+							<svg width="6" height="4" fill="none" viewBox="0 0 6 4" class="Navigation___StyledSvg-h33bys-0 gPHFcz"><path fill="#999" d="M.471 0L0 .471 2.828 3.3 5.657.47 5.185 0 2.828 2.357.471 0z"></path></svg>
+						</li>
+						
+						<li>
+							<button type="button">Relational Logic</button>
+							<svg width="6" height="4" fill="none" viewBox="0 0 6 4" class="Navigation___StyledSvg-h33bys-0 gPHFcz"><path fill="#999" d="M.471 0L0 .471 2.828 3.3 5.657.47 5.185 0 2.828 2.357.471 0z"></path></svg>
+						</li>
+					</ul>
+	
+				</div>
+			</nav>
+		</div>
+
+	<div class="main-content">
+		<div class="truth-content">
+			<div class="row-fluid">
+				<div class="span6 column">
+				<h3> &#x2460; Compose </h3>
+
+				<ul class="nav nav-tabs">
+						<li id="regexinput" class="active"><a href="#tab1" data-toggle="tab">Input regex</a></li>
+						<li id="fsminput"><a href="#tab2" data-toggle="tab">Input automaton</a></li>
+				</ul>
+
+				<div class="tab-content">
+						<div class="tab-pane active" id="tab1">
+						<div class="instructions">
+								<p>
+								Enter a regular expression into the input field below or click <strong>Generate random regex</strong> to have the app generate a simple regex randomly for you.
+								Next, click <strong>Create automaton</strong> to create a FSM for the defined regex and display its transition graph.
+								</p>
+								<p>
+								A valid regex consists of alphanumeric characters representing the set of input symbols (e.g. <code>a</code>, <code>B</code>, <code>9</code>), the <code>$</code> character representing the empty string, the choice operator <code>+</code>, the Kleene operator <code>*</code>, and parentheses <code>(</code> and <code>)</code>. An example of a valid regex is: <code>(a+B)*(c9+$)+$</code>.
+								</p>
+						</div>
+
+						<p>
+								<button id="generateRegex" class="btn">Generate random regex</button>
+						</p>
+
+						<p>
+								<div class="control-group">
+								<input id="regex" type="text" class="input-block-level" placeholder="or write your own" spellcheck="false">
+								</div>
+						</p>
+
+						<p>
+								<div class="control-group">
+								<label for="automatonType">Select generated FSM type: </label>
+								<select id="automatonType">
+										<option value="eNFA" default="true">eNFA</option>
+										<option value="NFA">NFA</option>
+										<option value="DFA">DFA</option>
+								</select>
+								</div>
+						</p>
+						</div>
+						<div class="tab-pane" id="tab2">
+						<div class="instructions">
+								<p>
+								Enter a FSM into the input field below or click <strong>Generate random DFA/NFA/eNFA</strong> to have the app generate a simple FSM randomly for you.
+								Next, click <strong>Create automaton</strong> to display the FSM's transition graph.
+								</p>
+								<p>
+								A valid FSM definition contains a list of states, symbols and transitions, the initial state and the accepting states. States and symbols are alphanumeric character strings and can not overlap. Transitions have the format: <code>stateA:symbol>stateB,stateC</code>. The <code>$</code> character is used to represent the empty string symbol (epsilon) but should not be listed in the alphabet. Generate a FSM to see a valid example.
+								</p>
+						</div>
+
+						<p>
+								<button id="generateDFA" class="btn">Generate random DFA</button>
+								<button id="generateNFA" class="btn">Generate random NFA</button>
+								<button id="generateENFA" class="btn">Generate random eNFA</button>
+						</p>
+						<p>
+								<textarea id="fsm" class="input-block-level" type="text" placeholder="or write your own" spellcheck="false"></textarea>
+						</p>
+						</div>
+				</div>
+
+				<p id="fsmError" class="text-error">
+				</p>
+
+				<p>
+						<button id="createAutomaton" class="btn" disabled>Create automaton</button>
+				</p>
+
+				</div>
+
+				<div class="span6 column">
+						<h3> &#x2461; Simulate </h3>
+
+						<div class="instructions">
+								<p>
+								Enter a sequence of input symbols into the input field below or click <strong>Random string</strong>, <strong>Acceptable string</strong> and <strong>Unacceptable string</strong> to have the app generate random acceptable and unacceptable sequences for you.
+								</p>
+								<p>
+								Click <strong>Read next</strong> to have the FSM consume the next input symbol in the sequence and <strong>Read all</strong> to consume all remaining input symbols.
+								Click <strong>Step backward</strong> to go back one symbol and <strong>Reset</strong> to reset the FSM and go back to the beginning of the input sequence.
+								</p>
+								<p>
+								The input field highlights the input symbol that will be read next.
+								</p>
+						</div>
+
+						<p>
+								<button id="generateRandomString" class="btn" disabled> Random string </button>
+								<button id="generateRandomAcceptableString" class="btn" disabled> Acceptable string </button>
+								<button id="generateRandomUnacceptableString" class="btn" disabled> Unacceptable string </button>
+						</p>
+
+						<p>
+								<div class="control-group">
+								<input id="inputString" type="text" class="input-block-level" placeholder="See if this fits" disabled spellcheck="false">
+								</div>
+						</p>
+
+						<p>
+								<button id="startStop" class="btn" disabled>
+								Start
+								</button>
+								<button id="inputFirst" class="btn" disabled>
+								<i class="icon-fast-backward"></i>
+								Reset
+								</button>
+								<button id="inputPrevious" class="btn" disabled>
+								<i class="icon-backward"></i>
+								Step backward
+								</button>
+								<button id="inputNext" class="btn" disabled>
+								<i class="icon-forward"></i>
+								Read next
+								</button>
+								<button id="inputLast" class="btn" disabled>
+								<i class="icon-fast-forward"></i>
+								Read all
+								</button>
+						</p>
+						<p id="inputError" class="text-error"></p>
+				</div>
+			</div>
+			<div class="container graph">
+				<h3> &#x2462; Transition graph </h3>
+	
+				<p>
+					The FSM being simulated is displayed in the form of a transition graph.
+					The nodes representing the current states of the FSM are colored in <span class="currentState">&nbsp;&nbsp;&nbsp;</span>.
+				</p>
+	
+				<div id="automatonGraph"> </div>
+			</div>
+		</div>
+	</div>
+</body>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+<script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/js/bootstrap.min.js"></script>
+<script src="http://mdaines.github.io/viz.js/bower_components/viz.js/viz.js"></script>
+<script src="http://izuzak.github.com/noam/lib/browser/noam.js"></script>
+<script type='text/javascript' src="js/fsm.js"></script>
+
+</html>
