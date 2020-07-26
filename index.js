@@ -4,9 +4,8 @@ const express = require("express"),
       bodyParser = require('body-parser'),
 			helmet = require('helmet'),
 			path = require('path');
-			
-let stateAutomaton = require("./app/stateAutomaton.js");
 
+const morgan = require("morgan");
 
 let app = express();
 const routes = require(path.join(path.join(__dirname, 'routes'), 'main'));
@@ -21,9 +20,9 @@ const server = require("http").createServer(app);
 
 let cacheTime = 14 * 24 * 60 * 60 * 1000;
 app.use(compression());
-//app.set('views', path.join(__dirname, 'views'));
+app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public'), {maxAge: cacheTime}));
-//app.set("view engine", "pug");
+app.set("view engine", "pug");
 app.use(express.urlencoded({extended: true}));
 
 let userSession = (session({
@@ -47,12 +46,11 @@ for (let pages in routes){
   app.use(pages, routes[pages]);
 }
 
-app.get('/createAutomaton', function(req, res, next) {
-	stateAutomaton();
+app.use(morgan('dev'));
+
+app.get('/truth/generateTable', function(req, res, next) {
+	console.log("got table request");
 });
-
-
-
 
 server.listen(process.env.PORT || 4000, () => {
   console.log("server is live on port 4000");

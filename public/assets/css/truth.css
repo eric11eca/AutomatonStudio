@@ -184,7 +184,7 @@ body {
 .premises {
     width: 50%;
     height: 80%;
-    max-height: 400px;
+    max-height: 300px;
     font-family:courier; 
     font-size:13px;
     background-color: #283745;
@@ -207,7 +207,7 @@ body {
     padding: 15px;
     width: 50%;
     height: 80%;
-    max-height: 400px;
+    max-height: 300px;
     align-items: center;
     justify-content: center;
     overflow: auto;
@@ -216,6 +216,7 @@ body {
 .conclusion table {
     height: 50%;
     margin: 10px;
+    color: white;
 }
 
 .conclusion tr td:last-child{

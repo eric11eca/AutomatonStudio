@@ -1,14 +1,24 @@
 const express = require("express"),
-      router = express.Router();
+	  router = express.Router(),
+		bodyParser = require('body-parser');
+		
+router.use(bodyParser.json());
+router.use(bodyParser.urlencoded({ extended: true }));
+			
+let stateAutomaton = require("../app/stateAutomaton.js");
 
-router.get("/fsm", (request, response) => {
-	response.render("fsm.html"
-		/*{
-			title: "Truth Table Generator",
+router.get("/", (request, response) => {
+	response.render("fsm",
+		{
+			title: "Finite State Automaton Simulation",
 			author: "Zeming Chen",
-			description: "generates truth table acordding to premesis."
-		}*/
+			description: "playground for define FSM and simulate string"
+		}
 	);
+});
+
+router.post("/createAutomaton", (req, res, next) => {
+	var 
 });
 
 module.exports = router;

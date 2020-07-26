@@ -1,5 +1,7 @@
 let truth = {},
-    logic = require('./logic');
+	logic = require('./logic');
+	
+logic = logic.data;
 
 truth.queryTruthTable = function(premises) {
 	var result = "";
@@ -42,7 +44,7 @@ truth.formattruthtable = function(cl,pl) {
 
 	exp = exp + '<td></td>';
 	for (var j=0; j<pl.length; j++) {
-		exp = exp + '<th style="min-width:40px">' + grind(pl[j]) + '</th>';
+		exp = exp + '<th style="min-width:40px">' + logic.grind(pl[j]) + '</th>';
 	}
 
 	exp = exp + '<td></td>';
@@ -79,7 +81,7 @@ truth._pretty = function (val) {
 //------------------------------------------------------------------------------
 
 truth.constants = function (p) {
-	return truth.getconstants(p,seq());
+	return truth.getconstants(p,logic.seq());
 }
 
 truth.getconstants = function (p,nl) { 
@@ -104,8 +106,8 @@ truth.itemp = function (p,nl) {
 }
 
 truth.databases = function (cl) {
-	var al = seq();
-	var nl = seq();
+	var al = logic.seq();
+	var nl = logic.seq();
 	truth.getdatabases(cl,0,al,nl);
 	return nl;
 }
@@ -123,7 +125,7 @@ truth.getdatabases = function (cl,n,al,nl) {
 }
 
 truth.makedatabase = function (cl,al) {
-	var db = seq();
+	var db = logic.seq();
 	for (var i=0; i<cl.length; i++) {
 		if (al[i]) {db[db.length]=cl[i]};
 	}

@@ -1256,7 +1256,7 @@ function grindem(data) {
     return exp
 }
 
-function grind(p) {
+logic.grind = function(p) {
     return grindit(p, 'lparen', 'rparen')
 }
 

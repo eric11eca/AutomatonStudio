@@ -28,23 +28,23 @@ generate.addEventListener('click', function(e) {
   }
   result.innerHTML = "";
 
-  fetch('generateTable', {
+  fetch('/truth/generateTable', {
     method: "POST",
     headers: {
       "Accept": "application/json",
       "Content-Type": "application/json"
     }, 
-    params: {
-      "task": "generateTable"
-    },
     body: JSON.stringify({premises: premises.value})
   }).then((response) => {
     if (!response.ok) {
       throw new Error("Unable to generate truth table");
     }
-    return response.text();
-  }).then((data) => {
-    window.location = (JSON.parse(data).redirect);
+    response.text().then(text => {
+      console.log(text);
+      result.innerHTML = text;
+    });
+     
+    return result;
   }).catch((err)=> {
     console.log(err);
   });

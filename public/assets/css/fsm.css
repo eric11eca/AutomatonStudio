@@ -111,7 +111,7 @@ body {
     flex-grow: 1;
     align-items: center;
     justify-content: center;
-    background-color: bisque;
+    background-color: rgb(243, 239, 234);
 }
 
 .truth-content {

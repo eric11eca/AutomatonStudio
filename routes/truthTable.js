@@ -1,28 +1,29 @@
 const express = require("express"),
 	  router = express.Router(),
-	  path = require("path");
+	  bodyParser = require('body-parser');
 	  
-let truthTable = require("../app/truth.js");
+const truthTable = require("../app/truth.js");
+router.use(bodyParser.json());
+router.use(bodyParser.urlencoded({ extended: true }));
+
+let premises = "";
 
 router.get("/", (request, response) => {
-	response.sendFile(path.join(path.join(__dirname, 'public'), "truth.html")
-		/*{
+	response.render("truth",
+		{
 			title: "Truth Table Generator",
 			author: "Zeming Chen",
 			description: "generates truth table acordding to premesis."
-		}*/
+		}
 	);
 });
 
-router.get('/generateTable', function(req, res, next) {
-	console.log(req.hostname)    
-  console.log(req.path)    
-	console.log(req.originalUrl)
-	if (req.params.task == "generateTable") {
-		console.log("request truth table generator");
-		var result = truthTable.queryTruthTable();
-		res.send({result: result});
-	}
+
+
+router.post('/generateTable', function(req, res, next) {
+	premises = req.body.premises;
+	var result = truthTable.data.queryTruthTable(premises);
+	return res.send(result);
 });
 
 module.exports = router;
