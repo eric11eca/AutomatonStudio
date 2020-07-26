@@ -4,8 +4,8 @@
 <head>
   <title>Finite State Automota Simulator</title>
   <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/js/all.min.js"></script>
-  <link rel="icon" href="assets/img/logic1.png">
-	<link rel="stylesheet" href="assets/css/style_fsm.css">
+  <link rel="icon" href="/assets/img/logic1.png">
+	<link rel="stylesheet" href="/assets/css/style_fsm.css">
 	<link rel="stylesheet" href="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/css/bootstrap-combined.min.css" />
   <link href="https://fonts.googleapis.com/css?family=Baloo+Bhaina" rel="stylesheet">
 </head>
@@ -13,9 +13,8 @@
 <body>
 	<div class="header">
 			<nav class="title-nav">
-				<div class="title-banner">
-					
-					<a class="title-bage" herf="/">
+				<div class="title-banner">		
+					<a class="title-bage">
 						<img class="head-icon" src="assets/img/logic1.png"></img>
 						Computational Logic Toolbox 
 					</a>
@@ -23,25 +22,33 @@
 					<ul class="nav-items"> 
 						<li>
 							<button type="button">Truth Table</button>
-							<svg width="6" height="4" fill="none" viewBox="0 0 6 4" class="Navigation___StyledSvg-h33bys-0 gPHFcz"><path fill="#999" d="M.471 0L0 .471 2.828 3.3 5.657.47 5.185 0 2.828 2.357.471 0z"></path></svg>
+							<svg width="6" height="4" fill="none" viewBox="0 0 6 4">
+								<path fill="#999" d="M.471 0L0 .471 2.828 3.3 5.657.47 5.185 0 2.828 2.357.471 0z"></path>
+							</svg>
 						</li>
 						
 						<li>
 							<button type="button">Automota</button>
-							<svg width="6" height="4" fill="none" viewBox="0 0 6 4" class="Navigation___StyledSvg-h33bys-0 gPHFcz"><path fill="#999" d="M.471 0L0 .471 2.828 3.3 5.657.47 5.185 0 2.828 2.357.471 0z"></path></svg>
+							<svg width="6" height="4" fill="none" viewBox="0 0 6 4">
+								<path fill="#999" d="M.471 0L0 .471 2.828 3.3 5.657.47 5.185 0 2.828 2.357.471 0z"></path>
+							</svg>
 						</li>
 	
 						<li>
 							<button type="button">Fitch</button>
-							<svg width="6" height="4" fill="none" viewBox="0 0 6 4" class="Navigation___StyledSvg-h33bys-0 gPHFcz"><path fill="#999" d="M.471 0L0 .471 2.828 3.3 5.657.47 5.185 0 2.828 2.357.471 0z"></path></svg>
+							<svg width="6" height="4" fill="none" viewBox="0 0 6 4">
+								<path fill="#999" d="M.471 0L0 .471 2.828 3.3 5.657.47 5.185 0 2.828 2.357.471 0z"></path>
+							</svg>
 						</li>
 						
 						<li>
 							<button type="button">Relational Logic</button>
-							<svg width="6" height="4" fill="none" viewBox="0 0 6 4" class="Navigation___StyledSvg-h33bys-0 gPHFcz"><path fill="#999" d="M.471 0L0 .471 2.828 3.3 5.657.47 5.185 0 2.828 2.357.471 0z"></path></svg>
+							<svg width="6" height="4" fill="none" viewBox="0 0 6 4">
+								<path fill="#999" d="M.471 0L0 .471 2.828 3.3 5.657.47 5.185 0 2.828 2.357.471 0z"></path>
+							</svg>
 						</li>
+
 					</ul>
-	
 				</div>
 			</nav>
 		</div>
@@ -53,12 +60,80 @@
 				<h3> &#x2460; Compose </h3>
 
 				<ul class="nav nav-tabs">
-						<li id="regexinput" class="active"><a href="#tab1" data-toggle="tab">Input regex</a></li>
-						<li id="fsminput"><a href="#tab2" data-toggle="tab">Input automaton</a></li>
+					<li id="fsminput" class="active"><a href="#tab1" data-toggle="tab">Input automaton</a></li>
+					<li id="regexinput"><a href="#tab2" data-toggle="tab">Input regex</a></li>
 				</ul>
 
 				<div class="tab-content">
-						<div class="tab-pane active" id="tab1">
+					<div class="tab-pane active" id="tab1">
+						<div class="instructions">
+								<p>
+									Compose FSM from definition and transitions
+								</p>
+								<p>
+									Follow the formal definition of a FSM
+								</p>
+						</div>
+
+						<p>
+								<button id="generateDFA" class="btn">Generate random DFA</button>
+								<button id="generateNFA" class="btn">Generate random NFA</button>
+								<button id="generateENFA" class="btn">Generate random eNFA</button>
+						</p>
+						<p>
+							<table class="state-table">
+								<colgroup>
+									<col span="1" style="width: 10%;">
+									<col span="1" style="width: 35%;">
+									<col span="1" style="width: 55%;">
+							 </colgroup>
+
+								<tr>
+									<td>
+										<span style="margin-left: 10px;">States:  </span>
+									</td>
+									<td>
+										<input id="states" class="input-block-level" type="text" placeholder="..." spellcheck="false">
+									</td>
+									<td rowspan="4">
+										<span style="margin-left: 10px;">Transitions:</span>
+										<textarea id="transition" class="input-block-level" type="text" placeholder="..." spellcheck="false"></textarea>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<span style="margin-left: 10px;">Alphabet:</span>
+									</td>
+									<td>
+										<input id="alphabet" class="input-block-level" type="text" placeholder="..." spellcheck="false">
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<span style="margin-left: 10px;">Starting:</span>
+									</td>
+									<td>
+										<input id="start" class="input-block-level" type="text" placeholder="..." spellcheck="false">
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<span style="margin-left: 10px;">Accepting:</span>
+									</td>
+									<td>
+										<input id="accept" class="input-block-level" type="text" placeholder="..." spellcheck="false">
+									</td>
+								</tr>			
+								<tr>
+									<td colspan="2">
+										<button id="createAutomaton" class="btn" disabled>Create automaton</button>
+									</td>
+								</tr>
+							</table>
+						</p>
+						</div>
+
+						<div class="tab-pane" id="tab2">
 						<div class="instructions">
 								<p>
 								Enter a regular expression into the input field below or click <strong>Generate random regex</strong> to have the app generate a simple regex randomly for you.
@@ -90,35 +165,10 @@
 								</div>
 						</p>
 						</div>
-						<div class="tab-pane" id="tab2">
-						<div class="instructions">
-								<p>
-								Enter a FSM into the input field below or click <strong>Generate random DFA/NFA/eNFA</strong> to have the app generate a simple FSM randomly for you.
-								Next, click <strong>Create automaton</strong> to display the FSM's transition graph.
-								</p>
-								<p>
-								A valid FSM definition contains a list of states, symbols and transitions, the initial state and the accepting states. States and symbols are alphanumeric character strings and can not overlap. Transitions have the format: <code>stateA:symbol>stateB,stateC</code>. The <code>$</code> character is used to represent the empty string symbol (epsilon) but should not be listed in the alphabet. Generate a FSM to see a valid example.
-								</p>
-						</div>
 
-						<p>
-								<button id="generateDFA" class="btn">Generate random DFA</button>
-								<button id="generateNFA" class="btn">Generate random NFA</button>
-								<button id="generateENFA" class="btn">Generate random eNFA</button>
-						</p>
-						<p>
-								<textarea id="fsm" class="input-block-level" type="text" placeholder="or write your own" spellcheck="false"></textarea>
-						</p>
-						</div>
 				</div>
 
-				<p id="fsmError" class="text-error">
-				</p>
-
-				<p>
-						<button id="createAutomaton" class="btn" disabled>Create automaton</button>
-				</p>
-
+				<p id="fsmError" class="text-error"></p>
 				</div>
 
 				<div class="span6 column">
@@ -175,12 +225,6 @@
 			</div>
 			<div class="container graph">
 				<h3> &#x2462; Transition graph </h3>
-	
-				<p>
-					The FSM being simulated is displayed in the form of a transition graph.
-					The nodes representing the current states of the FSM are colored in <span class="currentState">&nbsp;&nbsp;&nbsp;</span>.
-				</p>
-	
 				<div id="automatonGraph"> </div>
 			</div>
 		</div>
@@ -191,6 +235,6 @@
 <script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/js/bootstrap.min.js"></script>
 <script src="http://mdaines.github.io/viz.js/bower_components/viz.js/viz.js"></script>
 <script src="http://izuzak.github.com/noam/lib/browser/noam.js"></script>
-<script type='text/javascript' src="js/fsm.js"></script>
+<script type='text/javascript' src="/js/fsm_view.js"></script>
 
 </html>

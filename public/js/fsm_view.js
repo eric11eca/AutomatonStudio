@@ -239,10 +239,44 @@ function colorStates(states, cssClass) {
   
   function generateAutomaton(fsmType) {
     automaton = noam.fsm.createRandomFsm(fsmType, 4, 3, 3);
-    $("#fsm").val(noam.fsm.serializeFsmToString(automaton));
-    $("#fsm").scrollTop(0);
-    $("#fsm").focus();
+		var automaton_df = noam.fsm.serializeFsmToString(automaton);
+		var definition = process_automaton_df(automaton_df.split('#'));
+
+		$("#states").val(definition[0]);
+		$("#alphabet").val(definition[1]);
+		$("#start").val(definition[2]);
+		$("#accept").val(definition[3]);
+		$("#transition").val(definition[4]);
+    $("#transition").scrollTop(0);
+    $("#transition").focus();
     onRegexOrAutomatonChange();
+  }
+
+  function process_automaton_df(definition) {
+    var states = definition[1];
+    var start = definition[2];
+    var accept = definition[3];
+    var alphabet = definition[4]
+		var transition = definition[5];
+
+		states = states.replace("states", '');
+		states = states.replace(/\n/ig, ",");
+		states = states.slice(1,-1);
+
+		start = start.replace("initial", '');
+		start = start.replace(/\n/ig, ",");
+		start = start.slice(1,-1);
+
+		accept = accept.replace("accepting", '');
+		accept = accept.replace(/\n/ig, ",");
+		accept = accept.slice(1,-1);
+
+		alphabet = alphabet.replace("alphabet", '');
+		alphabet = alphabet.replace(/\n/ig, ",");
+		alphabet = alphabet.slice(1,-1);
+
+		transition = transition.replace("transitions", '');
+		return [states, alphabet, start, accept, transition];
   }
   
   $("#generateDFA").click(function() {
@@ -320,21 +354,21 @@ function colorStates(states, cssClass) {
   }
   
   function validateFsm() {
-    var fsm = $("#fsm").val();
+    var fsm = $("#transition").val();
   
     if (fsm.length === 0) {
-      $("#fsm").parent().removeClass("success error");
+      $("#transition").parent().removeClass("success error");
       $("#fsmError").hide();
     } else {
       try {
         noam.fsm.parseFsmFromString(fsm);
-        $("#fsm").parent().removeClass("error");
-        $("#fsm").parent().addClass("success");
+        $("#transition").parent().removeClass("error");
+        $("#transition").parent().addClass("success");
         $("#createAutomaton").attr("disabled", false);
         $("#fsmError").hide();
       } catch (e) {
-        $("#fsm").parent().removeClass("success");
-        $("#fsm").parent().addClass("error");
+        $("#transition").parent().removeClass("success");
+        $("#transition").parent().addClass("error");
         $("#fsmError").text("Error: " + e.message);
         $("#fsmError").show();
       }

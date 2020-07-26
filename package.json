@@ -2,15 +2,20 @@
   "name": "logictoolbox",
   "version": "1.0.0",
   "description": "Toolbox for computational logic",
-  "main": "main.js",
+  "main": "index.js",
   "repository": "https://github.com/eric11eca/computational-logic-toolbox.git",
   "directories": {
-    "lib": "lib",
-    "assets": "assests"
+    "app": "app",
+    "views": "views",
+    "public": "public",
+    "lib": "public/lib",
+    "js": "public/js",
+    "assets": "public/assests"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "electron .",
+    "start": "nodeman index.js",
+    "start-desk": "electron .",
     "package-windows": "electron-packager . logictoolbox --overwrite --platform=win32 --arch=ia32 --icon=assets/icons/logic.ico --prune=true --out=release-builds --version-string.CompanyName=RHIT --version-string.FileDescription=CE --version-string.ProductName=\"Computational Logic Toolbox\"",
     "package-mac": "electron-packager . logictoolbox --overwrite --platform=darwin --arch=x64 --icon=assets/icons/logic.icns --prune=true --out=release-builds",
     "package-linux": "electron-packager . logictoolbox --overwrite --platform=linux --arch=x64 --icon=assets/img/logic1.png --prune=true --out=release-builds",
@@ -23,7 +28,12 @@
   "author": "Zeming Chen",
   "license": "MIT",
   "dependencies": {
+    "body-parser": "^1.19.0",
+    "compression": "^1.7.4",
     "electron-installer-dmg": "^3.0.0",
+    "express": "^4.17.1",
+    "express-session": "^1.17.1",
+    "helmet": "^3.23.3",
     "stats.js": "^0.17.0"
   },
   "devDependencies": {

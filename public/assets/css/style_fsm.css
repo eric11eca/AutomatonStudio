@@ -5,8 +5,6 @@ body * {
 }
 
 body {
-    /*background-color:#040405;*/
-    background-color: white;
     width: initial;
     display: flex;
     flex-direction: column;
@@ -113,6 +111,7 @@ body {
     flex-grow: 1;
     align-items: center;
     justify-content: center;
+    background-color: bisque;
 }
 
 .truth-content {
@@ -131,7 +130,7 @@ body {
 }
 
 .column {
-    /*background-color: #E1E4F4;*/
+    margin-top: 10px;
     min-height: 190px;
 }
 
@@ -143,9 +142,28 @@ input,textarea {
     font-family: monospace;
 }
 
-hr {
-    height: 2px;
-    border-color: grey;
+.state-table {
+	border: none;
+    border-radius: 5px;
+	border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+    box-shadow: 0px 3px 10px 3px #e8e8e8
+}
+
+.state-table td, th {
+    border: none;
+    text-align: left;
+    height: 100%;
+}
+.state-table input {
+    margin: 10px;
+}
+.state-table textarea {
+    margin: 10px;
+}
+#createAutomaton{
+    margin: 10px;
 }
 
 .currentState {
@@ -176,8 +194,25 @@ hr {
     font-weight:bold;
 }
 
-#fsm {
-    height: 60px;
+#states {
+    max-width: 60%;
+}
+
+#alphabet {
+    max-width: 60%;
+}
+
+#start {
+    max-width: 60%;
+}
+
+#accept {
+    max-width: 60%;
+}
+
+#transition {
+    height: 150px;
+    max-width: 80%;
 }
 
 .graph {
