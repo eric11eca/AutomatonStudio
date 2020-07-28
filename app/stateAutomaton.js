@@ -298,29 +298,29 @@ fsm.determineType = function (fsm) {
 };
 
 // computes epsilon closure of fsm from states array states
-fsm.computeEpsilonClosure = function (fsm, states) {
-  if (!(util.containsAll(fsm.states, states))) {
+fsm.computeEpsilonClosure = function (automaton, states) {
+  if (!(util.containsAll(automaton.states, states))) {
     throw new Error('FSM must contain all states for which epsilon closure is being computed');
   }
 
   var unprocessedStates = states;
   var targetStates = [];
+  var transitions = Object.values(automaton.transitions);
 
   while (unprocessedStates.length !== 0) {
     var currentState = unprocessedStates.pop();
     targetStates.push(currentState);
 
-    for (var i = 0; i < fsm.transitions.length; i++) {
-      var transition = fsm.transitions[i];
+    for (var i = 0; i < transitions.length; i++) {
+      var transition = transitions[i];
 
-      if (transition.symbol === fsm.constants.epsilon &&
+      if (transition.input === fsm.constants.epsilon &&
         util.areEquivalent(transition.fromState, currentState)) {
         for (var j = 0; j < transition.toStates.length; j++) {
           if (util.contains(targetStates, transition.toStates[j]) ||
             util.contains(unprocessedStates, transition.toStates[j])) {
             continue;
           }
-
           unprocessedStates.push(transition.toStates[j]);
         }
       }
@@ -632,7 +632,7 @@ fsm.printDotFormat = function (machine) {
   var accStates = ["  node [shape = doublecircle];"];
 
   var i, j, k, trans;
-  var automaton = JSON.parse(machine);
+  var automaton = machine;
 
   for (i = 0; i < automaton.accepting.length; i++) {
     accStates.push(automaton.accepting[i].toString());
@@ -644,10 +644,6 @@ fsm.printDotFormat = function (machine) {
   }
   result.push("  node [shape = circle];");
   result.push("  secret_node [style=invis, shape=point];");
-  //var initState = ['  {rank = source; "'];
-  //initState.push(fsm.initialState.toString());
-  //initState.push('" "secret_node"}');
-  //result.push(initState.join(""));
 
   var initStateArrow = ["  secret_node ->"];
   initStateArrow.push(automaton.starting);
@@ -671,16 +667,16 @@ fsm.printDotFormat = function (machine) {
       if (found === null) {
         var newTransition = util.clone(transitions[i]);
         newTransition.toStates = [newTransition.toStates[j]];
-        newTransition.symbol = [newTransition.symbol];
+        newTransition.input = [newTransition.input];
         newTransitions.push(newTransition);
       } else {
-        found.symbol.push(transitions[i].symbol);
+        found.input.push(transitions[i].input);
       }
     }
   }
 
   for (i = 0; i < newTransitions.length; i++) {
-    if (util.areEquivalent(newTransitions[i].toStates[0], automaton.start)) {
+    if (newTransitions[i].toStates[0] == automaton.starting) {
       trans = [" "];
       trans.push(newTransitions[i].toStates[0].toString());
       trans.push("->");

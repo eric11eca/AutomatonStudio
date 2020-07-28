@@ -35,4 +35,12 @@ router.post("/printDotFormat", (req, res, next) => {
 	return res.send(dotString);
 });
 
+router.post("/getCurrentStates", (req, res, next) => {
+	var automaton = req.body.automaton;
+	var currentStates = stateAutomaton.computeEpsilonClosure(automaton, [automaton.starting]);
+	return res.send(currentStates);
+});
+
+
+
 module.exports = router;

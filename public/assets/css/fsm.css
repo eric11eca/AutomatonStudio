@@ -73,9 +73,11 @@ body {
 .nav-items li {
     margin: 0px;
 }
+
 .nav-items li:not(:last-child) {
     margin-right: 3rem;
 }
+
 @media screen and (max-width: 900px) {
     .nav-items li:not(:last-child) {
         margin-right: 1rem;
@@ -111,14 +113,12 @@ body {
     flex-grow: 1;
     align-items: center;
     justify-content: center;
-    background-color: rgb(243, 239, 234);
 }
 
 .truth-content {
-    width:80%;
+    width: 80%;
     z-index: 20;
-    position: absolute;
-    top: 10%;
+    position: relative;
     text-align: center;
     opacity: 1;
     transform: none;
@@ -138,31 +138,36 @@ h3 {
     text-rendering: auto;
 }
 
-input,textarea {
+input,
+textarea {
     font-family: monospace;
 }
 
 .state-table {
-	border: none;
+    border: none;
     border-radius: 5px;
-	border-collapse: separate;
+    border-collapse: separate;
     border-spacing: 0;
     width: 100%;
     box-shadow: 0px 3px 10px 3px #e8e8e8
 }
 
-.state-table td, th {
+.state-table td,
+th {
     border: none;
     text-align: left;
     height: 100%;
 }
+
 .state-table input {
     margin: 10px;
 }
+
 .state-table textarea {
     margin: 10px;
 }
-#createAutomaton{
+
+#createAutomaton {
     margin: 10px;
 }
 
@@ -191,7 +196,7 @@ input,textarea {
 
 .nextSymbol {
     background-color: lightgreen;
-    font-weight:bold;
+    font-weight: bold;
 }
 
 #states {
@@ -217,21 +222,27 @@ input,textarea {
 
 .graph {
     min-height: 150px;
+    margin-bottom: 50px;
 }
+
+.simulator {
+    max-width: 50%;
+}
+
 
 
 ::-webkit-scrollbar {
     width: 12px;
 }
- 
+
 ::-webkit-scrollbar-track {
-    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); 
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
     border-radius: 10px;
 }
- 
+
 ::-webkit-scrollbar-thumb {
     border-radius: 10px;
-    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5); 
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.5);
 }
 
 textarea:focus {

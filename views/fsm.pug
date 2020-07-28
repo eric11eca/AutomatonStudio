@@ -28,123 +28,105 @@ append head
 							path(fill='#999' d='M.471 0L0 .471 2.828 3.3 5.657.47 5.185 0 2.828 2.357.471 0z')
 	.main-content
 		.truth-content
-			.row-fluid
-				.span6.column
-					h3  &#x2460; Compose 
-					ul.nav.nav-tabs
-						li#fsminput.active
-							a(href='#tab1' data-toggle='tab') Input automaton
-						li#regexinput
-							a(href='#tab2' data-toggle='tab') Input regex
-					.tab-content
-						#tab1.tab-pane.active
-							.instructions
-								p
-									| Compose FSM from definition and transitions
-								p
-									| Follow the formal definition of a FSM
+			.span6.column
+				h3  &#x2460; Compose 
+				ul.nav.nav-tabs
+					li#fsminput.active
+						a(href='#tab1' data-toggle='tab') Input automaton
+					li#regexinput
+						a(href='#tab2' data-toggle='tab') Input regex
+				.tab-content
+					#tab1.tab-pane.active
+						.instructions
 							p
-								button#generateDFA.btn Generate random DFA
-								button#generateNFA.btn Generate random NFA
-								button#generateENFA.btn Generate random eNFA
+								| Compose FSM from definition and transitions
 							p
-								table.state-table
-									colgroup
-										col(span='1' style='width: 10%;')
-										col(span='1' style='width: 35%;')
-										col(span='1' style='width: 55%;')
-									tr
-										td
-											span(style='margin-left: 10px;') States:  
-										td
-											input#states.input-block-level(type='text' placeholder='...' spellcheck='false')
-										td(rowspan='4')
-											span(style='margin-left: 10px;') Transitions:
-											textarea#transition.input-block-level(type='text' placeholder='...' spellcheck='false')
-									tr
-										td
-											span(style='margin-left: 10px;') Alphabet:
-										td
-											input#alphabet.input-block-level(type='text' placeholder='...' spellcheck='false')
-									tr
-										td
-											span(style='margin-left: 10px;') Starting:
-										td
-											input#start.input-block-level(type='text' placeholder='...' spellcheck='false')
-									tr
-										td
-											span(style='margin-left: 10px;') Accepting:
-										td
-											input#accept.input-block-level(type='text' placeholder='...' spellcheck='false')
-									tr
-										td(colspan='2')
-											button#createAutomaton.btn() Create automaton
-						#tab2.tab-pane
-							.instructions
-								p
-									| Enter a regular expression into the input field below or click 
-									strong Generate random regex
-									|  to have the app generate a simple regex randomly for you.
-									| &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Next, click 
-									strong Create automaton
-									|  to create a FSM for the defined regex and display its transition graph.
-								p
-									| A valid regex consists of alphanumeric characters representing the set of input symbols (e.g. 
-									code a
-									| , 
-									code B
-									| , 
-									code 9
-									| ), the 
-									code $
-									|  character representing the empty string, the choice operator 
-									code +
-									| , the Kleene operator 
-									code *
-									| , and parentheses 
-									code (
-									|  and 
-									code )
-									| . An example of a valid regex is: 
-									code (a+B)*(c9+$)+$
-									| .
-							p
-								button#generateRegex.btn Generate random regex
-							p
-								.control-group
-									input#regex.input-block-level(type='text' placeholder='or write your own' spellcheck='false')
-							p
-								.control-group
-									label(for='automatonType') Select generated FSM type: 
-									select#automatonType
-										option(value='eNFA' default='true') eNFA
-										option(value='NFA') NFA
-										option(value='DFA') DFA
-					p#fsmError.text-error
-				.span6.column
-					h3  &#x2461; Simulate 
-					.instructions
+								| Follow the formal definition of a FSM
 						p
-							| Enter a sequence of input symbols into the input field below or click 
-							strong Random string
-							| , 
-							strong Acceptable string
-							|  and 
-							strong Unacceptable string
-							|  to have the app generate random acceptable and unacceptable sequences for you.
+							button#generateDFA.btn Generate random DFA
+							button#generateNFA.btn Generate random NFA
+							button#generateENFA.btn Generate random eNFA
 						p
-							| Click 
-							strong Read next
-							|  to have the FSM consume the next input symbol in the sequence and 
-							strong Read all
-							|  to consume all remaining input symbols.
-							| &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Click 
-							strong Step backward
-							|  to go back one symbol and 
-							strong Reset
-							|  to reset the FSM and go back to the beginning of the input sequence.
+							table.state-table
+								colgroup
+									col(span='1' style='width: 10%;')
+									col(span='1' style='width: 35%;')
+									col(span='1' style='width: 55%;')
+								tr
+									td
+										span(style='margin-left: 10px;') States:  
+									td
+										input#states.input-block-level(type='text' placeholder='...' spellcheck='false')
+									td(rowspan='4')
+										span(style='margin-left: 10px;') Transitions:
+										textarea#transition.input-block-level(type='text' placeholder='...' spellcheck='false')
+								tr
+									td
+										span(style='margin-left: 10px;') Alphabet:
+									td
+										input#alphabet.input-block-level(type='text' placeholder='...' spellcheck='false')
+								tr
+									td
+										span(style='margin-left: 10px;') Starting:
+									td
+										input#start.input-block-level(type='text' placeholder='...' spellcheck='false')
+								tr
+									td
+										span(style='margin-left: 10px;') Accepting:
+									td
+										input#accept.input-block-level(type='text' placeholder='...' spellcheck='false')
+								tr
+									td(colspan='2')
+										button#createAutomaton.btn() Create automaton
+					#tab2.tab-pane
+						.instructions
+							p
+								| Enter a regular expression into the input field below or click 
+								strong Generate random regex
+								|  to have the app generate a simple regex randomly for you.
+								| &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Next, click 
+								strong Create automaton
+								|  to create a FSM for the defined regex and display its transition graph.
+							p
+								| A valid regex consists of alphanumeric characters representing the set of input symbols (e.g. 
+								code a
+								| , 
+								code B
+								| , 
+								code 9
+								| ), the 
+								code $
+								|  character representing the empty string, the choice operator 
+								code +
+								| , the Kleene operator 
+								code *
+								| , and parentheses 
+								code (
+								|  and 
+								code )
+								| . An example of a valid regex is: 
+								code (a+B)*(c9+$)+$
+								| .
 						p
-							| The input field highlights the input symbol that will be read next.
+							button#generateRegex.btn Generate random regex
+						p
+							.control-group
+								input#regex.input-block-level(type='text' placeholder='or write your own' spellcheck='false')
+						p
+							.control-group
+								label(for='automatonType') Select generated FSM type: 
+								select#automatonType
+									option(value='eNFA' default='true') eNFA
+									option(value='NFA') NFA
+									option(value='DFA') DFA
+				p#fsmError.text-error
+
+			.simulator 
+				h3  &#x2461; Simulate 
+				span
+					| Enter a sequence of input symbols into the input field below. 
+				span
+					| Or click the three buttons to generate random string.
 					p
 						button#generateRandomString.btn(disabled='')  Random string 
 						button#generateRandomAcceptableString.btn(disabled='')  Acceptable string 
@@ -168,8 +150,8 @@ append head
 							i.icon-fast-forward
 							| &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Read all
 					p#inputError.text-error
+					
 			.container.graph
-				h3  &#x2462; Transition graph 
 				#automatonGraph  
 
 	script(src='https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js')

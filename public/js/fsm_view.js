@@ -33,8 +33,8 @@ function getElementsOfStates(states) {
   var retVal = [];
 
   for (var i = 0; i < states.length; i++) {
-    $("title:contains('" + states[i].toString() + "')").each(function (index, element) {
-      if ($(this).text() === states[i].toString()) {
+    $("title:contains('" + states[i] + "')").each(function (index, element) {
+      if ($(this).text() === states[i]) {
         retVal.push($(this).parent());
       }
     });
@@ -45,7 +45,6 @@ function getElementsOfStates(states) {
 
 function reorderCirclesInAcceptingStates(states) {
   var stateElements = getElementsOfStates(states);
-
   for (var i = 0; i < stateElements.length; i++) {
     var e1 = $(stateElements[i].children("ellipse")[0]);
     var e2 = $(stateElements[i].children("ellipse")[1]);
@@ -80,9 +79,9 @@ function drawGraph() {
 }
 
 function colorize() {
-  colorStates(automaton.states, "inactiveStates");
-  colorStates(previousStates, "previousState");
-  colorStates(nextStates, "nextState");
+  //colorStates(automaton.states, "inactiveStates");
+  //colorStates(previousStates, "previousState");
+  //colorStates(nextStates, "nextState");
   colorStates(currentStates, "currentState");
 }
 
@@ -185,11 +184,29 @@ function colorNextSymbol() {
 }
 
 function resetAutomaton() {
-  currentStates = noam.fsm.computeEpsilonClosure(automaton, [automaton.initialState]);
-  inputString = $("#inputString").text();
-  nextSymbolIndex = 0;
-  colorize();
-  colorNextSymbol();
+  fetch('/fsm/getCurrentStates', {
+    method: "POST",
+    headers: {
+      "Accept": "application/json",
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      automaton: automaton
+    })
+  }).then((response) => {
+    if (!response.ok) {
+      throw new Error("Unable to generate random automaton");
+    }
+    return response.text();
+  }).then((data) => {
+    currentStates = JSON.parse(data);
+    inputString = $("#inputString").text();
+    nextSymbolIndex = 0;
+    colorize();
+    colorNextSymbol();
+  }).catch((err) => {
+    console.log(err);
+  });
 }
 
 $("#inputFirst").click(function () {
@@ -356,6 +373,7 @@ $("#createAutomaton").click(async function () {
     }
 
     automaton = await createAutomaton(definition);
+    automaton = JSON.parse(automaton);
   }
 
   initialize();
