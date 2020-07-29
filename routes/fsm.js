@@ -19,7 +19,7 @@ router.get("/", (request, response) => {
 
 router.post("/generateAutomaton", (req, res, next) => {
 	var fsmType = req.body.fsmType;
-	var automaton = stateAutomaton.createRandomFsm(fsmType, 4, 3, 3)
+	var automaton = stateAutomaton.createRandomFsm(fsmType, 4, 3, 3);
 	return res.send(stateAutomaton.serializeFsmToString(automaton));
 });
 
@@ -37,10 +37,23 @@ router.post("/printDotFormat", (req, res, next) => {
 
 router.post("/getCurrentStates", (req, res, next) => {
 	var automaton = req.body.automaton;
-	var currentStates = stateAutomaton.computeEpsilonClosure(automaton, [automaton.starting]);
+	var currentStates = stateAutomaton.forwardEpsilonTransition(automaton, [automaton.starting]);
 	return res.send(currentStates);
 });
 
+router.post("/forwardTransition", (req, res, next) => {
+	var automaton = req.body.automaton;
+	var currentStates = req.body.currentStates;
+	var input = req.body.input;
+	var newStates = stateAutomaton.forwardTransition(automaton, currentStates, input);
+	return res.send(newStates);
+});
 
+router.post("/backwardTransition", (req, res, next) => {
+	var automaton = req.body.automaton;
+	var inputString = req.body.inputString;
+	var newStates = stateAutomaton.backwardTransition(automaton, inputString);
+	return res.send(newStates);
+});
 
 module.exports = router;

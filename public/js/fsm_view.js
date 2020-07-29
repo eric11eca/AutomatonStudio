@@ -1,3 +1,21 @@
+function initialize() {
+  inputStringLeft = null;
+  currentStates = null;
+  inactiveStates = null;
+  previousStates = null;
+  nextStates = null;
+}
+
+var regex = null;
+var automaton = null;
+var inputString = null;
+var nextSymbolIndex = 0;
+var currentStates = null;
+var inactiveStates = null;
+var previousStates = null;
+var nextStates = null;
+var inputIsFSM = true;
+
 function colorStates(states, cssClass) {
   if (states === undefined || states === null) {
     return;
@@ -43,6 +61,13 @@ function getElementsOfStates(states) {
   return retVal;
 }
 
+function colorize() {
+  colorStates(automaton.states, "inactiveStates");
+  colorStates(previousStates, "previousState");
+  colorStates(nextStates, "nextState");
+  colorStates(currentStates, "currentState");
+}
+
 function reorderCirclesInAcceptingStates(states) {
   var stateElements = getElementsOfStates(states);
   for (var i = 0; i < stateElements.length; i++) {
@@ -78,11 +103,44 @@ function drawGraph() {
   });
 }
 
-function colorize() {
-  //colorStates(automaton.states, "inactiveStates");
-  //colorStates(previousStates, "previousState");
-  //colorStates(nextStates, "nextState");
-  colorStates(currentStates, "currentState");
+function colorNextSymbol() {
+  $("#inputString").html(inputString);
+
+  if ($("#inputString").html() === "") {
+    $("#inputString").html("<br>");
+  }
+
+  if (nextSymbolIndex < inputString.length) {
+    colorDiv("inputString", [
+      [nextSymbolIndex, nextSymbolIndex + 1]
+    ], "nextSymbol");
+  }
+}
+
+function resetAutomaton() {
+  fetch('/fsm/getCurrentStates', {
+    method: "POST",
+    headers: {
+      "Accept": "application/json",
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      automaton: automaton
+    })
+  }).then((response) => {
+    if (!response.ok) {
+      throw new Error("Unable to reset automaton");
+    }
+    return response.text();
+  }).then((data) => {
+    currentStates = JSON.parse(data);
+    inputString = $("#inputString").text();
+    nextSymbolIndex = 0;
+    colorize();
+    colorNextSymbol();
+  }).catch((err) => {
+    console.log(err);
+  });
 }
 
 $("#generateRandomString").click(function () {
@@ -117,8 +175,9 @@ $("#generateRandomUnacceptableString").click(function () {
 });
 
 $("#startStop").click(function () {
+  let r = "";
   if ($("#startStop").text() === "Start") {
-    var r = $("#inputString").val();
+    r = $("#inputString").val();
     $("#inputString").parent().html('<div id="inputString" type="text" class="input-div input-block-level monospaceRegex" placeholder="See if this fits"><br></div>');
     $("#inputString").html(r === "" ? '<br>' : r);
     resetAutomaton();
@@ -129,7 +188,7 @@ $("#startStop").click(function () {
     $("#inputLast").attr("disabled", false);
     $("#startStop").text("Stop");
   } else {
-    var r = $("#inputString").text();
+    r = $("#inputString").text();
     $("#inputString").parent().html('<input id="inputString" type="text" class="input-block-level monospaceRegex" placeholder="See if this fits">');
     $("#inputString").keyup(onInputStringChange);
     $("#inputString").change(onInputStringChange);
@@ -147,9 +206,10 @@ $("#startStop").click(function () {
 
 function onInputStringChange() {
   var chars = $("#inputString").val().split("");
+  var alphabetSet = new Set(automaton.alphabet);
   var isValidInputString = -1;
   for (var i = 0; i < chars.length; i++) {
-    if (!noam.util.contains(automaton.alphabet, chars[i])) {
+    if (!alphabetSet.has(chars[i])) {
       isValidInputString = i;
       break;
     }
@@ -169,29 +229,33 @@ function onInputStringChange() {
   }
 }
 
-function colorNextSymbol() {
-  $("#inputString").html(inputString);
-
-  if ($("#inputString").html() === "") {
-    $("#inputString").html("<br>");
-  }
-
-  if (nextSymbolIndex < inputString.length) {
-    colorDiv("inputString", [
-      [nextSymbolIndex, nextSymbolIndex + 1]
-    ], "nextSymbol");
-  }
-}
-
-function resetAutomaton() {
-  fetch('/fsm/getCurrentStates', {
+async function forwardTransition() {
+  let response = await fetch('/fsm/forwardTransition', {
     method: "POST",
     headers: {
       "Accept": "application/json",
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      automaton: automaton
+      automaton: automaton,
+      currentStates: currentStates,
+      input: inputString[nextSymbolIndex]
+    })
+  });
+  let data = await response.text();
+  return data;
+}
+
+function backwardTransition() {
+  fetch('/fsm/backwardTransition', {
+    method: "POST",
+    headers: {
+      "Accept": "application/json",
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      automaton: automaton,
+      inputString: inputString.substring(0, nextSymbolIndex - 1).split("")
     })
   }).then((response) => {
     if (!response.ok) {
@@ -200,8 +264,7 @@ function resetAutomaton() {
     return response.text();
   }).then((data) => {
     currentStates = JSON.parse(data);
-    inputString = $("#inputString").text();
-    nextSymbolIndex = 0;
+    nextSymbolIndex -= 1;
     colorize();
     colorNextSymbol();
   }).catch((err) => {
@@ -215,48 +278,36 @@ $("#inputFirst").click(function () {
 
 $("#inputPrevious").click(function () {
   if (nextSymbolIndex > 0) {
-    currentStates = noam.fsm.readString(automaton, inputString.substring(0, nextSymbolIndex - 1).split(""));
-    nextSymbolIndex = nextSymbolIndex - 1;
-    colorize();
-    colorNextSymbol();
+    backwardTransition();
   }
 });
 
-$("#inputNext").click(function () {
+$("#inputNext").click(async function () {
   if (nextSymbolIndex < inputString.length) {
-    currentStates = noam.fsm.makeTransition(automaton, currentStates, inputString[nextSymbolIndex]);
+    let data = await forwardTransition();
+    currentStates = JSON.parse(data);
     nextSymbolIndex += 1;
     colorize();
     colorNextSymbol();
   }
 });
 
-$("#inputLast").click(function () {
+$("#inputLast").click(async function () {
+  var i = 0;
+  console.log(nextSymbolIndex);
   while (nextSymbolIndex < inputString.length) {
-    currentStates = noam.fsm.makeTransition(automaton, currentStates, inputString[nextSymbolIndex]);
+    console.log(nextSymbolIndex);
+    let data = await forwardTransition();
+    currentStates = JSON.parse(data);
     nextSymbolIndex += 1;
     colorize();
     colorNextSymbol();
+    i = i + 1;
+    if (i > 10) {
+      break;
+    }
   }
 });
-
-function initialize() {
-  inputStringLeft = null;
-  currentStates = null;
-  inactiveStates = null;
-  previousStates = null;
-  nextStates = null;
-}
-
-var regex = null;
-var automaton = null;
-var inputString = null;
-var nextSymbolIndex = 0;
-var currentStates = null;
-var inactiveStates = null;
-var previousStates = null;
-var nextStates = null;
-var inputIsFSM = true;
 
 $("#regexinput").click(function () {
   inputIsFSM = false;
@@ -297,7 +348,6 @@ function generateAutomaton(fsmType) {
       $("#transition").val(definition[4]);
       $("#transition").scrollTop(0);
       $("#transition").focus();
-      //onRegexOrAutomatonChange();
     });
     return true;
   }).catch((err) => {
@@ -370,7 +420,7 @@ $("#createAutomaton").click(async function () {
       start: $("#start").val(),
       accepting: $("#accept").val().split(','),
       transitions: $("#transition").val().split('\n')
-    }
+    };
 
     automaton = await createAutomaton(definition);
     automaton = JSON.parse(automaton);
@@ -384,6 +434,7 @@ $("#createAutomaton").click(async function () {
   $("#generateRandomAcceptableString").attr("disabled", false);
   $("#generateRandomUnacceptableString").attr("disabled", false);
   $("#inputString").attr("disabled", false);
+  $("#startStop").attr("disabled", false);
 });
 
 async function createAutomaton(definition) {
@@ -406,7 +457,7 @@ $("#regex").keyup(onRegexOrAutomatonChange);
 $("#fsm").change(onRegexOrAutomatonChange);
 $("#fsm").keyup(onRegexOrAutomatonChange);*/
 
-function onRegexOrAutomatonChange() {
+/*function onRegexOrAutomatonChange() {
   $("#automatonGraph").html("");
   $("#inputString").html("<br>");
 
@@ -475,4 +526,4 @@ function validateRegex() {
       $("#fsmError").show();
     }
   }
-}
+}*/

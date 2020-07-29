@@ -5,7 +5,7 @@ fsm.constants = {
   epsilon: '$',
   determine: 'DFA',
   non_determine: 'NFA'
-}
+};
 
 /********** Define Finite State Automaton *************/
 
@@ -17,7 +17,7 @@ fsm.createFSM = function () {
     starting: undefined,
     transitions: {}
   };
-}
+};
 
 fsm._addStateOrAlphabet = function (arr, obj, undefErrorMsg, existsErrorMsg) {
   if (obj === undefined) {
@@ -94,17 +94,17 @@ fsm.loadContents = function (automaton, states, alphabet, start, accepting, tran
     fsm.addState(automaton, states[i]);
   }
 
-  for (var i = alphabet.length - 1; i >= 0; i--) {
+  for (i = alphabet.length - 1; i >= 0; i--) {
     fsm.addAlphabet(automaton, alphabet[i]);
   }
 
-  for (var i = 0; i < accepting.length; i++) {
+  for (i = 0; i < accepting.length; i++) {
     fsm.addAcceptingState(automaton, accepting[i]);
   }
 
   fsm.setStartingState(automaton, start);
 
-  for (var i = 0; i < transitions.length; i++) {
+  for (i = 0; i < transitions.length; i++) {
     var transition = transitions[i];
 
     for (var j = 0; j < transition[0].length; j++) {
@@ -117,9 +117,9 @@ fsm.loadContents = function (automaton, states, alphabet, start, accepting, tran
       }
     }
   }
-}
+};
 
-// validates a FSM definition
+/********** Validate Finite State Automaton Definition*************/
 fsm.validate = function (automaton) {
   var i, j, k;
   var transitions = Object.values(automaton.transitions);
@@ -174,7 +174,7 @@ fsm.validate = function (automaton) {
     if (!(util.contains(automaton.states, state))) {
       throw new Error('Error: one accepting state is not in the automaton');
     }
-  })
+  });
 
   if (!(util.contains(automaton.states, automaton.starting))) {
     throw new Error('Error: The starting state is not in the automaton');
@@ -221,6 +221,8 @@ fsm.validate = function (automaton) {
   return true;
 };
 
+/********** Parse Finite State Automaton Definition*************/
+
 fsm.parseFsmFromString = function (definition) {
   var states = definition.states;
   var alphabet = definition.alphabet;
@@ -259,141 +261,93 @@ fsm.parseFsmFromString = function (definition) {
   }
 
   var automaton = fsm.createFSM();
-  fsm.loadContents(automaton, states, alphabet, start, accepting, transfunc)
+  fsm.loadContents(automaton, states, alphabet, start, accepting, transfunc);
   fsm.validate(automaton);
   return automaton;
 };
 
 
-/**********Functions for Finite State Automaton *************/
+/**********Transition Functions for Finite State Automaton *************/
 
-// determine if stateObj is an accepting state in fsm
-fsm.isAcceptingState = function (fsm, stateObj) {
-  return util.contains(fsm.acceptingStates, stateObj);
-};
-
-// determine fsm type based on transition function
-fsm.determineType = function (fsm) {
-  var fsmType = fsm.dfaType;
-
-  for (var i = 0; i < fsm.transitions.length; i++) {
-    var transition = fsm.transitions[i];
-
-    if (transition.symbol === fsm.constants.epsilon) {
-      fsmType = fsm.enfaType;
-      break;
-    } else if (transition.toStates.length === 0 ||
-      transition.toStates.length > 1) {
-      fsmType = fsm.nfaType;
-    }
+fsm.forwardEpsilonTransition = function (automaton, currentStates) {
+  if (!(util.containsAll(automaton.states, currentStates))) {
+    throw new Error('FSM must contain all the given states.');
   }
 
-  if (fsmType === fsm.dfaType) {
-    if (fsm.transitions.length < fsm.states.length * fsm.alphabet.length) {
-      fsmType = fsm.nfaType;
-    }
-  }
-
-  return fsmType;
-};
-
-// computes epsilon closure of fsm from states array states
-fsm.computeEpsilonClosure = function (automaton, states) {
-  if (!(util.containsAll(automaton.states, states))) {
-    throw new Error('FSM must contain all states for which epsilon closure is being computed');
-  }
-
-  var unprocessedStates = states;
-  var targetStates = [];
-  var transitions = Object.values(automaton.transitions);
+  let unprocessedStates = currentStates;
+  let newStates = [];
 
   while (unprocessedStates.length !== 0) {
-    var currentState = unprocessedStates.pop();
-    targetStates.push(currentState);
+    let currentState = unprocessedStates.pop();
+    newStates.push(currentState);
 
-    for (var i = 0; i < transitions.length; i++) {
-      var transition = transitions[i];
-
-      if (transition.input === fsm.constants.epsilon &&
+    Object.keys(automaton.transitions).forEach(key => {
+      let transition = automaton.transitions[key];
+      if (transition.input == fsm.constants.epsilon &&
         util.areEquivalent(transition.fromState, currentState)) {
-        for (var j = 0; j < transition.toStates.length; j++) {
-          if (util.contains(targetStates, transition.toStates[j]) ||
-            util.contains(unprocessedStates, transition.toStates[j])) {
-            continue;
+        transition.toStates.forEach(state => {
+          if (!(util.contains(newStates, state))) {
+            unprocessedStates.push(transition.toStates[j]);
           }
-          unprocessedStates.push(transition.toStates[j]);
-        }
+        });
       }
-    }
+    });
   }
-
-  return targetStates;
+  return newStates;
 };
 
-// determines the target states from reading symbol at states array states
-fsm.makeSimpleTransition = function (fsm, states, symbol) {
-  if (!(util.containsAll(fsm.states, states))) {
-    throw new Error('FSM must contain all states for which the transition is being computed');
-  }
+fsm.forwardSymbolTransition = function (automaton, currentStates, symbol) {
+  var newStates = [];
 
-  if (!(util.contains(fsm.alphabet, symbol))) {
-    throw new Error('FSM must contain input symbol for which the transition is being computed');
-  }
+  Object.keys(automaton.transitions).forEach(key => {
+    let transition = automaton.transitions[key];
 
-  var targetStates = [];
-
-  for (var i = 0; i < fsm.transitions.length; i++) {
-    var transition = fsm.transitions[i];
-
-    if (util.areEquivalent(fsm.transitions[i].symbol, symbol) &&
-      util.contains(states, transition.fromState)) {
-      for (var j = 0; j < transition.toStates.length; j++) {
-        if (!(util.contains(targetStates, transition.toStates[j]))) {
-          targetStates.push(transition.toStates[j]);
+    if (util.areEquivalent(transition.input, symbol) &&
+      util.contains(currentStates, transition.fromState)) {
+      transition.toStates.forEach(state => {
+        if (!(util.contains(newStates, state))) {
+          newStates.push(state);
         }
-      }
+      });
     }
-  }
-
-  return targetStates;
+  });
+  return newStates;
 };
 
-// makes transition from states array states and for input symbol symbol by:
-//   a) computing the epsilon closure of states
-//   b) making a simple transition from resulting states of a)
-//   c) computing the epsilon closure of resulting states of b)
-fsm.makeTransition = function (fsm, states, symbol) {
-  if (!(util.containsAll(fsm.states, states))) {
-    throw new Error('FSM must contain all states for which the transition is being computed');
+fsm.forwardTransition = function (automaton, currentStates, input) {
+  if (!(util.containsAll(automaton.states, currentStates))) {
+    throw new Error('Some states are not in the automaton states');
   }
 
-  if (!(util.contains(fsm.alphabet, symbol))) {
-    throw new Error('FSM must contain input symbol for which the transition is being computed');
+  if (!(util.contains(automaton.alphabet, input))) {
+    throw new Error('This character are not in the automaton alphabet');
   }
 
-  var targetStates = util.clone(states);
+  var newStates = util.clone(currentStates);
 
-  targetStates = fsm.computeEpsilonClosure(fsm, targetStates);
-  targetStates = fsm.makeSimpleTransition(fsm, targetStates, symbol);
-  targetStates = fsm.computeEpsilonClosure(fsm, targetStates);
+  newStates = fsm.forwardEpsilonTransition(automaton, newStates);
+  newStates = fsm.forwardSymbolTransition(automaton, newStates, input);
+  newStates = fsm.forwardEpsilonTransition(automaton, newStates);
 
-  return targetStates;
+  return newStates;
 };
 
-// read a stream of input symbols and determine target states
-fsm.readString = function (fsm, inputSymbolStream) {
-  if (!(util.containsAll(fsm.alphabet, inputSymbolStream))) {
-    throw new Error('FSM must contain all symbols for which the transition is being computed');
+fsm.backwardTransition = function (automaton, inputString) {
+  if (!(util.containsAll(automaton.alphabet, inputString))) {
+    throw new Error('Some characters are not in the automaton alphabet');
   }
 
-  var states = fsm.computeEpsilonClosure(fsm, [fsm.initialState]);
+  let newStates = fsm.forwardEpsilonTransition(automaton, [automaton.starting]);
 
-  for (var i = 0; i < inputSymbolStream.length; i++) {
-    states = fsm.makeTransition(fsm, states, inputSymbolStream[i]);
-  }
+  inputString.forEach(char => {
+    newStates = fsm.forwardTransition(automaton, newStates, char);
+  });
 
-  return states;
+  return newStates;
 };
+
+
+
 
 // read a stream of input symbols starting from state and make a list of
 // states that were on the transition path
@@ -536,6 +490,34 @@ fsm.serializeFsmToString = function (fsm) {
   }
 
   return lines.join("\n");
+};
+
+fsm.isAcceptingState = function (fsm, stateObj) {
+  return util.contains(fsm.acceptingStates, stateObj);
+};
+
+fsm.determineType = function (fsm) {
+  var fsmType = fsm.dfaType;
+
+  for (var i = 0; i < fsm.transitions.length; i++) {
+    var transition = fsm.transitions[i];
+
+    if (transition.symbol === fsm.constants.epsilon) {
+      fsmType = fsm.enfaType;
+      break;
+    } else if (transition.toStates.length === 0 ||
+      transition.toStates.length > 1) {
+      fsmType = fsm.nfaType;
+    }
+  }
+
+  if (fsmType === fsm.dfaType) {
+    if (fsm.transitions.length < fsm.states.length * fsm.alphabet.length) {
+      fsmType = fsm.nfaType;
+    }
+  }
+
+  return fsmType;
 };
 
 
@@ -804,8 +786,8 @@ fsm.areEquivalentStates = function (fsmA, stateA, fsmB, stateB) {
     processedPairs.push(currentPair);
 
     for (j = 0; j < fsmA.alphabet.length; j++) {
-      var pair = [fsm.makeTransition(fsmA, [currentPair[0]], fsmA.alphabet[j])[0],
-        fsm.makeTransition(fsmB, [currentPair[1]], fsmA.alphabet[j])[0]
+      var pair = [fsm.forwardTransition(fsmA, [currentPair[0]], fsmA.alphabet[j])[0],
+        fsm.forwardTransition(fsmB, [currentPair[1]], fsmA.alphabet[j])[0]
       ];
 
       if (!(util.contains(processedPairs, pair)) &&
@@ -1438,8 +1420,8 @@ fsm.union = function (fsmA, fsmB) {
           fromState: newState,
           symbol: newFsm.alphabet[k],
           toStates: [
-            [fsm.makeTransition(fsmA, [fsmA.states[i]], newFsm.alphabet[k])[0],
-              fsm.makeTransition(fsmB, [fsmB.states[j]], newFsm.alphabet[k])[0]
+            [fsm.forwardTransition(fsmA, [fsmA.states[i]], newFsm.alphabet[k])[0],
+              fsm.forwardTransition(fsmB, [fsmB.states[j]], newFsm.alphabet[k])[0]
             ]
           ]
         });
@@ -1481,8 +1463,8 @@ fsm.intersection = function (fsmA, fsmB) {
           fromState: newState,
           symbol: newFsm.alphabet[k],
           toStates: [
-            [fsm.makeTransition(fsmA, [fsmA.states[i]], newFsm.alphabet[k])[0],
-              fsm.makeTransition(fsmB, [fsmB.states[j]], newFsm.alphabet[k])[0]
+            [fsm.forwardTransition(fsmA, [fsmA.states[i]], newFsm.alphabet[k])[0],
+              fsm.forwardTransition(fsmB, [fsmB.states[j]], newFsm.alphabet[k])[0]
             ]
           ]
         });
@@ -1526,8 +1508,8 @@ fsm.difference = function (fsmA, fsmB) {
           fromState: newState,
           symbol: newFsm.alphabet[k],
           toStates: [
-            [fsm.makeTransition(fsmA, [fsmA.states[i]], newFsm.alphabet[k])[0],
-              fsm.makeTransition(fsmB, [fsmB.states[j]], newFsm.alphabet[k])[0]
+            [fsm.forwardTransition(fsmA, [fsmA.states[i]], newFsm.alphabet[k])[0],
+              fsm.forwardTransition(fsmB, [fsmB.states[j]], newFsm.alphabet[k])[0]
             ]
           ]
         });
