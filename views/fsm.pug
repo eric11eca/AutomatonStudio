@@ -90,17 +90,18 @@ block content
 								code (a+B)*(c9+$)+$
 								| .
 						p
-							button#generateRegex.btn Generate random regex
+							button#generateRegex Generate random regex
 						p
 							.control-group
-								input#regex.input-block-level(type='text' placeholder='or write your own' spellcheck='false')
+								input#regex-input.input-block-level(type='text' placeholder='or write your own' spellcheck='false')
 						p
 							.control-group
-								label(for='automatonType') Select generated FSM type: 
+								//label(for='automatonType') Select generated FSM type: 
 								select#automatonType
 									option(value='eNFA' default='true') eNFA
 									option(value='NFA') NFA
 									option(value='DFA') DFA
+							button#createAutomaton Create automaton
 			.sim-graph 
 				.simulator 
 					h3  &#x2461; Simulate 

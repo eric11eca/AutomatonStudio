@@ -1,3 +1,9 @@
+body * {
+    box-sizing: content-box;
+    box-sizing: initial;
+    -webkit-font-smoothing: antialiased;
+}
+
 .header {
     position: relative;
     box-shadow: rgb(36, 36, 36) 0px 1px 0px;
@@ -7,7 +13,7 @@
 }
 
 .header .title-nav {
-    width: 1081px;
+    width: 1080px;
     max-width: 90%;
     display: flex;
     height: 100%;
@@ -174,6 +180,14 @@ th {
     margin: 10px;
 }
 
+#generateRegex {
+    background-color: #455767;
+    color: white;
+    border-radius: 5px;
+    border: none;
+    padding: 8px;
+}
+
 #generateDFA {
     background-color: #455767;
     color: white;
@@ -207,6 +221,18 @@ th {
     border-radius: 5px;
     border: none;
     padding: 8px;
+}
+
+#regex-input {
+    background-color: #455767;
+    color: white;
+    border: none;
+}
+
+#automatonType {
+    background-color: #455767;
+    color: white;
+    border: none;
 }
 
 .currentState {

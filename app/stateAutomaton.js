@@ -1675,11 +1675,11 @@ fsm.grammar = function (fsm) {
   return grammar;
 };
 
-fsm.symbolsForTransitions = function (fsm, stateA, stateB) {
+fsm.symbolsForTransitions = function (automaton, stateA, stateB) {
   var res = [];
 
-  for (var i = 0; i < fsm.transitions.length; i++) {
-    var transition = fsm.transitions[i];
+  for (var i = 0; i < automaton.transitions.length; i++) {
+    var transition = automaton.transitions[i];
 
     if (util.areEquivalent(transition.fromState, stateA) &&
       util.contains(transition.toStates, stateB)) {
@@ -1690,9 +1690,9 @@ fsm.symbolsForTransitions = function (fsm, stateA, stateB) {
   return res;
 };
 
-fsm.toRegex = function (fsm) {
+fsm.toRegex = function (automaton) {
   var r = [];
-  var n = fsm.states.length;
+  var n = automaton.states.length;
 
   var i, j, k, z;
 
@@ -1705,7 +1705,7 @@ fsm.toRegex = function (fsm) {
 
   for (i = 0; i < n; i++) {
     for (j = 0; j < n; j++) {
-      var symbols = fsm.symbolsForTransitions(fsm, fsm.states[i], fsm.states[j]);
+      var symbols = fsm.symbolsForTransitions(automaton, automaton.states[i], automaton.states[j]);
 
       for (z = 0; z < symbols.length; z++) {
         symbols[z] = re.tree.makeLit(symbols[z]);
@@ -1727,7 +1727,7 @@ fsm.toRegex = function (fsm) {
           (typeof r[k - 1][k - 1][k - 1].choices !== "undefined" && r[k - 1][k - 1][k - 1].choices.length === 0));
         var t2 = (typeof r[k - 1][i][j].choices !== "undefined" && r[k - 1][i][j].choices.length === 0);
 
-        var seq = null
+        var seq = null;
 
         if (r[k - 1][k - 1][k - 1].tag === re.tree.tags.EPS) {
           seq = re.tree.makeSeq([r[k - 1][i][k - 1], r[k - 1][k - 1][j]]);
@@ -1755,12 +1755,12 @@ fsm.toRegex = function (fsm) {
   var startStateIndex = -1;
   var acceptableStatesIndexes = [];
 
-  for (i = 0; i < fsm.states.length; i++) {
-    if (util.areEquivalent(fsm.states[i], fsm.initialState)) {
+  for (i = 0; i < automaton.states.length; i++) {
+    if (util.areEquivalent(automaton.states[i], automaton.initialState)) {
       startStateIndex = i;
     }
 
-    if (util.contains(fsm.acceptingStates, fsm.states[i])) {
+    if (util.contains(automaton.acceptingStates, automaton.states[i])) {
       acceptableStatesIndexes.push(i);
     }
   }
