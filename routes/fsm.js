@@ -17,6 +17,12 @@ router.get("/", (request, response) => {
 	});
 });
 
+router.post("/", (req, res, next) => {
+	res.send({
+		redirect: '/fsm'
+	});
+});
+
 router.post("/generateAutomaton", (req, res, next) => {
 	var fsmType = req.body.fsmType;
 	var automaton = stateAutomaton.createRandomFsm(fsmType, 4, 3, 3);

@@ -29,7 +29,7 @@ body {
     -webkit-box-align: center;
     align-items: center;
     -webkit-box-pack: justify;
-    justify-content: space-between;
+    justify-content: left;
     font-size: 0.8125rem;
     margin: auto;
 }

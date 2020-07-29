@@ -3,29 +3,7 @@ append head
 	link(rel="stylesheet", href="/assets/css/fsm.css")
 	link(rel="stylesheet" href="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/css/bootstrap-combined.min.css")
 
-	.header
-		nav.title-nav
-			.title-banner
-				a.title-bage
-					img.head-icon(src='assets/img/logic1.png')
-					| &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Computational Logic Toolbox
-				ul.nav-items
-					li
-						button(type='button') Truth Table
-						svg(width='6' height='4' fill='none' viewbox='0 0 6 4')
-							path(fill='#999' d='M.471 0L0 .471 2.828 3.3 5.657.47 5.185 0 2.828 2.357.471 0z')
-					li
-						button(type='button') Automota
-						svg(width='6' height='4' fill='none' viewbox='0 0 6 4')
-							path(fill='#999' d='M.471 0L0 .471 2.828 3.3 5.657.47 5.185 0 2.828 2.357.471 0z')
-					li
-						button(type='button') Fitch
-						svg(width='6' height='4' fill='none' viewbox='0 0 6 4')
-							path(fill='#999' d='M.471 0L0 .471 2.828 3.3 5.657.47 5.185 0 2.828 2.357.471 0z')
-					li
-						button(type='button') Relational Logic
-						svg(width='6' height='4' fill='none' viewbox='0 0 6 4')
-							path(fill='#999' d='M.471 0L0 .471 2.828 3.3 5.657.47 5.185 0 2.828 2.357.471 0z')
+block content
 	.main-content
 		.truth-content
 			.span6.column
@@ -154,6 +132,7 @@ append head
 			.container.graph
 				#automatonGraph  
 
+block script
 	script(src='https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js')
 	script(src='https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/js/bootstrap.min.js')
 	script(src='http://mdaines.github.io/viz.js/bower_components/viz.js/viz.js')

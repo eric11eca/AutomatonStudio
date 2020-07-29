@@ -11,3 +11,34 @@ html(lang="en")
     block head
   
   body
+    .header
+      nav.title-nav
+        .title-banner
+          a.title-bage
+            img.head-icon(src='assets/img/logic1.png')
+            | &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Computational Logic Toolbox
+          ul.nav-items
+            li
+              button#logic(type='button') Logic
+              svg(width='6' height='4' fill='none' viewbox='0 0 6 4')
+                path(fill='#999' d='M.471 0L0 .471 2.828 3.3 5.657.47 5.185 0 2.828 2.357.471 0z')
+            li
+              button#fsm(type='button') FSA
+              svg(width='6' height='4' fill='none' viewbox='0 0 6 4')
+                path(fill='#999' d='M.471 0L0 .471 2.828 3.3 5.657.47 5.185 0 2.828 2.357.471 0z')
+            li
+              button#cfg(type='button') CFG
+              svg(width='6' height='4' fill='none' viewbox='0 0 6 4')
+                path(fill='#999' d='M.471 0L0 .471 2.828 3.3 5.657.47 5.185 0 2.828 2.357.471 0z')
+            li
+              button#pda(type='button') PDA
+              svg(width='6' height='4' fill='none' viewbox='0 0 6 4')
+                path(fill='#999' d='M.471 0L0 .471 2.828 3.3 5.657.47 5.185 0 2.828 2.357.471 0z')
+            li
+              button#regex(type='button') Regex
+              svg(width='6' height='4' fill='none' viewbox='0 0 6 4')
+                path(fill='#999' d='M.471 0L0 .471 2.828 3.3 5.657.47 5.185 0 2.828 2.357.471 0z')
+    script(type='text/javascript' src='/js/nav.js')
+
+    block content
+    block script

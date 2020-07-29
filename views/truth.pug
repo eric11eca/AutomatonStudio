@@ -2,29 +2,7 @@ extends layout
 append head
 	link(rel="stylesheet", href="/assets/css/truth.css")
 
-	.header
-		nav.title-nav
-			.title-banner
-				a.title-bage(herf='/')
-					img.head-icon(src='assets/img/logic1.png')
-					|           Computational Logic Toolbox
-				ul.nav-items
-					li(herf='/truth')
-						button(type='button') Truth Table
-						svg.Navigation___StyledSvg-h33bys-0.gPHFcz(width='6' height='4' fill='none' viewbox='0 0 6 4')
-							path(fill='#999' d='M.471 0L0 .471 2.828 3.3 5.657.47 5.185 0 2.828 2.357.471 0z')
-					li(herf='/fsm')
-						button(type='button') Automota
-						svg.Navigation___StyledSvg-h33bys-0.gPHFcz(width='6' height='4' fill='none' viewbox='0 0 6 4')
-							path(fill='#999' d='M.471 0L0 .471 2.828 3.3 5.657.47 5.185 0 2.828 2.357.471 0z')
-					li
-						button(type='button') Fitch
-						svg.Navigation___StyledSvg-h33bys-0.gPHFcz(width='6' height='4' fill='none' viewbox='0 0 6 4')
-							path(fill='#999' d='M.471 0L0 .471 2.828 3.3 5.657.47 5.185 0 2.828 2.357.471 0z')
-					li
-						button(type='button') Relational Logic
-						svg.Navigation___StyledSvg-h33bys-0.gPHFcz(width='6' height='4' fill='none' viewbox='0 0 6 4')
-							path(fill='#999' d='M.471 0L0 .471 2.828 3.3 5.657.47 5.185 0 2.828 2.357.471 0z')
+block content
 	#particles.main-content
 		.truth-content
 			h1.intro Truth Table Generator
@@ -37,7 +15,8 @@ append head
 				button.generate.btn
 					i.fas.fa-hammer
 
-	script(type='text/javascript' src='/js/truth_table.js')
+block script
+	script(type='text/javascript' src='/js/truth_view.js')
 	script(type='text/javascript' src='/lib/particles.min.js')
 	script(type='text/javascript' src='/js/partical.js')
 					

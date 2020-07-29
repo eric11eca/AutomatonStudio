@@ -1,9 +1,9 @@
 let home = require("./home"),
-    truthTable = require('./truthTable'),
+    truth = require('./truth'),
     fsm = require("./fsm");
 
 module.exports = {
     "/": home,
-    "/truth": truthTable, 
-    "/fsm" : fsm
+    "/truth": truth,
+    "/fsm": fsm
 }
