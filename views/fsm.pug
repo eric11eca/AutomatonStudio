@@ -1,62 +1,66 @@
 extends layout
 append head
 	link(rel="stylesheet", href="/assets/css/fsm.css")
-	link(rel="stylesheet" href="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/css/bootstrap-combined.min.css")
 
 block content
 	.main-content
 		.truth-content
-			.span6.column
-				h3  &#x2460; Compose 
-				ul.nav.nav-tabs
-					li#fsminput.active
-						a(href='#tab1' data-toggle='tab') Input automaton
-					li#regexinput
-						a(href='#tab2' data-toggle='tab') Input regex
-				.tab-content
-					#tab1.tab-pane.active
-						.instructions
-							p
-								| Compose FSM from definition and transitions
-							p
-								| Follow the formal definition of a FSM
+			.row-fluid
+				.span6.column
+					h3  &#x2460; Compose Automaton 
+					//ul.nav.nav-tabs
+						li#fsminput.active
+							a(href='#tab1' data-toggle='tab') Input automaton
+						li#regexinput
+							a(href='#tab2' data-toggle='tab') Input regex
+					//.tab-content
+					//#tab1.tab-pane.active
+					.instructions
 						p
-							button#generateDFA.btn Generate random DFA
-							button#generateNFA.btn Generate random NFA
-							button#generateENFA.btn Generate random eNFA
+							| Compose FSM from definition and transitions
 						p
-							table.state-table
-								colgroup
-									col(span='1' style='width: 10%;')
-									col(span='1' style='width: 35%;')
-									col(span='1' style='width: 55%;')
-								tr
-									td
-										span(style='margin-left: 10px;') States:  
-									td
-										input#states.input-block-level(type='text' placeholder='...' spellcheck='false')
-									td(rowspan='4')
-										span(style='margin-left: 10px;') Transitions:
-										textarea#transition.input-block-level(type='text' placeholder='...' spellcheck='false')
-								tr
-									td
-										span(style='margin-left: 10px;') Alphabet:
-									td
-										input#alphabet.input-block-level(type='text' placeholder='...' spellcheck='false')
-								tr
-									td
-										span(style='margin-left: 10px;') Starting:
-									td
-										input#start.input-block-level(type='text' placeholder='...' spellcheck='false')
-								tr
-									td
-										span(style='margin-left: 10px;') Accepting:
-									td
-										input#accept.input-block-level(type='text' placeholder='...' spellcheck='false')
-								tr
-									td(colspan='2')
-										button#createAutomaton.btn() Create automaton
-					#tab2.tab-pane
+							| Follow the formal definition of a FSM
+					p
+						button#generateDFA Generate random DFA
+						button#generateNFA Generate random NFA
+						button#generateENFA Generate random eNFA
+					p
+						table.state-table
+							colgroup
+								col(span='1' style='width: 10%;')
+								col(span='1' style='width: 35%;')
+								col(span='1' style='width: 55%;')
+							tr
+								td
+									span(style='margin-left: 10px;') States:  
+								td
+									input#states.input-block-level(type='text' placeholder='...' spellcheck='false')
+								td(rowspan='4')
+									span(style='margin-left: 10px;') Transitions:
+									textarea#transition.input-block-level(type='text' placeholder='...' spellcheck='false')
+							tr
+								td
+									span(style='margin-left: 10px;') Alphabet:
+								td
+									input#alphabet.input-block-level(type='text' placeholder='...' spellcheck='false')
+							tr
+								td
+									span(style='margin-left: 10px;') Starting:
+								td
+									input#start.input-block-level(type='text' placeholder='...' spellcheck='false')
+							tr
+								td
+									span(style='margin-left: 10px;') Accepting:
+								td
+									input#accept.input-block-level(type='text' placeholder='...' spellcheck='false')
+							tr
+								td(colspan='2')
+									button#createAutomaton Create automaton
+					p#fsmError.text-error
+
+				.span6.column 
+						//#tab2.tab-pane
+						h3  &#x2460; Regular Expression 
 						.instructions
 							p
 								| Enter a regular expression into the input field below or click 
@@ -97,40 +101,39 @@ block content
 									option(value='eNFA' default='true') eNFA
 									option(value='NFA') NFA
 									option(value='DFA') DFA
-				p#fsmError.text-error
-
-			.simulator 
-				h3  &#x2461; Simulate 
-				span
-					| Enter a sequence of input symbols into the input field below. 
-				span
-					| Or click the three buttons to generate random string.
+			.sim-graph 
+				.simulator 
+					h3  &#x2461; Simulate 
 					p
-						button#generateRandomString.btn(disabled='')  Random string 
-						button#generateRandomAcceptableString.btn(disabled='')  Acceptable string 
-						button#generateRandomUnacceptableString.btn(disabled='')  Unacceptable string 
+						| Enter a sequence of input symbols into the input field below. 
 					p
-						.control-group
-							input#inputString.input-block-level(type='text' placeholder='See if this fits' disabled='' spellcheck='false')
-					p
-						button#startStop.btn(disabled='')
-							| Start
-						button#inputFirst.btn(disabled='')
-							i.icon-fast-backward
-							| &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Reset
-						button#inputPrevious.btn(disabled='')
-							i.icon-backward
-							| &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Step backward
-						button#inputNext.btn(disabled='')
-							i.icon-forward
-							| &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Read next
-						button#inputLast.btn(disabled='')
-							i.icon-fast-forward
-							| &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Read all
-					p#inputError.text-error
-					
-			.container.graph
-				#automatonGraph  
+						| Or click the three buttons to generate random string.
+						p
+							button#generateRandomString.btn(disabled='')  Random string 
+							button#generateRandomAcceptableString.btn(disabled='')  Acceptable string 
+							button#generateRandomUnacceptableString.btn(disabled='')  Unacceptable string 
+						p
+							.control-group
+								input#inputString.input-block-level(type='text' placeholder='See if this fits' disabled='' spellcheck='false')
+						p
+							button#startStop.btn(disabled='')
+								| Start
+							button#inputFirst.btn(disabled='')
+								i.icon-fast-backward
+								| &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Reset
+							button#inputPrevious.btn(disabled='')
+								i.icon-backward
+								| &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Step backward
+							button#inputNext.btn(disabled='')
+								i.icon-forward
+								| &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Read next
+							button#inputLast.btn(disabled='')
+								i.icon-fast-forward
+								| &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Read all
+						p#inputError.text-error
+						
+				.container.graph
+					#automatonGraph  
 
 block script
 	script(src='https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js')

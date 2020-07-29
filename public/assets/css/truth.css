@@ -5,7 +5,7 @@ body * {
 }
 
 body {
-    background-color:#040405;
+    background-color: #040405;
     width: initial;
     display: flex;
     flex-direction: column;
@@ -23,14 +23,14 @@ body {
 }
 
 .header .title-nav {
-    width: 1081px;
+    width: 1080px;
     max-width: 90%;
     display: flex;
     height: 100%;
     -webkit-box-align: center;
     align-items: center;
     -webkit-box-pack: justify;
-    justify-content: space-between;
+    justify-content: left;
     font-size: 0.8125rem;
     margin: auto;
 }
@@ -74,9 +74,11 @@ body {
 .nav-items li {
     margin: 0px;
 }
+
 .nav-items li:not(:last-child) {
     margin-right: 3rem;
 }
+
 @media screen and (max-width: 900px) {
     .nav-items li:not(:last-child) {
         margin-right: 1rem;
@@ -170,13 +172,15 @@ body {
     font-family: 'Telefon Black', Sans-Serif;
     justify-content: center;
 }
+
 .generate:hover {
-    outline:none;
+    outline: none;
     background-color: #03921d;
     cursor: pointer;
 }
+
 .generate:focus {
-    outline:none;
+    outline: none;
     background-color: #03921d;
     cursor: pointer;
 }
@@ -185,8 +189,8 @@ body {
     width: 50%;
     height: 80%;
     max-height: 300px;
-    font-family:courier; 
-    font-size:13px;
+    font-family: courier;
+    font-size: 13px;
     background-color: #283745;
     color: white;
     margin: 15px;
@@ -197,8 +201,8 @@ body {
 }
 
 .conclusion {
-    font-family:courier; 
-    font-size:14px;
+    font-family: courier;
+    font-size: 14px;
     background-color: #283745;
     color: white;
     margin: 0 15px 0 0;
@@ -219,22 +223,22 @@ body {
     color: white;
 }
 
-.conclusion tr td:last-child{
-    white-space:nowrap;
+.conclusion tr td:last-child {
+    white-space: nowrap;
 }
 
 ::-webkit-scrollbar {
     width: 12px;
 }
- 
+
 ::-webkit-scrollbar-track {
-    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); 
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
     border-radius: 10px;
 }
- 
+
 ::-webkit-scrollbar-thumb {
     border-radius: 10px;
-    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5); 
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.5);
 }
 
 textarea:focus {
