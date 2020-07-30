@@ -4,6 +4,16 @@ body * {
     -webkit-font-smoothing: antialiased;
 }
 
+body {
+    background-color: #040405;
+    width: initial;
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    flex-grow: 1;
+    height: 100%;
+}
+
 .header {
     position: relative;
     box-shadow: rgb(36, 36, 36) 0px 1px 0px;
@@ -153,6 +163,7 @@ h3 {
 input,
 textarea {
     font-family: monospace;
+    resize: none;
 }
 
 .state-table {
@@ -317,6 +328,9 @@ th {
 
 .simulator input {
     max-width: 50%;
+    border: none;
+    color: white;
+    background-color: #455767;
 }
 
 textarea:focus {

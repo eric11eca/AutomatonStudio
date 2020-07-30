@@ -4,7 +4,8 @@ let util = require("./util.js").data;
 fsm.constants = {
   epsilon: '$',
   determine: 'DFA',
-  non_determine: 'NFA'
+  non_determine: 'NFA',
+  e_non_determine: 'e',
 };
 
 /********** Define Finite State Automaton *************/
@@ -379,7 +380,7 @@ fsm.printTable = function (fsm) {
   var Table = require('cli-table');
   var colHeads = [""].concat(fsm.alphabet);
 
-  if (fsm.determineType(fsm) === fsm.enfaType) {
+  if (fsm.determineType(fsm) === fsm.constans.e_non_determine) {
     colHeads.push(fsm.constants.epsilon);
   }
 
@@ -497,23 +498,23 @@ fsm.isAcceptingState = function (fsm, stateObj) {
 };
 
 fsm.determineType = function (fsm) {
-  var fsmType = fsm.dfaType;
+  var fsmType = fsm.constans.determine;
 
   for (var i = 0; i < fsm.transitions.length; i++) {
     var transition = fsm.transitions[i];
 
     if (transition.symbol === fsm.constants.epsilon) {
-      fsmType = fsm.enfaType;
+      fsmType = fsm.constans.e_non_determine;
       break;
     } else if (transition.toStates.length === 0 ||
       transition.toStates.length > 1) {
-      fsmType = fsm.nfaType;
+      fsmType = fsm.constans.non_determine;
     }
   }
 
-  if (fsmType === fsm.dfaType) {
+  if (fsmType === fsm.constans.determine) {
     if (fsm.transitions.length < fsm.states.length * fsm.alphabet.length) {
-      fsmType = fsm.nfaType;
+      fsmType = fsm.constans.non_determine;
     }
   }
 
@@ -525,7 +526,7 @@ fsm.determineType = function (fsm) {
 // print the fsm transition function and accepting states as an HTML table
 fsm.printHtmlTable = function (fsm) {
   var headers = [""].concat(fsm.alphabet);
-  if (fsm.determineType(fsm) === fsm.enfaType) {
+  if (fsm.determineType(fsm) === fsm.constans.e_non_determine) {
     headers.push(fsm.constants.epsilon);
   }
   headers.push("");
@@ -747,8 +748,8 @@ fsm.removeUnreachableStates = function (fsm) {
 
 // determines if two states from potentially different fsms are equivalent
 fsm.areEquivalentStates = function (fsmA, stateA, fsmB, stateB) {
-  if (fsm.determineType(fsmA) !== fsm.dfaType ||
-    fsm.determineType(fsmB) !== fsm.dfaType) {
+  if (fsm.determineType(fsmA) !== fsm.constans.determine ||
+    fsm.determineType(fsmB) !== fsm.constans.determine) {
     throw new Error('FSMs must be DFAs');
   }
 
@@ -807,7 +808,7 @@ fsm.areEquivalentFSMs = function (fsmA, fsmB) {
 
 // finds and removes equivalent states
 fsm.removeEquivalentStates = function (fsm) {
-  if (fsm.determineType(fsm) !== fsm.dfaType) {
+  if (fsm.determineType(fsm) !== fsm.constans.determine) {
     throw new Error('FSM must be DFA');
   }
 
@@ -897,9 +898,9 @@ fsm.minimize = function (fsm) {
   var fsmType = fsm.determineType(fsm);
   var newFsm = fsm;
 
-  if (fsmType === fsm.nfaType) {
+  if (fsmType === fsm.constans.non_determine) {
     newFsm = fsm.convertNfaToDfa(fsm);
-  } else if (fsmType === fsm.enfaType) {
+  } else if (fsmType === fsm.constans.e_non_determine) {
     newFsm = fsm.convertEnfaToNfa(fsm);
     newFsm = fsm.convertNfaToDfa(newFsm);
   }
@@ -943,7 +944,7 @@ fsm.convertStatesToNumbers = function (fsm) {
   }
 
   return newFsm;
-}
+};
 
 // generate random fsm
 fsm.createRandomFsm = function (fsmType, numStates, numAlphabet, maxNumToStates) {
@@ -984,7 +985,7 @@ fsm.createRandomFsm = function (fsmType, numStates, numAlphabet, maxNumToStates)
     }
   }
 
-  if (fsmType === fsm.enfaType) {
+  if (fsmType === fsm.constants.e_non_determine) {
     newFsm.alphabet.push(fsm.constants.epsilon);
   }
 
@@ -993,7 +994,7 @@ fsm.createRandomFsm = function (fsmType, numStates, numAlphabet, maxNumToStates)
     for (j = 0; j < newFsm.alphabet.length; j++) {
       var numToStates = 1;
 
-      if (fsmType !== fsm.dfaType) {
+      if (fsmType !== fsm.constants.determine) {
         numToStates = Math.floor(Math.random() * maxNumToStates);
       }
 
@@ -1022,7 +1023,7 @@ fsm.createRandomFsm = function (fsmType, numStates, numAlphabet, maxNumToStates)
     }
   }
 
-  if (fsmType === fsm.enfaType) {
+  if (fsmType === fsm.constants.e_non_determine) {
     newFsm.alphabet.pop();
   }
 
@@ -1031,12 +1032,12 @@ fsm.createRandomFsm = function (fsmType, numStates, numAlphabet, maxNumToStates)
 
 fsm.convertNfaToDfa = function (fsm) {
   var fsmType = fsm.determineType(fsm);
-  if (fsmType === fsm.enfaType) {
+  if (fsmType === fsm.constans.e_non_determine) {
     throw new Error('FSM must be an NFA');
   }
 
-  if (fsmType === fsm.dfaType) {
-    return fsm; // no need to convert it
+  if (fsmType === fsm.constans.determine) {
+    return fsm;
   }
 
   var newFsm = {},
@@ -1151,7 +1152,7 @@ fsm.convertNfaToDfa = function (fsm) {
 };
 
 fsm.convertEnfaToNfa = function (fsm) {
-  if (fsm.determineType(fsm) !== fsm.enfaType) {
+  if (fsm.determineType(fsm) !== fsm.constans.e_non_determine) {
     return fsm; // this is already an NFA (or a DFA which is also an NFA)
   }
 
@@ -1213,9 +1214,9 @@ fsm.isLanguageNonEmpty = function (fsm) {
   var fsmType = fsm.determineType(fsm);
   var newFsm = fsm;
 
-  if (fsmType === fsm.nfaType) {
+  if (fsmType === fsm.constans.non_determine) {
     newFsm = fsm.convertNfaToDfa(fsm);
-  } else if (fsmType === fsm.enfaType) {
+  } else if (fsmType === fsm.constans.e_non_determine) {
     newFsm = fsm.convertEnfaToNfa(fsm);
     newFsm = fsm.convertNfaToDfa(newFsm);
   }
@@ -1229,9 +1230,9 @@ fsm.isLanguageInfinite = function (fsm) {
   var fsmType = fsm.determineType(fsm);
   var newFsm = fsm;
 
-  if (fsmType === fsm.nfaType) {
+  if (fsmType === fsm.constans.non_determine) {
     newFsm = fsm.convertNfaToDfa(fsm);
-  } else if (fsmType === fsm.enfaType) {
+  } else if (fsmType === fsm.constans.e_non_determine) {
     newFsm = fsm.convertEnfaToNfa(fsm);
     newFsm = fsm.convertNfaToDfa(newFsm);
   }
@@ -1280,9 +1281,9 @@ fsm.randomStringInLanguage = function (fsm) {
   var fsmType = fsm.determineType(fsm);
   var newFsm = fsm;
 
-  if (fsmType === fsm.nfaType) {
+  if (fsmType === fsm.constans.non_determine) {
     newFsm = fsm.convertNfaToDfa(fsm);
-  } else if (fsmType === fsm.enfaType) {
+  } else if (fsmType === fsm.constans.e_non_determine) {
     newFsm = fsm.convertEnfaToNfa(fsm);
     newFsm = fsm.convertNfaToDfa(newFsm);
   }
@@ -1332,9 +1333,9 @@ fsm.randomStringNotInLanguage = function (fsm) {
   var fsmType = fsm.determineType(fsm);
   var newFsm = fsm;
 
-  if (fsmType === fsm.nfaType) {
+  if (fsmType === fsm.constans.non_determine) {
     newFsm = fsm.convertNfaToDfa(fsm);
-  } else if (fsmType === fsm.enfaType) {
+  } else if (fsmType === fsm.constans.e_non_determine) {
     newFsm = fsm.convertEnfaToNfa(fsm);
     newFsm = fsm.convertNfaToDfa(newFsm);
   }
