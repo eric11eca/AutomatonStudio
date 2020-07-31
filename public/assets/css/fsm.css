@@ -1,342 +1,243 @@
-body * {
-    box-sizing: content-box;
-    box-sizing: initial;
-    -webkit-font-smoothing: antialiased;
-}
-
-body {
-    background-color: #040405;
-    width: initial;
-    display: flex;
-    flex-direction: column;
-    flex: 1 1 auto;
-    flex-grow: 1;
-    height: 100%;
-}
-
-.header {
-    position: relative;
-    box-shadow: rgb(36, 36, 36) 0px 1px 0px;
-    height: 48px;
-    width: 100%;
-    background: rgb(4, 4, 4);
-}
-
-.header .title-nav {
-    width: 1080px;
-    max-width: 90%;
-    display: flex;
-    height: 100%;
-    -webkit-box-align: center;
-    align-items: center;
-    -webkit-box-pack: justify;
-    justify-content: left;
-    font-size: 0.8125rem;
-    margin: auto;
-}
-
-.title-banner {
-    display: flex;
-    -webkit-box-align: center;
-    align-items: center;
-    width: 100%;
-    -webkit-box-pack: justify;
-    justify-content: space-between;
-}
-
-.title-bage {
-    font-family: 'Telefon Black', Sans-Serif;
-    line-height: 1.1;
-    font-size: 1.2rem;
-    display: flex;
-    -webkit-box-align: center;
-    align-items: center;
-    margin-right: 4rem;
-    color: white;
-    text-decoration: none;
-}
-
-.head-icon {
-    width: 30px;
-    height: 30px;
-    margin-right: 1rem;
-}
-
-.nav-items {
-    display: flex;
-    -webkit-box-align: center;
-    align-items: center;
-    list-style: none;
-    margin: 0px;
-    padding: 0px;
-}
-
-.nav-items li {
-    margin: 0px;
-}
-
-.nav-items li:not(:last-child) {
-    margin-right: 3rem;
-}
-
-@media screen and (max-width: 900px) {
-    .nav-items li:not(:last-child) {
-        margin-right: 1rem;
-    }
-}
-
-.nav-items button {
-    cursor: pointer;
-    color: rgb(153, 153, 153);
-    background: transparent;
-    border-width: initial;
-    border-style: none;
-    border-color: initial;
-    border-image: initial;
-    text-decoration: none;
-    transition: all 200ms ease 0s;
-    outline: none;
-    padding: 0px;
-}
-
-.nav-items svg {
-    margin-left: 0.25rem;
-    margin-right: 0.5rem;
-    top: -1px;
-    position: relative;
-}
-
 .main-content {
-    width: initial;
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-    align-items: center;
-    justify-content: center;
-    background-color: #040405;
-    color: white;
+	width: initial;
+	display: flex;
+	flex-direction: column;
+	flex-grow: 1;
+	align-items: center;
+	justify-content: center;
+	background-color: #040405;
+	color: white;
 }
 
 .truth-content {
-    margin: 25px 0;
-    padding: 25px;
-    border: none;
-    border-radius: 15px;
-    background-color: #283745;
-    width: 80%;
-    z-index: 20;
-    position: relative;
-    text-align: center;
-    opacity: 1;
-    transform: none;
-    display: flex;
-    flex-grow: 1;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+	margin: 25px 0;
+	padding: 25px;
+	border: none;
+	border-radius: 15px;
+	background-color: #283745;
+	width: 80%;
+	z-index: 20;
+	position: relative;
+	text-align: center;
+	opacity: 1;
+	transform: none;
+	display: flex;
+	flex-grow: 1;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
 }
 
 .truth-content ::-webkit-scrollbar {
-    width: 12px;
+	width: 12px;
 }
 
 .truth-content ::-webkit-scrollbar-track {
-    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
-    border-radius: 10px;
+	-webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+	border-radius: 10px;
 }
 
 .truth-content ::-webkit-scrollbar-thumb {
-    border-radius: 10px;
-    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.5);
+	border-radius: 10px;
+	-webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.5);
 }
 
 .column {
-    margin-top: 10px;
-    min-height: 200px;
-    border-top: white solid 1px;
+	margin-top: 10px;
+	min-height: 200px;
+	border-top: white solid 1px;
 }
 
 h3 {
-    text-rendering: auto;
+	text-rendering: auto;
 }
 
 input,
 textarea {
-    font-family: monospace;
-    resize: none;
+	font-family: monospace;
+	resize: none;
 }
 
 .state-table {
-    border: none;
-    border-radius: 5px;
-    border-collapse: separate;
-    border-spacing: 0;
-    width: 100%;
-    color: white;
+	border: none;
+	border-radius: 5px;
+	border-collapse: separate;
+	border-spacing: 0;
+	width: 100%;
+	color: white;
 }
 
 .state-table td,
 th {
-    border: none;
-    text-align: left;
-    color: white;
-    height: 100%;
+	border: none;
+	text-align: left;
+	color: white;
+	height: 100%;
 }
 
 .state-table input {
-    margin: 10px;
+	margin: 10px;
 }
 
 .state-table textarea {
-    margin: 10px;
+	margin: 10px;
 }
 
 #generateRegex {
-    background-color: #455767;
-    color: white;
-    border-radius: 5px;
-    border: none;
-    padding: 8px;
+	background-color: #455767;
+	color: white;
+	border-radius: 5px;
+	border: none;
+	padding: 8px;
 }
 
 #generateDFA {
-    background-color: #455767;
-    color: white;
-    border-radius: 5px;
-    border: none;
-    padding: 8px;
-    margin-right: 5px;
+	background-color: #455767;
+	color: white;
+	border-radius: 5px;
+	border: none;
+	padding: 8px;
+	margin-right: 5px;
 }
 
 #generateNFA {
-    background-color: #455767;
-    color: white;
-    border-radius: 5px;
-    border: none;
-    padding: 8px;
-    margin-right: 5px;
+	background-color: #455767;
+	color: white;
+	border-radius: 5px;
+	border: none;
+	padding: 8px;
+	margin-right: 5px;
 }
 
 #generateENFA {
-    background-color: #455767;
-    color: white;
-    border-radius: 5px;
-    border: none;
-    padding: 8px;
+	background-color: #455767;
+	color: white;
+	border-radius: 5px;
+	border: none;
+	padding: 8px;
 }
 
-#createAutomaton {
-    margin: 10px;
-    background-color: #455767;
-    color: white;
-    border-radius: 5px;
-    border: none;
-    padding: 8px;
+#createAutomatonFsm {
+	margin: 10px;
+	background-color: #455767;
+	color: white;
+	border-radius: 5px;
+	border: none;
+	padding: 8px;
+}
+
+#createAutomatonReg {
+	margin: 10px;
+	background-color: #455767;
+	color: white;
+	border-radius: 5px;
+	border: none;
+	padding: 8px;
 }
 
 #regex-input {
-    background-color: #455767;
-    color: white;
-    border: none;
+	background-color: #455767;
+	color: white;
+	border: none;
 }
 
 #automatonType {
-    background-color: #455767;
-    color: white;
-    border: none;
+	background-color: #455767;
+	color: white;
+	border: none;
 }
 
 .currentState {
-    fill: lightpink;
-    background-color: lightpink;
-    stroke-width: 2;
+	fill: lightpink;
+	background-color: lightpink;
+	stroke-width: 2;
 }
 
 .nextState {
-    fill: lightgreen;
+	fill: lightgreen;
 }
 
 .previousState {
-    fill: lightblue;
+	fill: lightblue;
 }
 
 .activeTransition {
-    stroke: blue;
-    stroke-width: 2;
+	stroke: blue;
+	stroke-width: 2;
 }
 
 .inactiveState {
-    fill: white;
+	fill: white;
 }
 
 .nextSymbol {
-    background-color: lightgreen;
-    font-weight: bold;
+	background-color: lightgreen;
+	font-weight: bold;
 }
 
 #states {
-    max-width: 60%;
-    border: none;
-    background-color: #455767;
-    color: white;
+	max-width: 60%;
+	border: none;
+	background-color: #455767;
+	color: white;
 }
 
 #alphabet {
-    max-width: 60%;
-    border: none;
-    background-color: #455767;
-    color: white;
+	max-width: 60%;
+	border: none;
+	background-color: #455767;
+	color: white;
 }
 
 #start {
-    max-width: 60%;
-    border: none;
-    background-color: #455767;
-    color: white;
+	max-width: 60%;
+	border: none;
+	background-color: #455767;
+	color: white;
 }
 
 #accept {
-    max-width: 60%;
-    border: none;
-    background-color: #455767;
-    color: white;
+	max-width: 60%;
+	border: none;
+	background-color: #455767;
+	color: white;
 }
 
 #transition {
-    height: 150px;
-    max-width: 80%;
-    border: none;
-    background-color: #455767;
-    color: white;
+	height: 150px;
+	max-width: 80%;
+	border: none;
+	background-color: #455767;
+	color: white;
 }
 
 .sim-graph {
-    width: 100%;
-    overflow: auto;
-    align-items: center;
-    justify-self: center;
-    border-top: white solid 1px;
+	width: 100%;
+	overflow: auto;
+	align-items: center;
+	justify-self: center;
+	border-top: white solid 1px;
 }
 
 .graph {
-    min-height: 150px;
+	min-height: 150px;
 }
 
 .simulator {
-    margin-bottom: 10px;
+	margin-bottom: 10px;
 }
 
 .simulator input {
-    max-width: 50%;
-    border: none;
-    color: white;
-    background-color: #455767;
+	max-width: 50%;
+	border: none;
+	color: white;
+	background-color: #455767;
 }
 
 textarea:focus {
-    outline: none;
+	outline: none;
 }
 
 button:focus {
-    outline: none;
+	outline: none;
 }

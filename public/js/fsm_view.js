@@ -394,37 +394,80 @@ $("#generateENFA").click(function () {
 	generateAutomaton("ENFA");
 });
 
-$("#createAutomaton").click(async function () {
+async function convertToAutomaton(regex) {
+	let response = await fetch('/fsm/convertToAutomaton', {
+		method: "POST",
+		headers: {
+			"Accept": "application/json",
+			"Content-Type": "application/json"
+		},
+		body: JSON.stringify({
+			regex: regex
+		})
+	});
+	let newFSM = await response.text();
+	return newFSM;
+}
+
+async function convertAutomaton(req, automaton) {
+	let response = await fetch(req, {
+		method: "POST",
+		headers: {
+			"Accept": "application/json",
+			"Content-Type": "application/json"
+		},
+		body: JSON.stringify({
+			automaton: automaton
+		})
+	});
+	let newFSM = await response.text();
+	return newFSM;
+}
+
+$("#createAutomatonReg").click(async function () {
 	$("#automatonGraph").html("");
 	$("#inputString").html("<br>");
 
-	if (!inputIsFSM) {
-		regex = $("#regex").val();
-		automatonType = $("#automatonType").val();
-		automaton = noam.re.string.toAutomaton(regex);
+	regex = $("#regex").val();
+	automatonType = $("#automatonType").val();
+	automaton = await convertToAutomaton(regex);
 
-		if (automatonType === noam.fsm.nfaType) {
-			automaton = noam.fsm.convertEnfaToNfa(automaton);
-		}
-
-		if (automatonType === noam.fsm.dfaType) {
-			automaton = noam.fsm.convertEnfaToNfa(automaton);
-			automaton = noam.fsm.convertNfaToDfa(automaton);
-			automaton = noam.fsm.minimize(automaton);
-			automaton = noam.fsm.convertStatesToNumbers(automaton);
-		}
-	} else {
-		var definition = {
-			states: $("#states").val().split(','),
-			alphabet: $("#alphabet").val().split(','),
-			start: $("#start").val(),
-			accepting: $("#accept").val().split(','),
-			transitions: $("#transition").val().split('\n')
-		};
-
-		automaton = await createAutomaton(definition);
-		automaton = JSON.parse(automaton);
+	if (automatonType == "NFA") {
+		automaton = await convertAutomaton("\fsm\convertEnfaToNfa", automaton);
 	}
+
+	if (automatonType == "DFA") {
+		automaton = await convertAutomaton("\fsm\convertEnfaToNfa", automaton);
+		automaton = await convertAutomaton("\fsm\convertNfaToDfa", automaton);
+		automaton = await convertAutomaton("\fsm\minimize", automaton);
+		automaton = await convertAutomaton("\fsm\convertStatesToNumbers", automaton);
+	}
+
+	initialize();
+	drawGraph();
+	resetAutomaton();
+
+	$("#generateRandomString").attr("disabled", false);
+	$("#generateRandomAcceptableString").attr("disabled", false);
+	$("#generateRandomUnacceptableString").attr("disabled", false);
+	$("#inputString").attr("disabled", false);
+	$("#startStop").attr("disabled", false);
+});
+
+$("#createAutomatonFsm").click(async function () {
+	$("#automatonGraph").html("");
+	$("#inputString").html("<br>");
+
+	var definition = {
+		states: $("#states").val().split(','),
+		alphabet: $("#alphabet").val().split(','),
+		start: $("#start").val(),
+		accepting: $("#accept").val().split(','),
+		transitions: $("#transition").val().split('\n')
+	};
+
+	automaton = await createAutomaton(definition);
+	automaton = JSON.parse(automaton);
 
 	initialize();
 	drawGraph();

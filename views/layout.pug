@@ -3,9 +3,10 @@ html(lang="en")
     meta(charset="UTF-8")
     meta(name="viewport", content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no")
     meta(http-equiv="X-UA-Compatible", content="ie=edge")
-    link(rel="icon" href="/assets/img/logic1.png")
+    link(rel="icon" href="/assets/img/algorithm1.png")
     link(rel="stylesheet", href="https://fonts.googleapis.com/css?family=Baloo+Bhaina")
     link(rel="stylesheet" href="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/css/bootstrap-combined.min.css")
+    link(rel="stylesheet", href="/assets/css/layout.css")
     script(scripttype='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/js/all.min.js")
     meta(name="description" content= description)
     title= title
@@ -15,9 +16,10 @@ html(lang="en")
     .header
       nav.title-nav
         .title-banner
-          a.title-bage
-            img.head-icon(src='assets/img/logic1.png')
-            | &#x9;&#x9;&#x9;&#x9;&#x9;&#x9; Computational Logic Toolbox
+          a#home.title-bage(aria-current="page" herf="/")
+            img.head-icon(src='assets/img/algorithm1.png')
+            |  AutomataToolbox 
+            //&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;
           ul.nav-items
             li
               button#logic(type='button') Logic

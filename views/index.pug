@@ -1,0 +1,20 @@
+extends layout
+append head
+  link(rel="stylesheet", href="/assets/css/index.css")
+
+block content
+  .main-content
+    h1.intro
+      | Computational Logic ToolBox
+    h3.intro-content 
+        | A toolbox for computational logic and automaton theory simulation and functions.
+    .truth-content
+      <canvas></canvas>
+    .container
+      h3.subtitle
+        | Finite State Automaton Simulation and Function
+
+      
+
+block script 
+  script(type='text/javascript' src='/js/index.js')
