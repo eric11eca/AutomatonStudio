@@ -1,15 +1,12 @@
-let fsm = require("fsm").data;
-
-
-let regex = {};
+let fsm = require("./stateAutomaton").data;
 
 let tree = {};
 
 tree.constants = {
   UNION: 'union',
-  SEQ: 'sequence',
+  CONCAT: 'concatnation',
   KLEEN: 'kleene_star',
-  ELEM: 'literal',
+  ELEM: 'element',
   EPS: 'epsilon'
 };
 
@@ -18,43 +15,122 @@ tree.constants = {
 // all the choices.
 tree.makeUnion = function (children) {
   return {
-    tag: tree.constants.UNION,
+    type: tree.constants.UNION,
     children: children
   };
 };
 
-// Returns the root of a new tree that represents the expression that is the sequence
+// Returns the root of a new tree that represents the expression that is the concatnation
 // of all the elements.
-tree.makeSequence = function (children) {
+tree.makeConcatnation = function (components) {
   return {
-    tag: tree.constants.SEQ,
-    children: children
+    type: tree.constants.CONCAT,
+    components: components
   };
 };
 
-// Wraps the given expressin tree unde a Kleene star operator.
+// Wraps the given expressin tree unde a Kleene star.
 // Returns the root of the new tree.
 tree.makeKleenStar = function (expression) {
   return {
-    tag: tree.constants.KLEEN,
+    type: tree.constants.KLEEN,
     expression: expression
   };
 };
 
-// Creates a node that represents the literal obj.
-tree.makeLiteral = function (obj) {
+// Creates a node that represents the characters in alphabet.
+tree.makeElement = function (obj) {
   return {
-    tag: tree.constants.ELEM,
+    type: tree.constants.ELEM,
     obj: obj
   };
 };
 
 var epsNode = {
-  tag: tree.constants.EPS
+  type: tree.constants.EPS
 };
 // Returns a node representing the empty string regular expression.
 tree.makeEpsilon = function () {
   return epsNode;
+};
+
+
+tree._simplify_rule_eps = function (reg) {
+  if (reg.type == tree.constants.KLEEN && reg.expression == tree.constants.EPS) {
+    reg.type = reg.expression.type;
+    delete reg.expression;
+    return true;
+  }
+  return false;
+};
+
+tree._simplify_rule_eps_concat = function (reg) {
+  if (reg.type == tree.constants.CONCAT && reg.components.length > 1) {
+    for (var i = 0; i < reg.components.lenght; i++) {
+      if (reg.components[i].type == tree.constants.EPS) {
+        reg.components.splice(i, 1);
+        return true;
+      }
+    }
+  }
+  return false;
+};
+
+tree._simplify_rule_kleen_1 = function (reg) {
+  if (reg.type == tree.constants.KLEEN && tree.expr.type == tree.constants.KLEEN) {
+    reg.expression = reg.expression.expression;
+    return true;
+  }
+
+  return false;
+};
+
+tree._simplify_rule_kleen_2 = function (reg) {
+  if (reg.type == tree.constants.KLEEN && tree.expr.type == tree.constants.UNION) {
+    reg.expression = reg.expression.expression;
+    for (var i = 0; i < reg.expression.children.length; i++) {
+      if (reg.expression.children[i].type == tree.constants.KLEEN) {
+        reg.expression.children[i] = reg.expression.children[i].expression;
+        return true;
+      }
+    }
+  }
+  return false;
+};
+
+tree._simplify_rule_eps_kleen_union = function (reg) {
+  if (reg.type == tree.constants.UNION && reg.children.length > 1) {
+    var epsidx = -1;
+    var isKleen = false;
+    for (i = 0; i < reg.children.length; i++) {
+      if (reg.children[i].type == tree.constants.EPS) {
+        epsidx = i;
+      } else if (reg.children[i].type == tree.constants.KLEEN) {
+        isKleen = true;
+      }
+    }
+
+    if (epsidx >= 0 && isKleen) {
+      reg.children.splice(epsidx, 1);
+      return true;
+    }
+  }
+};
+
+tree._simplify_rule_kleen_3 = function (reg) {
+  if (reg.type == tree.constants.KLEEN &&
+    reg.expression.type == tree.constants.CONCAT) {
+    for (var i = 0; i < reg.expression.components.length; i++) {
+      if (reg.expression.component[i].type != tree.constants.KLEEN) {
+        return false;
+      }
+    }
+
+    reg.expression.type = tree.constants.UNION;
+    reg.expression.children = reg.expression.components;
+    delete reg.expression.component;
+    return true;
+  }
 };
 
 tree._automatonFromUnion = function (regex, automaton, stateCounter) {
@@ -67,3 +143,11 @@ tree._automatonFromUnion = function (regex, automaton, stateCounter) {
   }
   return [l, r];
 };
+
+
+
+let regex = {
+  tree: tree
+};
+
+exports.data = regex;

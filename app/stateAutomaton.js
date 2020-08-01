@@ -472,19 +472,19 @@ fsm.serializeFsmToString = function (fsm) {
 
   lines.push("#accepting");
 
-  for (var i = 0; i < fsm.acceptingStates.length; i++) {
+  for (i = 0; i < fsm.acceptingStates.length; i++) {
     lines.push(fsm.acceptingStates[i].toString());
   }
 
   lines.push("#alphabet");
 
-  for (var i = 0; i < fsm.alphabet.length; i++) {
+  for (i = 0; i < fsm.alphabet.length; i++) {
     lines.push(fsm.alphabet[i].toString());
   }
 
   lines.push("#transitions");
 
-  for (var i = 0; i < fsm.transitions.length; i++) {
+  for (i = 0; i < fsm.transitions.length; i++) {
     lines.push(fsm.transitions[i].fromState.toString() + ":" +
       fsm.transitions[i].symbol.toString() + "->" +
       fsm.transitions[i].toStates.join(","));
@@ -1691,6 +1691,8 @@ fsm.symbolsForTransitions = function (automaton, stateA, stateB) {
   return res;
 };
 
+let regex = require("./regex").data;
+
 fsm.toRegex = function (automaton) {
   var r = [];
   var n = automaton.states.length;
@@ -1709,14 +1711,14 @@ fsm.toRegex = function (automaton) {
       var symbols = fsm.symbolsForTransitions(automaton, automaton.states[i], automaton.states[j]);
 
       for (z = 0; z < symbols.length; z++) {
-        symbols[z] = re.tree.makeLit(symbols[z]);
+        symbols[z] = regex.tree.makeLiteral(symbols[z]);
       }
 
       if (i === j) {
-        symbols.push(re.tree.makeEps());
+        symbols.push(regex.tree.makeEpsilon());
       }
 
-      r[0][i][j] = re.tree.makeAlt(symbols);
+      r[0][i][j] = regex.tree.makeUnion(symbols);
     }
   }
 
@@ -1730,10 +1732,10 @@ fsm.toRegex = function (automaton) {
 
         var seq = null;
 
-        if (r[k - 1][k - 1][k - 1].tag === re.tree.tags.EPS) {
-          seq = re.tree.makeSeq([r[k - 1][i][k - 1], r[k - 1][k - 1][j]]);
+        if (r[k - 1][k - 1][k - 1].tag === regex.tree.constants.EPS) {
+          seq = regex.tree.makeSequence([r[k - 1][i][k - 1], r[k - 1][k - 1][j]]);
         } else {
-          seq = re.tree.makeSeq([r[k - 1][i][k - 1], re.tree.makeKStar(r[k - 1][k - 1][k - 1]), r[k - 1][k - 1][j]]);
+          seq = regex.tree.makeSequence([r[k - 1][i][k - 1], regex.tree.makeKleenStar(r[k - 1][k - 1][k - 1]), r[k - 1][k - 1][j]]);
         }
 
         var alt = [];
@@ -1746,7 +1748,7 @@ fsm.toRegex = function (automaton) {
           alt.push(seq);
         }
 
-        alt = re.tree.makeAlt(alt);
+        alt = regex.tree.makeUnion(alt);
 
         r[k][i][j] = alt;
       }
@@ -1772,7 +1774,7 @@ fsm.toRegex = function (automaton) {
     elements.push(r[n][startStateIndex][acceptableStatesIndexes[i]]);
   }
 
-  return re.tree.makeAlt(elements);
+  return regex.tree.makeUnion(elements);
 };
 
 exports.data = fsm;
