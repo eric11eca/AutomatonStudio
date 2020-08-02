@@ -1,9 +1,11 @@
 let home = require("./home"),
     truth = require('./truth'),
-    fsm = require("./fsm");
+    fsm = require("./fsm"),
+    cfg = require("./cfg");
 
 module.exports = {
     "/": home,
     "/truth": truth,
-    "/fsm": fsm
+    "/fsm": fsm,
+    "/cfg": cfg
 }
