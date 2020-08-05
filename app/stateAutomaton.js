@@ -1711,7 +1711,7 @@ fsm.toRegex = function (automaton) {
       var symbols = fsm.symbolsForTransitions(automaton, automaton.states[i], automaton.states[j]);
 
       for (z = 0; z < symbols.length; z++) {
-        symbols[z] = regex.tree.makeLiteral(symbols[z]);
+        symbols[z] = regex.tree.makeElement(symbols[z]);
       }
 
       if (i === j) {
@@ -1733,9 +1733,9 @@ fsm.toRegex = function (automaton) {
         var seq = null;
 
         if (r[k - 1][k - 1][k - 1].tag === regex.tree.constants.EPS) {
-          seq = regex.tree.makeSequence([r[k - 1][i][k - 1], r[k - 1][k - 1][j]]);
+          seq = regex.tree.makeConcatnation([r[k - 1][i][k - 1], r[k - 1][k - 1][j]]);
         } else {
-          seq = regex.tree.makeSequence([r[k - 1][i][k - 1], regex.tree.makeKleenStar(r[k - 1][k - 1][k - 1]), r[k - 1][k - 1][j]]);
+          seq = regex.tree.makeConcatnation([r[k - 1][i][k - 1], regex.tree.makeKleenStar(r[k - 1][k - 1][k - 1]), r[k - 1][k - 1][j]]);
         }
 
         var alt = [];
