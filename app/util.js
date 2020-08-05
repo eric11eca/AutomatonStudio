@@ -1,66 +1,66 @@
 util = {};
 
-util.areEquivalent = function(object1, object2) {
+util.areEquivalent = function (object1, object2) {
 	if (object1 === object2) {
-			return true;
+		return true;
 	}
 
 	if (object1 instanceof Date && object2 instanceof Date) {
-			return object1.getTime() === object2.getTime();
+		return object1.getTime() === object2.getTime();
 	}
 
 	if (object1 instanceof RegExp && object2 instanceof RegExp) {
-			return object1.source === object2.source &&
-							object1.global === object2.global &&
-							object1.multiline === object2.multiline &&
-							object1.lastIndex === object2.lastIndex &&
-							object1.ignoreCase === object2.ignoreCase;
+		return object1.source === object2.source &&
+			object1.global === object2.global &&
+			object1.multiline === object2.multiline &&
+			object1.lastIndex === object2.lastIndex &&
+			object1.ignoreCase === object2.ignoreCase;
 	}
 
-	if (!(object1 instanceof Object) || !(object2 instanceof Object) ) {
-			return false;
+	if (!(object1 instanceof Object) || !(object2 instanceof Object)) {
+		return false;
 	}
 
 	if (typeof object1 === 'undefined' || typeof object2 === 'undefined') {
-			return false;
+		return false;
 	}
 
 	if (object1.constructor !== object2.constructor) {
-			return false;
+		return false;
 	}
 
 	for (var p in object1) {
-			if (!(p in object2)) {
+		if (!(p in object2)) {
 			return false;
-			}
+		}
 
-			if (object1[p] === object2[p]) {
+		if (object1[p] === object2[p]) {
 			continue;
-			}
+		}
 
-			if (typeof(object1[p]) !== "object") {
+		if (typeof (object1[p]) !== "object") {
 			return false;
-			}
+		}
 
-			if (!(util.areEquivalent(object1[p], object2[p]))) {
+		if (!(util.areEquivalent(object1[p], object2[p]))) {
 			return false;
-			}
+		}
 	}
 
 	for (p in object2) {
-			if (!(p in object1)) {
+		if (!(p in object1)) {
 			return false;
-			}
+		}
 	}
 
 	return true;
 };
 
 // check if array arr contains obj starting from index startIndex
-util.contains = function(arr, obj, startIndex) {
+util.contains = function (arr, obj, startIndex) {
 	startIndex = startIndex ? startIndex : 0;
 
-	for (var i=startIndex; i<arr.length; i++) {
+	for (var i = startIndex; i < arr.length; i++) {
 		if (util.areEquivalent(arr[i], obj)) {
 			return true;
 		}
@@ -71,7 +71,7 @@ util.contains = function(arr, obj, startIndex) {
 
 // returns the index of the leftmost obj instance in arr starting from startIndex or -1
 // if no instance of obj is found
-util.index = function(arr, obj, startIndex) {
+util.index = function (arr, obj, startIndex) {
 	var i = startIndex || 0;
 	while (i < arr.length) {
 		if (util.areEquivalent(arr[i], obj)) {
@@ -83,8 +83,8 @@ util.index = function(arr, obj, startIndex) {
 };
 
 // check if array arr1 contains all elements from array arr2
-util.containsAll = function(arr1, arr2) {
-	for (var i=0; i<arr2.length; i++) {
+util.containsAll = function (arr1, arr2) {
+	for (var i = 0; i < arr2.length; i++) {
 		if (!(util.contains(arr1, arr2[i]))) {
 			return false;
 		}
@@ -93,8 +93,8 @@ util.containsAll = function(arr1, arr2) {
 };
 
 // check if array arr1 contains any element from array arr2
-util.containsAny = function(arr1, arr2) {
-	for (var i=0; i<arr2.length; i++) {
+util.containsAny = function (arr1, arr2) {
+	for (var i = 0; i < arr2.length; i++) {
 		if (util.contains(arr1, arr2[i])) {
 			return true;
 		}
@@ -103,12 +103,12 @@ util.containsAny = function(arr1, arr2) {
 };
 
 // check if arrays arr1 and arr2 contain the same elements
-util.areEqualSets = function(arr1, arr2) {
+util.areEqualSets = function (arr1, arr2) {
 	if (arr1.length !== arr2.length) {
-			return false;
+		return false;
 	}
 
-	for (var i=0; i<arr1.length; i++) {
+	for (var i = 0; i < arr1.length; i++) {
 		if (!(util.contains(arr2, arr1[i]))) {
 			return false;
 		}
@@ -118,8 +118,8 @@ util.areEqualSets = function(arr1, arr2) {
 };
 
 // check if array arr1 contains the set obj
-util.containsSet = function(arr1, obj) {
-	for (var i=0; i<arr1.length; i++) {
+util.containsSet = function (arr1, obj) {
+	for (var i = 0; i < arr1.length; i++) {
 		if (util.areEqualSets(arr1[i], obj)) {
 			return true;
 		}
@@ -129,16 +129,16 @@ util.containsSet = function(arr1, obj) {
 
 // returns an unsorted array representation of the union of the two arrays arr1 and arr2
 // with each element included exactly once, regardless of the count in arr1 and arr2
-util.setUnion = function(arr1, arr2) {
+util.setUnion = function (arr1, arr2) {
 	var res = [];
 	var i;
-	for (i=0; i<arr1.length; i++) {
+	for (i = 0; i < arr1.length; i++) {
 		// this will not include duplicates from arr1
 		if (!util.contains(res, arr1[i])) {
 			res.push(arr1[i]);
 		}
 	}
-	for (i=0; i<arr2.length; i++) {
+	for (i = 0; i < arr2.length; i++) {
 		if (!util.contains(res, arr2[i])) {
 			res.push(arr2[i]);
 		}
@@ -149,10 +149,10 @@ util.setUnion = function(arr1, arr2) {
 // returns an unsorted array representation of the intersection of the two
 // arrays arr1 and arr2 with each element included exactly once, regardless
 // of the count in arr1 and arr2
-util.setIntersection = function(arr1, arr2) {
+util.setIntersection = function (arr1, arr2) {
 	var res = [];
 	var i;
-	for (i=0; i<arr1.length; i++) {
+	for (i = 0; i < arr1.length; i++) {
 		if (util.contains(arr2, arr1[i])) {
 			res.push(arr1[i]);
 		}
@@ -161,7 +161,7 @@ util.setIntersection = function(arr1, arr2) {
 };
 
 // make a deep clone of an object
-util.clone = function(obj) {
+util.clone = function (obj) {
 	return JSON.parse(JSON.stringify(obj));
 };
 
@@ -170,9 +170,9 @@ util.clone = function(obj) {
 // across multiple function calls. The current value can be accessed through the
 // value property.
 // See the re.tree.toAutomaton function for a usage example.
-util.makeCounter = (function() {
+util.makeCounter = (function () {
 	function getAndAdvance() {
-			return this.value++;
+		return this.value++;
 	}
 
 	function makeCounter(init) {
@@ -187,8 +187,8 @@ util.makeCounter = (function() {
 
 
 // Returns a random integer from the interval [from, to].
-util.randint = function(from, to) {
-	return Math.floor(Math.random()*(to-from+1)) + from;
+util.randint = function (from, to) {
+	return Math.floor(Math.random() * (to - from + 1)) + from;
 };
 
 exports.data = util;

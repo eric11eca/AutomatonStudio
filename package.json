@@ -14,7 +14,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodeman index.js",
+    "start": "nodemon index.js",
     "start-desk": "electron .",
     "package-windows": "electron-packager . logictoolbox --overwrite --platform=win32 --arch=ia32 --icon=assets/icons/logic.ico --prune=true --out=release-builds --version-string.CompanyName=RHIT --version-string.FileDescription=CE --version-string.ProductName=\"Computational Logic Toolbox\"",
     "package-mac": "electron-packager . logictoolbox --overwrite --platform=darwin --arch=x64 --icon=assets/icons/logic.icns --prune=true --out=release-builds",
