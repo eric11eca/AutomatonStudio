@@ -1,7 +1,22 @@
 extends  layout 
 append head
-    link(rel="stylesheet", herf="/assets/css/cfg.css")
+	link(rel="stylesheet", href="/assets/css/cfg.css")
 
 block content 
-    .main-content
-        
+	.main-content
+		.row-fluid
+			.span6.leftPanel
+				.cfg-editor
+					textarea.cfg(placeholder = 'Type context-free grammar here')
+				//span.split-line(role = "presentation",style)
+				hr
+				//- .cfg-simulator
+				//- 	textarea.cfg(placeholder = 'Type context-free grammar here')
+			.span6.rightPanel
+				.user-input
+					textarea.cfg(placeholder = 'Type context-free grammar here')
+				span.split-line(role = "presentation")
+				.visual
+
+block script
+	script(src='https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/js/bootstrap.min.js')
