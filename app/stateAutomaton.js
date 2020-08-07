@@ -1388,155 +1388,91 @@ fsm.randomStringNotInLanguage = function (fsm) {
   return trail;
 };
 
-// get a new fsm which accepts the language L=L1+L2 (set union) where
-// L1 is the language accepted by fsma and
-// L2 is the language accepted by fsmB
-fsm.union = function (fsmA, fsmB) {
-  if (!(util.areEquivalent(fsmA.alphabet, fsmB.alphabet))) {
+fsm.operators = {
+  "union": function (bool1, bool2) {
+    return bool1 && bool2;
+  },
+  "intersection": function (bool1, bool2) {
+    return bool1 || bool2;
+  },
+  "difference": function (bool1, bool2) {
+    return bool1 && !(bool2);
+  },
+  "complement": function (set1, set2) {
+    return !(util.contains(set1, set2));
+  }
+};
+
+fsm.crossProduct = function (fsm1, fsm2, operator) {
+  var newAlphabet = util.clone(fsm1.alphabet);
+  var newStates = [];
+  var newStarting = [util.clone(fsm1.initialState), util.clone(fsm2.initialState)];
+  var newAccepting = [];
+  var newTransitions = {};
+
+  fsm1.states.forEach(state1 => {
+    fsm2.states.forEach(state2 => {
+      var newState = [util.clone(state1), util.clone(state2)];
+      newStates.push(newState);
+
+      newAlphabet.forEach(char => {
+        var transKey = newState + ',' + char;
+        newTransitions[transKey].fromState = newState;
+        newTransitions[transKey].input = char;
+        newTransitions[transKey].toStates = [
+          fsm.forwardTransition(fsm1, [state1, char])[0],
+          fsm.forwardTransition(fsm2, [state2, char])[0]
+        ];
+      });
+
+      if (fsm.operators[operator](
+          fsm1.accepting.include(state1),
+          fsm2.accepting.include(state2))) {
+        newAccepting.push(newState);
+      }
+    });
+  });
+
+  return {
+    states: newStates,
+    alphabet: newAlphabet,
+    accepting: newAccepting,
+    starting: newStarting,
+    transitions: newTransitions
+  };
+};
+
+fsm.union = function (fsm1, fsm2) {
+  if (!(util.areEquivalent(fsm1.alphabet, fsm2.alphabet))) {
     throw new Error("Alphabets must be the same");
   }
 
-  var newFsm = {
-    alphabet: util.clone(fsmA.alphabet),
-    states: [],
-    initialState: [util.clone(fsmA.initialState), util.clone(fsmB.initialState)],
-    acceptingStates: [],
-    transitions: []
-  };
-
-  var i, j, k;
-
-  for (i = 0; i < fsmA.states.length; i++) {
-    for (j = 0; j < fsmB.states.length; j++) {
-      var newState = [util.clone(fsmA.states[i]), util.clone(fsmB.states[j])];
-      newFsm.states.push(newState);
-
-      if (util.contains(fsmA.acceptingStates, fsmA.states[i]) ||
-        util.contains(fsmB.acceptingStates, fsmB.states[j])) {
-        newFsm.acceptingStates.push(newState);
-      }
-
-      for (k = 0; k < newFsm.alphabet.length; k++) {
-        newFsm.transitions.push({
-          fromState: newState,
-          symbol: newFsm.alphabet[k],
-          toStates: [
-            [fsm.forwardTransition(fsmA, [fsmA.states[i]], newFsm.alphabet[k])[0],
-              fsm.forwardTransition(fsmB, [fsmB.states[j]], newFsm.alphabet[k])[0]
-            ]
-          ]
-        });
-      }
-    }
-  }
-
-  return newFsm;
+  return fsm.crossProduct(fsm1, fsm2, "union");
 };
 
-// get a new fsm which accepts the language L=L1/L2 (set intersection) where
-// L1 is the language accepted by fsma and
-// L2 is the language accepted by fsmB
-fsm.intersection = function (fsmA, fsmB) {
-  var new_alphabet = util.clone(util.setIntersection(fsmA.alphabet, fsmB.alphabet));
-
-  var newFsm = {
-    alphabet: new_alphabet,
-    states: [],
-    initialState: [util.clone(fsmA.initialState), util.clone(fsmB.initialState)],
-    acceptingStates: [],
-    transitions: []
-  };
-
-  var i, j, k;
-
-  for (i = 0; i < fsmA.states.length; i++) {
-    for (j = 0; j < fsmB.states.length; j++) {
-      var newState = [util.clone(fsmA.states[i]), util.clone(fsmB.states[j])];
-      newFsm.states.push(newState);
-
-      if (util.contains(fsmA.acceptingStates, fsmA.states[i]) &&
-        util.contains(fsmB.acceptingStates, fsmB.states[j])) {
-        newFsm.acceptingStates.push(newState);
-      }
-
-      for (k = 0; k < newFsm.alphabet.length; k++) {
-        newFsm.transitions.push({
-          fromState: newState,
-          symbol: newFsm.alphabet[k],
-          toStates: [
-            [fsm.forwardTransition(fsmA, [fsmA.states[i]], newFsm.alphabet[k])[0],
-              fsm.forwardTransition(fsmB, [fsmB.states[j]], newFsm.alphabet[k])[0]
-            ]
-          ]
-        });
-      }
-    }
-  }
-
-  return newFsm;
+fsm.intersection = function (fsm1, fsm2) {
+  return fsm.crossProduct(fsm1, fsm2, "intersection");
 };
 
-// get a new fsm which accepts the language L=L1-L2 (set difference) where
-// L1 is the language accepted by fsma and
-// L2 is the language accepted by fsmB
-fsm.difference = function (fsmA, fsmB) {
-  if (!(util.areEquivalent(fsmA.alphabet, fsmB.alphabet))) {
+fsm.difference = function (fsm1, fsm2) {
+  if (!(util.areEquivalent(fsm1.alphabet, fsm2.alphabet))) {
     throw new Error("Alphabets must be the same");
   }
 
-  var newFsm = {
-    alphabet: util.clone(fsmA.alphabet),
-    states: [],
-    initialState: [util.clone(fsmA.initialState), util.clone(fsmB.initialState)],
-    acceptingStates: [],
-    transitions: []
-  };
-
-  var i, j, k;
-
-  for (i = 0; i < fsmA.states.length; i++) {
-    for (j = 0; j < fsmB.states.length; j++) {
-      var newState = [util.clone(fsmA.states[i]), util.clone(fsmB.states[j])];
-      newFsm.states.push(newState);
-
-      if (util.contains(fsmA.acceptingStates, fsmA.states[i]) &&
-        !(util.contains(fsmB.acceptingStates, fsmB.states[j]))) {
-        newFsm.acceptingStates.push(newState);
-      }
-
-      for (k = 0; k < newFsm.alphabet.length; k++) {
-        newFsm.transitions.push({
-          fromState: newState,
-          symbol: newFsm.alphabet[k],
-          toStates: [
-            [fsm.forwardTransition(fsmA, [fsmA.states[i]], newFsm.alphabet[k])[0],
-              fsm.forwardTransition(fsmB, [fsmB.states[j]], newFsm.alphabet[k])[0]
-            ]
-          ]
-        });
-      }
-    }
-  }
-
-  return newFsm;
+  return fsm.crossProduct(fsm1, fsm2, "difference");
 };
 
-// get a new fsm which accepts the complement language of the
-// langauge accepted by the input fsm
 fsm.complement = function (fsm) {
   var newFsm = util.clone(fsm);
+  var newAccepting = [];
 
-  var newAccepting = [],
-    i;
-
-  for (i = 0; i < newFsm.states.length; i++) {
-    if (!(util.contains(newFsm.acceptingStates, newFsm.states[i]))) {
-      newAccepting.push(newFsm.states[i]);
+  newFsms.states.forEach(state => {
+    if (fsm.operators.complement(newFsm.accepting, state)) {
+      newAccepting.push(state);
     }
-  }
+  });
 
-  newFsm.acceptingStates = newAccepting;
-
+  newFsm.accepting = newAccepting;
   return newFsm;
 };
 

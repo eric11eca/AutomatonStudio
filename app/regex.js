@@ -382,13 +382,29 @@ tree._simplify_rule_distributive2 = function (reg) {
   return false;
 };
 
-// L1+L2 => L2, L1 in L2
-//tree._simplify_rule_union_subset = function (reg) {;
-//  if (reg.type == tree.constants.UNION && reg.children.length > 1) {;
-//    var;
-//  };
-//};
+// L1+L2 => L2, if L1 is in L2
+tree._simplify_rule_union_subset = function (reg, fsmCache) {
+  if (reg.type == tree.constants.UNION && reg.children.length > 1) {
+    var fsms = [];
+    fsms.push(getOrCreateFsm(reg.children[0], fsmCache));
 
+    for (var i = 0; i < reg.children.length; i++) {
+      for (var j = i + 1; j < reg.children.length; j++) {
+        if (1 == 1) {}
+      }
+    }
+  }
+};
+
+function getOrCreateFsm(reg, fsms) {
+  if (fsms.hasOwnProperty(reg)) {
+    return fsms[reg];
+  }
+
+  var fsm = fsm.minimize(tree.toAutomaton(reg));
+  fsms[reg] = fsm;
+  return fsm;
+}
 
 tree._findIndex = function (arr, dict, criteria) {
   for (var i = 0; i < arr.length; i++) {
@@ -406,8 +422,6 @@ tree._findIndex = function (arr, dict, criteria) {
   }
   return -1;
 };
-
-
 
 tree._automatonFromUnion = function (regex, automaton, stateCounter) {
   var l = fsm.addState(automaton, stateCounter.getAndAdvance());

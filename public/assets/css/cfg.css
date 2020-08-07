@@ -1,105 +1,116 @@
-.main-content{
-    position: relative;
-    width: initial;
-    display: block;
-    height: 100%;
-    /*flex-direction: column;
-    flex-grow: 1;*/
+* {
+    box-sizing: border-box;
+}
 
+.main-content {
+    flex: 1 1;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    min-width: 0;
+    min-height: 0;
+    color: #bbb;
+    background-color: #040405;
 }
 
 .leftPanel {
+    flex: 1 1 auto;
     display: flex;
-    flex: 1 1 0%;
-    height: 100%;
-    position: relative;
-    outline: none;
-    overflow: hidden;
-    user-select: text;
-    bottom: 0px;
     flex-direction: column;
-    min-height: 100%;
-    top: 0px;
-    width:100%
+    align-items: stretch;
+    overflow: hidden;
+    background-color: #283745;
+    resize: horizontal;
 }
 
-.cfg-editor{
-    flex: 0 0 auto;
-    position: relative;
-    outline: none;
-    height: 45%;
-}
-.cfg{
-    position: relative;
-    height:100%;
-    width:100%;
-    display:flex;
-}
-.cfg-simulator{
-    flex: 1 1 0%;
-    position: relative;
-    outline: none;
-    height: 45%;
-}
 .rightPanel {
+    flex: 1 1 auto;
     display: flex;
-    flex: 1 1 0%;
-    height: 100%;
-    position: relative;
-    outline: none;
-    overflow: hidden;
-    user-select: text;
-    bottom: 0px;
     flex-direction: column;
-    min-height: 100%;
-    top: 0px;
-    width:100%
+    align-items: stretch;
+    overflow: hidden;
+    resize: horizontal;
 }
 
-.user-input{
-    flex: 0 0 auto;
-    position: relative;
-    outline: none;
-        height: 50%;
-        display: flex;
+.visualize-viewer {
+    flex: 1 1;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    min-height: 0;
 }
 
-.visual{
-    flex: 1 1 0%;
-    position: relative;
-    outline: none;
+.resize-box {
+    flex: 1 1;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    min-width: 0;
+    min-height: 0;
+    -webkit-background-clip: padding-box;
+    background-clip: padding-box;
 }
 
-.split-line{
-    /*display:block;*/
-    background: padding-box black;
-    box-sizing: border-box;
-    background-color: black;
+.resize-box2 {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    overflow: auto;
+}
+
+.divider-y {
+    width: 0.5%;
+    height: 100%;
+    cursor: col-resize;
     position: relative;
-    height: 10%;
-    margin: 5px 0;
-    border-top: transparent 2px solid ;
-    border-bottom: transparent 1px solid ;
+    z-index: 97;
+    background-color: #393939;
+}
+
+.divider-x {
+    height: 0.5%;
+    width: 100%;
     cursor: row-resize;
-    width: 100%;
+    position: relative;
+    z-index: 97;
+    background-color: #393939;
 }
 
-hr{
-    margin: 2px 0;
-    border: 0;
-    border-top: 1px solid white;
-    border-bottom: 1px solid #fff;
-    width: 100%;
-    height: 20px;
-}
-
-textarea {
-    margin:5px;
-    padding 5px;
-    background-color: black;
-    color: white;
-    border-top: white solid 2px;
-    outline:none;
+.cfg {
+    flex: 1 1 auto;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    overflow: auto;
+    background-color: inherit;
+    width: auto;
+    height: auto;
     border: none;
-    width:100%;
+    resize: none;
+    font-size: 20px;
+    padding: 15px;
+    -webkit-background-clip: padding-box;
+    background-clip: padding-box;
+    border-radius: 0px;
+    resize: none;
 }
+
+.cfg:focus {
+    box-shadow: none;
+}
+
+.leftPanel.cfg-sim.cfg {
+    margin-bottom: 10px;
+    margin-right: 10px;
+}
+
+.rightPanel .cfg-sim textarea {
+    margin-bottom: 10px;
+    margin-left: 10px;
+}
+
+/*.resize-box2 textarea {
+    border-bottom: #bbb solid 1px;
+}*/
