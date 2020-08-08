@@ -10,7 +10,92 @@
     min-width: 0;
     min-height: 0;
     color: #bbb;
-    background-color: #040405;
+}
+
+.control-bar {
+    position: relative;
+    width: 100%;
+    height: 44px;
+    flex: none;
+    overflow: hidden;
+    background-color: #2c2c2c;
+}
+
+.toolbar {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    padding-top: 4px;
+    overflow: hidden;
+}
+
+.toolbar-inner--left {
+    display: block;
+    margin-left: 15px;
+}
+
+.toolbar-inner--right {
+    float: right;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+.toolbar__spinner {
+    width: 24px;
+    margin: 8px 0 0 8px;
+}
+
+.toolbar__title {
+    display: inline-block;
+    font-size: 20px;
+    font-family: Helvetica;
+    color: #b9b9b9;
+    background-color: transparent;
+    width: auto;
+    white-space: pre-wrap;
+    align-items: center;
+    margin-top: 5px;
+}
+
+.toolbar-button {
+    float: left;
+    color: #b9b9b9;
+    width: 34px;
+    padding: 0 7px;
+    transition: opacity .25s;
+    border-radius: 5px;
+    border: none;
+    outline: none;
+}
+
+.toolbar-button:hover {
+    color: white;
+    background-color: #a1a1a1;
+}
+
+.toolbar-bar__spacer {
+    float: left;
+    height: 36px;
+    padding: 0 4px;
+    margin-bottom: 20px;
+}
+
+
+.toolbar-button,
+.toolbar-button__title {
+    display: inline-block;
+    color: #b9b9b9;
+    background-color: transparent;
+}
+
+.toolbar-button,
+.toolbar-spacer {
+    height: 36px;
+    padding: 0 4px;
+    margin-bottom: 20px;
 }
 
 .leftPanel {
@@ -19,7 +104,7 @@
     flex-direction: column;
     align-items: stretch;
     overflow: hidden;
-    background-color: #283745;
+    background-color: white;
     resize: horizontal;
 }
 
@@ -30,6 +115,7 @@
     align-items: stretch;
     overflow: hidden;
     resize: horizontal;
+    background-color: #f3f3f3;
 }
 
 .visualize-viewer {
@@ -60,12 +146,12 @@
 }
 
 .divider-y {
-    width: 0.5%;
+    width: 1px;
     height: 100%;
     cursor: col-resize;
     position: relative;
     z-index: 97;
-    background-color: #393939;
+    background-color: #f3f3f3;
 }
 
 .divider-x {
@@ -89,13 +175,22 @@
     height: auto;
     border: none;
     resize: none;
-    font-size: 20px;
+}
+
+#cfg-input {
+    font-size: 25;
+    font-weight: bold;
+    font-family: Lato,
+        Helvetica Neue,
+        Helvetica,
+        sans-serif;
     padding: 15px;
     -webkit-background-clip: padding-box;
     background-clip: padding-box;
     border-radius: 0px;
     resize: none;
 }
+
 
 .cfg:focus {
     box-shadow: none;

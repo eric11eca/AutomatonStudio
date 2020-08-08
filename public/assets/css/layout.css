@@ -1,3 +1,9 @@
+@font-face {
+  font-family: Vine;
+  src: url("../fonts/vine1.otf") format("opentype");
+}
+
+
 body * {
   box-sizing: content-box;
   box-sizing: initial;
@@ -46,14 +52,15 @@ body {
 
 .title-bage {
   background-color: transparent;
-  font-family: 'Telefon Black', Sans-Serif;
+  font-family: 'Vine';
+  font-weight: bold;
   line-height: 1.1;
   font-size: 1rem;
   display: flex;
   -webkit-box-align: center;
   align-items: center;
   margin-right: 4rem;
-  color: white;
+  color: #b9b9b9;
   text-decoration: none;
 }
 

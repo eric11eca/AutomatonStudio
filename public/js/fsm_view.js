@@ -94,6 +94,11 @@ function drawGraph() {
 		response.text().then(text => {
 			var gvizXml = Viz(text, "svg");
 			$("#automatonGraph").html(gvizXml);
+			$("polygon").each(function (index, element) {
+				if ($(this).attr("stroke") == "transparent") {
+					$(this).attr("fill", "#f3f3f3");
+				}
+			});
 			reorderCirclesInAcceptingStates(automaton.accepting);
 			$("#automatonGraph svg").width($("#automatonGraph").width());
 		});

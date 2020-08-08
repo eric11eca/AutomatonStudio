@@ -54,3 +54,22 @@ document.getElementById("fsm").addEventListener('click', (e) => {
 			error.style.display = "block";
 		});
 });
+
+document.getElementById("cfg").addEventListener('click', (e) => {
+	e.preventDefault();
+	fetch("/cfg", {
+			method: "POST",
+			headers: {
+				"Accept": "application/json",
+				"Content-Type": "application/json"
+			}
+		})
+		.then((response) => response.text())
+		.then((data) => {
+			window.location = (JSON.parse(data).redirect);
+		})
+		.catch((err) => {
+			error.innerHTML = err;
+			error.style.display = "block";
+		});
+});

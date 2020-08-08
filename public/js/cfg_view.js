@@ -68,13 +68,3 @@ function divider_horizontal_handler(e, isleft) {
   box.style.height = (Math.max(boxMinHeight, pointerRelativeYpos - 8)) + 'px';
   box.style.flexGrow = 0;
 }
-
-let editor = ace.edit("cfg-input");
-editor.setTheme("ace/theme/nord_dark");
-editor.session.setMode("ace/mode/text");
-
-editor.setOptions({
-  autoScrollEditorIntoView: true,
-  copyWithEmptySelection: true,
-  "mergeUndoDeltas": "always",
-});

@@ -3,12 +3,29 @@ append head
 	link(rel="stylesheet", href="/assets/css/cfg.css")
 
 block content
+	.control-bar
+		.toolbar
+			.toolbar-inner--left 
+				button.toolbar-button(title="Run")
+					i.fas.fa-hammer.fa-lg
+				.toolbar-bar__spacer
+				button.toolbar-button(title="Clear")
+					i.fa.fa-times.fa-2x
+				.toolbar-bar__spacer
+				button.toolbar-button(title="Refresh")
+					i.fas.fa-sync.fa-lg
+				.toolbar-bar__spacer
+			.toolbar-inner--right
+				.toolbar__spinner
+				.toolbar__title Context Free Grammar
+				.toolbar__spinner
+
 	.main-content
 		.leftPanel
 			.visualize-viewer
 				#cfg-editor.resize-box
 					#cfg-raw.resize-box2 
-						#cfg-input.cfg
+						textarea#cfg-input.cfg(spellcheck=false placeholder="Type the grammar here...")
 					#left-divider.divider-x
 					#cfg-sim.resize-box2
 						.cfg 

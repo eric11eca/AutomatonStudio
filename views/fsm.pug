@@ -4,118 +4,144 @@ append head
 
 block content
 	.main-content
-		.truth-content
-			.row-fluid
-				.span6.column
-					h3  &#x2460; Compose Automaton 
-					//ul.nav.nav-tabs
-						li#fsminput.active
-							a(href='#tab1' data-toggle='tab') Input automaton
-						li#regexinput
-							a(href='#tab2' data-toggle='tab') Input regex
-					//.tab-content
-					//#tab1.tab-pane.active
-					.instructions
-						p
-							| Compose FSM from definition and transitions
-						p
-							| Follow the formal definition of a FSM
-					p
-						button#generateDFA Generate random DFA
-						button#generateNFA Generate random NFA
-						button#generateENFA Generate random eNFA
-					p
-						table.state-table
-							colgroup
-								col(span='1' style='width: 10%;')
-								col(span='1' style='width: 35%;')
-								col(span='1' style='width: 55%;')
-							tr
-								td
-									span(style='margin-left: 10px;') States:  
-								td
-									input#states.input-block-level(type='text' placeholder='...' spellcheck='false')
-								td(rowspan='4')
-									span(style='margin-left: 10px;') Transitions:
-									textarea#transition.input-block-level(type='text' placeholder='...' spellcheck='false')
-							tr
-								td
-									span(style='margin-left: 10px;') Alphabet:
-								td
-									input#alphabet.input-block-level(type='text' placeholder='...' spellcheck='false')
-							tr
-								td
-									span(style='margin-left: 10px;') Starting:
-								td
-									input#start.input-block-level(type='text' placeholder='...' spellcheck='false')
-							tr
-								td
-									span(style='margin-left: 10px;') Accepting:
-								td
-									input#accept.input-block-level(type='text' placeholder='...' spellcheck='false')
-							tr
-								td(colspan='2')
-									button#createAutomatonFsm Create automaton
-					p#fsmError.text-error
+		.row-fluid
+			.span6.column
+				.control-bar
+					.toolbar
+						.toolbar-inner--left
+							button#createAutomatonFsm.toolbar-button(title="Create Automaton")
+								i.fas.fa-hammer.fa-lg
+							.toolbar-spacer
+							button.toolbar-button(title="Clear")
+								i.fa.fa-times.fa-2x
+							.toolbar-spacer
+							button.toolbar-button(title="Refresh")
+								i.fas.fa-sync.fa-lg
+							.toolbar-spacer
+						.toolbar-inner--right
+							.toolbar__spinner
+							.toolbar__title Compose Automaton
+							.toolbar__spinner
 
-				.span6.column 
-						//#tab2.tab-pane
-						h3  &#x2460; Regular Expression 
-						.instructions
-							p
-								| Enter a regular expression into the input field below or click 
-								strong Generate random regex
-								|  to have the app generate a simple regex randomly for you.
-								| &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Next, click 
-								strong Create automaton
-								|  to create a FSM for the defined regex and display its transition graph.
-							p
-								| A valid regex consists of alphanumeric characters representing the set of input symbols (e.g. 
-								code a
-								| , 
-								code B
-								| , 
-								code 9
-								| ), the 
-								code $
-								|  character representing the empty string, the choice operator 
-								code +
-								| , the Kleene operator 
-								code *
-								| , and parentheses 
-								code (
-								|  and 
-								code )
-								| . An example of a valid regex is: 
-								code (a+B)*(c9+$)+$
-								| .
-						p
-							button#generateRegex Generate random regex
-						p
-							.control-group
-								input#regex-input.input-block-level(type='text' placeholder='or write your own' spellcheck='false')
-						p
-							.control-group
-								//label(for='automatonType') Select generated FSM type: 
-								select#automatonType
-									option(value='eNFA' default='true') eNFA
-									option(value='NFA') NFA
-									option(value='DFA') DFA
-							button#createAutomatonReg Create automaton
-			.sim-graph 
-				.simulator 
-					h3  &#x2461; Simulate 
+				//h3  &#x2460; Compose Automaton 
+				//ul.nav.nav-tabs
+					li#fsminput.active
+						a(href='#tab1' data-toggle='tab') Input automaton
+					li#regexinput
+						a(href='#tab2' data-toggle='tab') Input regex
+				//.tab-content
+				//#tab1.tab-pane.active
+				//.instructions
 					p
-						| Enter a sequence of input symbols into the input field below. 
+						| Compose FSM from definition and transitions
 					p
-						| Or click the three buttons to generate random string.
+						| Follow the formal definition of a FSM
+				p(style="margin-top: 10px")
+					button#generateDFA Generate random DFA
+					button#generateNFA Generate random NFA
+					button#generateENFA Generate random eNFA
+				p
+					table.state-table
+						colgroup
+							col(span='1' style='width: 10%;')
+							col(span='1' style='width: 35%;')
+							col(span='1' style='width: 55%;')
+						tr
+							td
+								span(style='margin-left: 10px;') States:  
+							td
+								input#states.input-block-level(type='text' placeholder='...' spellcheck='false')
+							td(rowspan='4')
+								span(style='margin-left: 10px;') Transitions:
+								textarea#transition.input-block-level(type='text' placeholder='...' spellcheck='false')
+						tr
+							td
+								span(style='margin-left: 10px;') Alphabet:
+							td
+								input#alphabet.input-block-level(type='text' placeholder='...' spellcheck='false')
+						tr
+							td
+								span(style='margin-left: 10px;') Starting:
+							td
+								input#start.input-block-level(type='text' placeholder='...' spellcheck='false')
+						tr
+							td
+								span(style='margin-left: 10px;') Accepting:
+							td
+								input#accept.input-block-level(type='text' placeholder='...' spellcheck='false')
+				p#fsmError.text-error
+
+			.span6.column 
+				.control-bar
+					.toolbar
+						.toolbar-inner--left
+							button#createAutomatonReg.toolbar-button(title="Create Automaton")
+								i.fas.fa-hammer.fa-lg
+							.toolbar-spacer
+							button.toolbar-button(title="Clear")
+								i.fa.fa-times.fa-2x
+							.toolbar-spacer
+							button.toolbar-button(title="Refresh")
+								i.fas.fa-sync.fa-lg
+							.toolbar-spacer
+						.toolbar-inner--right
+							.toolbar__spinner
+							.toolbar__title Compose Regular Expression
+							.toolbar__spinner
+					//#tab2.tab-pane
+					//h3  &#x2460; Regular Expression 
+					//.instructions
 						p
-							button#generateRandomString.btn(disabled='')  Random string 
-							button#generateRandomAcceptableString.btn(disabled='')  Acceptable string 
-							button#generateRandomUnacceptableString.btn(disabled='')  Unacceptable string 
+							| Enter a regular expression into the input field below or click 
+							strong Generate random regex
+							|  to have the app generate a simple regex randomly for you.
+							| &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Next, click 
+							strong Create automaton
+							|  to create a FSM for the defined regex and display its transition graph.
 						p
-							.control-group
-								input#inputString.input-block-level(type='text' placeholder='See if this fits' disabled='' spellcheck='false')
+							| A valid regex consists of alphanumeric characters representing the set of input symbols (e.g. 
+							code a
+							| , 
+							code B
+							| , 
+							code 9
+							| ), the 
+							code $
+							|  character representing the empty string, the choice operator 
+							code +
+							| , the Kleene operator 
+							code *
+							| , and parentheses 
+							code (
+							|  and 
+							code )
+							| . An example of a valid regex is: 
+							code (a+B)*(c9+$)+$
+							| .
+				p
+					button#generateRegex Generate random regex
+				p
+					.control-group
+						input#regex-input.input-block-level(type='text' placeholder='or write your own' spellcheck='false')
+				p
+					.control-group
+						select#automatonType
+							option(value='eNFA' default='true') eNFA
+							option(value='NFA') NFA
+							option(value='DFA') DFA
+		.sim-graph 
+			.control-bar
+				.toolbar
+					.toolbar-inner--left
+						.toolbar-spacer
+						select#inputStringType
+							option(value='random' default='true') Random String
+							option(value='acceptable') Acceptable String
+							option(value='unacceptable') Unacceptable String
+						.toolbar-spacer
+						input#inputString(type='text' placeholder='See if this fits' disabled='' spellcheck='false')
+						.toolbar-spacer
+						.toolbar-spacer
 						p
 							button#startStop.btn(disabled='')
 								| Start
@@ -131,10 +157,39 @@ block content
 							button#inputLast.btn(disabled='')
 								i.icon-fast-forward
 								| &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Read all
-						p#inputError.text-error
-						
-				.container.graph
-					#automatonGraph  
+					.toolbar-inner--right
+						.toolbar__title Simulate Automaton
+			//.simulator 
+				h3  &#x2461; Simulate 
+				p
+					| Enter a sequence of input symbols into the input field below. 
+				p
+					| Or click the three buttons to generate random string.
+				p
+					button#generateRandomString.btn(disabled='')  Random string 
+					button#generateRandomAcceptableString.btn(disabled='')  Acceptable string 
+					button#generateRandomUnacceptableString.btn(disabled='')  Unacceptable string 
+				p
+					.control-group
+						input#inputString.input-block-level(type='text' placeholder='See if this fits' disabled='' spellcheck='false')
+				p
+					button#startStop.btn(disabled='')
+						| Start
+					button#inputFirst.btn(disabled='')
+						i.icon-fast-backward
+						| &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Reset
+					button#inputPrevious.btn(disabled='')
+						i.icon-backward
+						| &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Step backward
+					button#inputNext.btn(disabled='')
+						i.icon-forward
+						| &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Read next
+					button#inputLast.btn(disabled='')
+						i.icon-fast-forward
+						| &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Read all
+			.container.graph
+				p#inputError.text-error
+				#automatonGraph  
 
 block script
 	script(src='https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js')
