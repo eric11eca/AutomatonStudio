@@ -30,11 +30,14 @@
 	display: block;
 	margin-left: 15px;
 	align-items: center;
+	margin-top: auto;
+	margin-bottom: auto;
 }
 
 .toolbar-inner--right {
 	float: right;
-	margin-bottom: 20px;
+	margin-top: auto;
+	margin-bottom: auto;
 	display: flex;
 	flex-direction: row;
 	align-items: center;
@@ -43,7 +46,8 @@
 
 .toolbar__spinner {
 	width: 24px;
-	margin: 8px 0 0 8px;
+	margin-top: auto;
+	margin-bottom: auto;
 }
 
 .toolbar__title {
@@ -283,6 +287,11 @@ th {
 	margin-left: 5px;
 	color: #f3f3f3;
 	background-color: #455767;
+	margin-top: 3px;
+}
+
+.btn {
+	margin-top: 3px;
 }
 
 .graph {

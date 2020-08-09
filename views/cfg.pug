@@ -29,13 +29,20 @@ block content
 					#left-divider.divider-x
 					#cfg-sim.resize-box2
 						.cfg 
-		.divider-y
+							p
+								button#randomString.btn
+									| &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Random String
+								button#accepableString.btn
+									| &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Accepable String
+								button#unaccepableString.btn
+									| &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Unaccepable String
+							input#inputstring(spellcheck=false)
 		.rightPanel
 			.visualize-viewer
 				.resize-box
 					#cfg-right.resize-box2 
 						.cfg
-					#right-divider.divider-x
+					//#right-divider.divider-x
 					.resize-box2
 						.cfg
 block script

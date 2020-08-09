@@ -99,7 +99,7 @@
 }
 
 .leftPanel {
-    flex: 1 1 auto;
+    flex: 1 1 0;
     display: flex;
     flex-direction: column;
     align-items: stretch;
@@ -109,7 +109,7 @@
 }
 
 .rightPanel {
-    flex: 1 1 auto;
+    flex: 1 1 0;
     display: flex;
     flex-direction: column;
     align-items: stretch;
@@ -175,6 +175,7 @@
     height: auto;
     border: none;
     resize: none;
+    padding: 15px;
 }
 
 #cfg-input {
@@ -191,7 +192,6 @@
     resize: none;
 }
 
-
 .cfg:focus {
     box-shadow: none;
 }
@@ -204,6 +204,11 @@
 .rightPanel .cfg-sim textarea {
     margin-bottom: 10px;
     margin-left: 10px;
+}
+
+#inputstring {
+    width: 50%;
+    background-color: ;
 }
 
 /*.resize-box2 textarea {
