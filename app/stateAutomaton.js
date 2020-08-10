@@ -1406,7 +1406,7 @@ fsm.operators = {
 fsm.crossProduct = function (fsm1, fsm2, operator) {
   var newAlphabet = util.clone(fsm1.alphabet);
   var newStates = [];
-  var newStarting = [util.clone(fsm1.initialState), util.clone(fsm2.initialState)];
+  var newStarting = [util.clone(fsm1.starting), util.clone(fsm2.starting)];
   var newAccepting = [];
   var newTransitions = {};
 
@@ -1476,104 +1476,94 @@ fsm.complement = function (fsm) {
   return newFsm;
 };
 
-// get a new fsm which accepts the language L1L2 where
-// L1 is the language accepted by fsmA and L2 is the
-// langauge accepted by fsmB
-fsm.concatenation = function (fsmA, fsmB) {
-  if (!(util.areEquivalent(fsmA.alphabet, fsmB.alphabet))) {
+fsm.concatenation = function (fsm1, fsm2) {
+  if (!(util.areEquivalent(fsm1.alphabet, fsm2.alphabet))) {
     throw new Error("Alphabets must be the same");
   }
 
-  if (util.containsAny(fsmA.states, fsmB.states)) {
+  if (util.containsAny(fsm1.states, fsm2.states)) {
     throw new Error("States must not overlap");
   }
 
-  var newFsm = {
-    alphabet: util.clone(fsmA.alphabet),
-    states: util.clone(fsmA.states).concat(util.clone(fsmB.states)),
-    initialState: util.clone(fsmA.initialState),
-    acceptingStates: util.clone(fsmB.acceptingStates),
-    transitions: util.clone(fsmA.transitions).concat(util.clone(fsmB.transitions))
+  var newAlphabet = util.clone(fsm1.alphabet);
+  var newStates = util.clone(fsm1.states).concat(util.clone(fsm2.states));
+  var newStarting = util.clone(fsm1.starting);
+  var newAccepting = util.clone(fsm2.acceptingStates);
+  var newTransitions = {
+    ...util.clone(fsm1.transitions),
+    ...util.clone(fsm2.transitions)
   };
 
-  for (var i = 0; i < fsmA.acceptingStates.length; i++) {
-    newFsm.transitions.push({
-      fromState: util.clone(fsmA.acceptingStates[i]),
-      toStates: [util.clone(fsmB.initialState)],
-      symbol: fsm.constants.epsilon
-    });
-  }
+  fsm1.accepting.forEach(state => {
+    var transKey = state + ',' + fsm.constants.epsilon;
+    newTransitions[transKey].fromState = util.clone(state);
+    newTransitions[transKey].input = fsm.constants.epsilon;
+    newTransitions[transKey].toStates = [util.clone(fsm2.starting)];
+  });
 
-  return newFsm;
+  return {
+    states: newStates,
+    alphabet: newAlphabet,
+    accepting: newAccepting,
+    starting: newStarting,
+    transitions: newTransitions
+  };
 };
 
-// get a new fsm which accepts the language L*, where L is
-// accepted by the input fsm and * is the kleene operator
 fsm.kleene = function (fsm) {
   var newFsm = util.clone(fsm);
 
-  var newInitial = "NEW_INITIAL";
+  var newStarting = "S";
 
-  newFsm.states.push(newInitial);
-  newFsm.transitions.push({
-    fromState: newInitial,
-    toStates: [newFsm.initialState],
-    symbol: fsm.constants.epsilon
+  newFsm.states.push(newStarting);
+  var transKey = newStarting + ',' + fsm.constants.epsilon;
+  newFsm.transitions[transKey].fromState = newStarting;
+  newFsm.transitions[transKey].input = fsm.constants.epsilon;
+  newFsm.transitions[transKey].toStates = [newFsm.starting];
+  newFsm.starting = newStarting;
+
+  newFsm.accepting.forEach(state => {
+    var transKey = state + ',' + fsm.constants.epsilon;
+    newFsm.transitions[transKey].fromState = state;
+    newFsm.transitions[transKey].input = fsm.constants.epsilon;
+    newFsm.transitions[transKey].toStates = [newStarting];
   });
-  newFsm.initialState = newInitial;
-
-  for (var i = 0; i < newFsm.acceptingStates.length; i++) {
-    newFsm.transitions.push({
-      fromState: newFsm.acceptingStates[i],
-      toStates: [newInitial],
-      symbol: fsm.constants.epsilon
-    });
-  }
 
   return newFsm;
 };
 
-// get a new fsm which accepts the reverse language of the input fsm
 fsm.reverse = function (fsm) {
   var newFsm = util.clone(fsm);
 
-  var newTransitions = [];
-
-  for (var i = 0; i < newFsm.transitions.length; i++) {
-    for (var j = 0; j < newFsm.transitions[i].toStates.length; j++) {
-      newTransitions.push({
-        fromState: newFsm.transitions[i].toStates[j],
-        toStates: [newFsm.transitions[i].fromState],
-        symbol: newFsm.transitions[i].symbol
-      });
-    }
+  var newTransitions = {};
+  for (var key in newFsm.transitions) {
+    var transition = newFsm.transitions[key];
+    transition.toStates.forEach(state => {
+      var transKey = state + ',' + transition.input;
+      newFsm.transitions[transKey].fromState = state;
+      newFsm.transitions[transKey].input = transition.input;
+      newFsm.transitions[transKey].toStates = [transition.fromState];
+    });
   }
-
   newFsm.transitions = newTransitions;
 
-  var oldAcceptingStates = newFsm.acceptingStates;
+  var prevAcceptings = newFsm.accepting;
+  newFsm.accepting = [newFsm.starting];
 
-  newFsm.acceptingStates = [newFsm.initialState];
+  var newStarting = "S";
+  newFsm.states.push(newStarting);
+  newFsm.starting = newStarting;
 
-  var newInitialState = "NEW_INITIAL";
-  newFsm.states.push(newInitialState);
-  newFsm.initialState = newInitialState;
-
-  newFsm.transitions.push({
-    fromState: newInitialState,
-    toStates: oldAcceptingStates,
-    symbol: fsm.constants.epsilon
-  });
+  var transKey = newStarting + ',' + fsm.constants.epsilon;
+  newFsm.transitions[transKey].fromState = newStarting;
+  newFsm.transitions[transKey].input = fsm.constants.epsilon;
+  newFsm.transitions[transKey].toStates = prevAcceptings;
 
   return newFsm;
 };
 
-// check whether the language accepted by fsmB is a subset of
-// the language accepted by fsmA
-fsm.isSubset = function (fsmA, fsmB) {
-  var fsmIntersection = fsm.intersection(fsmA, fsmB);
-
-  return fsm.areEquivalentFSMs(fsmB, fsmIntersection);
+fsm.isSubset = function (fsm1, fsm2) {
+  return fsm.areEquivalentFSMs(fsm2, fsm.intersection(fsm1, fsm2));
 };
 
 // convert the fsm into a regular grammar
