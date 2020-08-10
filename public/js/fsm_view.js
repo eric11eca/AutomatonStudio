@@ -183,7 +183,8 @@ $("#startStop").click(function () {
 	let r = "";
 	if ($("#startStop").text() === "Start") {
 		r = $("#inputString").val();
-		$("#inputString").parent().html('<div id="inputString" type="text" class="input-div input-block-level monospaceRegex" placeholder="See if this fits"><br></div>');
+		$("#inputString").parent().html('<div id="inputString" type="text" placeholder="See if this fits"><br></div>');
+		$("#inputString").css("width", "10%");
 		$("#inputString").html(r === "" ? '<br>' : r);
 		resetAutomaton();
 		$("#inputString").removeAttr("contenteditable");
@@ -193,8 +194,8 @@ $("#startStop").click(function () {
 		$("#inputLast").attr("disabled", false);
 		$("#startStop").text("Stop");
 	} else {
-		r = $("#inputString").text();
-		$("#inputString").parent().html('<input id="inputString" type="text" class="input-block-level monospaceRegex" placeholder="See if this fits">');
+		//r = $("#inputString").text();
+		$("#inputString").parent().html('<input id="inputString" type="text" placeholder="See if this fits">');
 		$("#inputString").keyup(onInputStringChange);
 		$("#inputString").change(onInputStringChange);
 		$("#inputString").val(r);
