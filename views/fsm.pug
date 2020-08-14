@@ -139,7 +139,8 @@ block content
 							option(value='acceptable') Acceptable String
 							option(value='unacceptable') Unacceptable String
 						.toolbar-spacer
-						input#inputString(type='text' placeholder='See if this fits' disabled='' spellcheck='false')
+						.string-group
+							input#inputString(type='text' placeholder='See if this fits' disabled='' spellcheck='false')
 						.toolbar-spacer
 						.toolbar-spacer
 						p
@@ -187,7 +188,7 @@ block content
 					button#inputLast.btn(disabled='')
 						i.icon-fast-forward
 						| &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Read all
-			.container.graph
+			#automatonGraph.container.graph
 				p#inputError.text-error
 				#automatonGraph  
 

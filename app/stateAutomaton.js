@@ -5,7 +5,7 @@ fsm.constants = {
   epsilon: '$',
   determine: 'DFA',
   non_determine: 'NFA',
-  e_non_determine: 'e',
+  e_non_determine: 'ENFA',
 };
 
 /********** Define Finite State Automaton *************/
@@ -39,13 +39,15 @@ fsm.addState = function (automaton, state) {
 
 fsm.addAlphabet = function (automaton, char) {
   if (util.areEquivalent(char, fsm.constants.epsilon)) {
-    throw new Error("Can't add the epsilon symbol to the alphabet");
+    throw new Error("Can't add the epsilon input to the alphabet");
   }
   return fsm._addStateOrAlphabet(automaton.alphabet, char,
-    "No symbol object specified", "Symbol already exists");
+    "No input object specified", "input already exists");
 };
 
 fsm.addAcceptingState = function (automaton, state) {
+  //console.log("AcceptingState: ", [state]);
+
   if (!util.contains(automaton.states, state)) {
     throw new Error("The specified object is not a state of the FSM");
   }
@@ -61,6 +63,9 @@ fsm.setStartingState = function (automaton, state) {
 };
 
 fsm._addTransition = function (automaton, fromState, toStates, input) {
+  //console.log("FromState: ", fromState);
+  //console.log("ToStates: ", toStates);
+
   if (!util.contains(automaton.states, fromState) ||
     !util.containsAll(automaton.states, toStates)) {
     throw new Error("One of the specified objects is not a state of the FSM");
@@ -69,25 +74,26 @@ fsm._addTransition = function (automaton, fromState, toStates, input) {
   var transKey = fromState + ',' + input;
 
   if (transKey in automaton.transitions) {
-    automaton.transition[transKey].toStates = util.setUnion(
+    automaton.transitions[transKey].toStates = util.setUnion(
       automaton.transitions[transKey].toStates, toStates);
   } else {
-    automaton.transitions[transKey] = {};
-    automaton.transitions[transKey].toStates = toStates;
-    automaton.transitions[transKey].fromState = fromState;
-    automaton.transitions[transKey].input = input;
+    automaton.transitions[transKey] = {
+      toStates: toStates,
+      fromState: fromState,
+      input: input
+    };
   }
 };
 
-fsm.addTransition = function (automaton, fromState, toStates, transitionSymbol) {
-  if (!util.contains(automaton.alphabet, transitionSymbol)) {
-    throw new Error("The specified object is not an alphabet symbol of the FSM");
+fsm.addTransition = function (automaton, fromState, toStates, transitioninput) {
+  if (!util.contains(automaton.alphabet, transitioninput)) {
+    throw new Error("The specified object is not an alphabet input of the FSM");
   }
-  fsm._addTransition(automaton, fromState, toStates, transitionSymbol);
+  fsm._addTransition(automaton, fromState, toStates, transitioninput);
 };
 
 fsm.addEpsilonTransition = function (automaton, fromState, toStates) {
-  fsm._addTransition(automaton, fromState, toStates, automaton.constants.epsilon);
+  fsm._addTransition(automaton, fromState, toStates, fsm.constants.epsilon);
 };
 
 fsm.loadContents = function (automaton, states, alphabet, start, accepting, transitions) {
@@ -100,10 +106,14 @@ fsm.loadContents = function (automaton, states, alphabet, start, accepting, tran
   }
 
   for (i = 0; i < accepting.length; i++) {
-    fsm.addAcceptingState(automaton, accepting[i]);
+    if (accepting[i]) {
+      fsm.addAcceptingState(automaton, accepting[i]);
+    }
   }
 
   fsm.setStartingState(automaton, start);
+
+  //console.log("States: ", automaton.states);
 
   for (i = 0; i < transitions.length; i++) {
     var transition = transitions[i];
@@ -137,9 +147,6 @@ fsm.validate = function (automaton) {
   if (typeof automaton.starting == 'undefined' || automaton.starting == null) {
     throw new Error('Automaton definition missing starting states');
   }
-  if (automaton.accepting.length < 1) {
-    throw new Error('Automaton definition missing accepting states');
-  }
 
   if (transitions.length < 1) {
     throw new Error('Automaton definition missing transtions');
@@ -158,7 +165,7 @@ fsm.validate = function (automaton) {
   }
 
   if (acceptingSet.size < automaton.accepting.length) {
-    throw new Error('Error: Equivalent acceptingStates');
+    throw new Error('Error: Equivalent accepting');
   }
 
   if (util.contains(automaton.alphabet, fsm.constants.epsilon)) {
@@ -187,7 +194,7 @@ fsm.validate = function (automaton) {
     if (typeof transition.fromState === 'undefined' ||
       typeof transition.toStates === 'undefined' ||
       typeof transition.input === 'undefined') {
-      throw new Error('Transitions must have fromState, toState and symbol');
+      throw new Error('Transitions must have fromState, toState and input');
     }
 
     if (!(util.contains(automaton.states, transition.fromState))) {
@@ -195,8 +202,8 @@ fsm.validate = function (automaton) {
     }
 
     if (!(util.contains(automaton.alphabet, transition.input)) &&
-      transition.input !== automaton.constants.epsilon) {
-      throw new Error('Transition symbol must be in alphabet.');
+      transition.input != fsm.constants.epsilon) {
+      throw new Error('Transition input must be in alphabet.');
     }
 
     for (k = 0; k < transition.toStates.length; k++) {
@@ -214,7 +221,7 @@ fsm.validate = function (automaton) {
     for (j = i + 1; j < transitions.length; j++) {
       if (transitions[i].fromState === transitions[j].fromState &&
         transitions[i].input === transitions[j].input) {
-        throw new Error('Transitions for the same fromState and symbol must be defined in a single trainsition.');
+        throw new Error('Transitions for the same fromState and input must be defined in a single trainsition.');
       }
     }
   }
@@ -242,17 +249,11 @@ fsm.parseFsmFromString = function (definition) {
 
   transitions.forEach(trans => {
     var state_rest = trans.split(':');
-
-    var state = state_rest[0].split(',');
-    var parts = state_rest[1].split(';');
-
-    for (var j = 0; j < parts.length; j++) {
-      var left_right = parts[j].split('->');
-      var al_t = left_right[0].split(',');
-      var st_t = left_right[1].split(',');
-    }
-
-    transfunc.push([state, al_t, st_t]);
+    var state = state_rest[0].split(';');
+    var parts = state_rest[1].split('->');
+    var alphabet = parts[0];
+    var toStates = parts[1].split(';');
+    transfunc.push([state, alphabet, toStates]);
   });
 
   for (var k in parseCounts) {
@@ -261,14 +262,17 @@ fsm.parseFsmFromString = function (definition) {
     }
   }
 
+  //console.log("Transition Function: ", transfunc);
+
   var automaton = fsm.createFSM();
   fsm.loadContents(automaton, states, alphabet, start, accepting, transfunc);
   fsm.validate(automaton);
+  //console.log("Complete Automaton: ", automaton);
   return automaton;
 };
 
 
-/**********Transition Functions for Finite State Automaton *************/
+/**********Simulation Functions for Finite State Automaton *************/
 
 fsm.forwardEpsilonTransition = function (automaton, currentStates) {
   if (!(util.containsAll(automaton.states, currentStates))) {
@@ -288,7 +292,7 @@ fsm.forwardEpsilonTransition = function (automaton, currentStates) {
         util.areEquivalent(transition.fromState, currentState)) {
         transition.toStates.forEach(state => {
           if (!(util.contains(newStates, state))) {
-            unprocessedStates.push(transition.toStates[j]);
+            unprocessedStates.push(state);
           }
         });
       }
@@ -297,13 +301,13 @@ fsm.forwardEpsilonTransition = function (automaton, currentStates) {
   return newStates;
 };
 
-fsm.forwardSymbolTransition = function (automaton, currentStates, symbol) {
+fsm.forwardinputTransition = function (automaton, currentStates, input) {
   var newStates = [];
 
   Object.keys(automaton.transitions).forEach(key => {
     let transition = automaton.transitions[key];
 
-    if (util.areEquivalent(transition.input, symbol) &&
+    if (util.areEquivalent(transition.input, input) &&
       util.contains(currentStates, transition.fromState)) {
       transition.toStates.forEach(state => {
         if (!(util.contains(newStates, state))) {
@@ -327,7 +331,7 @@ fsm.forwardTransition = function (automaton, currentStates, input) {
   var newStates = util.clone(currentStates);
 
   newStates = fsm.forwardEpsilonTransition(automaton, newStates);
-  newStates = fsm.forwardSymbolTransition(automaton, newStates, input);
+  newStates = fsm.forwardinputTransition(automaton, newStates, input);
   newStates = fsm.forwardEpsilonTransition(automaton, newStates);
 
   return newStates;
@@ -347,267 +351,60 @@ fsm.backwardTransition = function (automaton, inputString) {
   return newStates;
 };
 
-
-
-
-// read a stream of input symbols starting from state and make a list of
+// read a stream of input inputs starting from state and make a list of
 // states that were on the transition path
-fsm.transitionTrail = function (fsm, state, inputSymbolStream) {
-  if (!(util.containsAll(fsm.alphabet, inputSymbolStream))) {
-    throw new Error('FSM must contain all symbols for which the transition is being computed');
+fsm.readString = function (automaton, state, inputString) {
+  if (!(util.containsAll(fsm.alphabet, inputinputStream))) {
+    throw new Error('FSM must contain all inputs for which the transition is being computed');
   }
+  var currentStates = [state];
+  var trail = [util.clone(currentStates)];
 
-  var states = [state];
-  var trail = [util.clone(states)];
-
-  for (var i = 0; i < inputSymbolStream.length; i++) {
-    states = fsm.makeTransition(fsm, states, inputSymbolStream[i]);
-    trail.push(util.clone(states));
-  }
-
-  return trail;
-};
-
-// test if a stream of input symbols leads a fsm to an accepting state
-fsm.isStringInLanguage = function (fsm, inputSymbolStream) {
-  var states = fsm.readString(fsm, inputSymbolStream);
-
-  return util.containsAny(fsm.acceptingStates, states);
-};
-
-// pretty print the fsm transition function and accepting states as a table
-fsm.printTable = function (fsm) {
-  var Table = require('cli-table');
-  var colHeads = [""].concat(fsm.alphabet);
-
-  if (fsm.determineType(fsm) === fsm.constans.e_non_determine) {
-    colHeads.push(fsm.constants.epsilon);
-  }
-
-  colHeads.push("");
-
-  var table = new Table({
-    head: colHeads,
-    chars: {
-      'top': '-',
-      'top-mid': '+',
-      'top-left': '+',
-      'top-right': '+',
-      'bottom': '-',
-      'bottom-mid': '+',
-      'bottom-left': '+',
-      'bottom-right': '+',
-      'left': '|',
-      'left-mid': '+',
-      'mid': '-',
-      'mid-mid': '+',
-      'right': '|',
-      'right-mid': '+'
-    },
-    truncate: '~'
+  inputString.forEach(char => {
+    currentStates = fsm.forwardTransition(automaton, currentStates, char);
+    trail.push(util.clone(currentStates));
   });
 
-  var tableRows = [],
-    i, j;
-  for (i = 0; i < fsm.states.length; i++) {
-    tableRows.push(new Array(colHeads.length));
-    for (j = 0; j < colHeads.length; j++) {
-      tableRows[i][j] = "";
-    }
-    tableRows[i][0] = fsm.states[i].toString();
-    tableRows[i][colHeads.length - 1] =
-      util.contains(fsm.acceptingStates, fsm.states[i]) ?
-      "1" : "0";
-    table.push(tableRows[i]);
-  }
-
-  for (i = 0; i < fsm.transitions.length; i++) {
-    var transition = fsm.transitions[i];
-
-    var colNum = null;
-    var rowNum = null;
-
-    for (j = 0; j < fsm.states.length; j++) {
-      if (util.areEquivalent(fsm.states[j], transition.fromState)) {
-        rowNum = j;
-        break;
-      }
-    }
-
-    if (transition.symbol === fsm.constants.epsilon) {
-      colNum = colHeads.length - 2;
-    } else {
-      for (j = 0; j < fsm.alphabet.length; j++) {
-        if (util.areEquivalent(fsm.alphabet[j], transition.symbol)) {
-          colNum = j + 1;
-          break;
-        }
-      }
-    }
-
-    if (typeof tableRows[rowNum][colNum].text === "undefined") {
-      tableRows[rowNum][colNum] = {
-        text: []
-      };
-    }
-
-    tableRows[rowNum][colNum].text.push(transition.toStates);
-  }
-
-  return table.toString();
+  return {
+    currentState: currentStates,
+    trail: trail
+  };
 };
 
-fsm.serializeFsmToString = function (fsm) {
+// test if a stream of input inputs leads a fsm to an accepting state
+fsm.isStringInLanguage = function (automaton, inputString) {
+  var finalStates = fsm.readString(automaton, automaton.starting, inputString);
+  return util.containsAny(automaton.accepting, finalStates);
+};
+
+
+/**********Fomrating Functions for Finite State Automaton *************/
+
+fsm.serializeFsmToString = function (autoamton) {
   var lines = [];
-
   lines.push("#states");
-
-  for (var i = 0; i < fsm.states.length; i++) {
-    lines.push(fsm.states[i].toString());
+  for (var i = 0; i < autoamton.states.length; i++) {
+    lines.push(autoamton.states[i].toString());
   }
-
-  lines.push("#initial");
-
-  lines.push(fsm.initialState.toString());
-
+  lines.push("#starting");
+  lines.push(autoamton.starting.toString());
   lines.push("#accepting");
-
-  for (i = 0; i < fsm.acceptingStates.length; i++) {
-    lines.push(fsm.acceptingStates[i].toString());
+  for (i = 0; i < autoamton.accepting.length; i++) {
+    lines.push(autoamton.accepting[i].toString());
   }
-
   lines.push("#alphabet");
-
-  for (i = 0; i < fsm.alphabet.length; i++) {
-    lines.push(fsm.alphabet[i].toString());
+  for (i = 0; i < autoamton.alphabet.length; i++) {
+    lines.push(autoamton.alphabet[i].toString());
   }
-
   lines.push("#transitions");
-
-  for (i = 0; i < fsm.transitions.length; i++) {
-    lines.push(fsm.transitions[i].fromState.toString() + ":" +
-      fsm.transitions[i].symbol.toString() + "->" +
-      fsm.transitions[i].toStates.join(","));
+  for (const key in autoamton.transitions) {
+    lines.push(autoamton.transitions[key].fromState.toString() + ":" +
+      autoamton.transitions[key].input.toString() + "->" +
+      autoamton.transitions[key].toStates.join(";"));
   }
-
   return lines.join("\n");
 };
 
-fsm.isAcceptingState = function (fsm, stateObj) {
-  return util.contains(fsm.acceptingStates, stateObj);
-};
-
-fsm.determineType = function (fsm) {
-  var fsmType = fsm.constans.determine;
-
-  for (var i = 0; i < fsm.transitions.length; i++) {
-    var transition = fsm.transitions[i];
-
-    if (transition.symbol === fsm.constants.epsilon) {
-      fsmType = fsm.constans.e_non_determine;
-      break;
-    } else if (transition.toStates.length === 0 ||
-      transition.toStates.length > 1) {
-      fsmType = fsm.constans.non_determine;
-    }
-  }
-
-  if (fsmType === fsm.constans.determine) {
-    if (fsm.transitions.length < fsm.states.length * fsm.alphabet.length) {
-      fsmType = fsm.constans.non_determine;
-    }
-  }
-
-  return fsmType;
-};
-
-
-
-// print the fsm transition function and accepting states as an HTML table
-fsm.printHtmlTable = function (fsm) {
-  var headers = [""].concat(fsm.alphabet);
-  if (fsm.determineType(fsm) === fsm.constans.e_non_determine) {
-    headers.push(fsm.constants.epsilon);
-  }
-  headers.push("");
-
-  var tableRows = [],
-    i, j;
-
-  for (i = 0; i < fsm.states.length; i++) {
-    tableRows.push(new Array(headers.length));
-    for (j = 0; j < headers.length; j++) {
-      tableRows[i][j] = {
-        text: []
-      };
-    }
-    tableRows[i][0] = {
-      text: fsm.states[i].toString()
-    };
-    tableRows[i][headers.length - 1] =
-      util.contains(fsm.acceptingStates, fsm.states[i]) ? {
-        text: ["1"]
-      } : {
-        text: ["0"]
-      };
-  }
-
-  for (i = 0; i < fsm.transitions.length; i++) {
-    var transition = fsm.transitions[i];
-
-    var colNum = null;
-    var rowNum = null;
-
-    for (j = 0; j < fsm.states.length; j++) {
-      if (util.areEquivalent(fsm.states[j], transition.fromState)) {
-        rowNum = j;
-        break;
-      }
-    }
-
-    if (transition.symbol === fsm.constants.epsilon) {
-      colNum = headers.length - 2;
-    } else {
-      for (j = 0; j < fsm.alphabet.length; j++) {
-        if (util.areEquivalent(fsm.alphabet[j], transition.symbol)) {
-          colNum = j + 1;
-          break;
-        }
-      }
-    }
-
-    if (typeof tableRows[rowNum][colNum].text === "undefined") {
-      tableRows[rowNum][colNum] = {
-        text: []
-      };
-    }
-
-    tableRows[rowNum][colNum].text.push(transition.toStates);
-  }
-
-  var htmlString = [];
-
-  htmlString.push("<table border='1'>");
-  htmlString.push("  <tr>");
-
-  for (i = 0; i < headers.length; i++) {
-    htmlString.push("    <th>" + headers[i].toString() + "</th>");
-  }
-
-  htmlString.push("  </tr>");
-
-  for (i = 0; i < tableRows.length; i++) {
-    htmlString.push("  <tr>");
-    for (j = 0; j < tableRows[i].length; j++) {
-      htmlString.push("    <td>" + tableRows[i][j].text + "</td>");
-    }
-
-    htmlString.push("  </tr>");
-  }
-
-  htmlString.push("</table>");
-  return htmlString.join("\n");
-};
 
 // print the fsm in the graphviz dot format
 fsm.printDotFormat = function (machine) {
@@ -658,12 +455,14 @@ fsm.printDotFormat = function (machine) {
     }
   }
 
+  //console.log(newTransitions);
+
   for (i = 0; i < newTransitions.length; i++) {
     if (newTransitions[i].toStates[0] == automaton.starting) {
       trans = [" "];
-      trans.push(newTransitions[i].toStates[0].toString());
+      trans.push(newTransitions[i].toStates[0].toString().replace(/,/g, ''));
       trans.push("->");
-      trans.push(newTransitions[i].fromState.toString());
+      trans.push(newTransitions[i].fromState.toString().replace(/,/g, ''));
       trans.push("[");
       trans.push("label =");
       trans.push('"' + newTransitions[i].input.toString() + '"');
@@ -671,9 +470,9 @@ fsm.printDotFormat = function (machine) {
       result.push(trans.join(" "));
     } else {
       trans = [" "];
-      trans.push(newTransitions[i].fromState.toString());
+      trans.push(newTransitions[i].fromState.toString().replace(/,/g, ''));
       trans.push("->");
-      trans.push(newTransitions[i].toStates[0].toString());
+      trans.push(newTransitions[i].toStates[0].toString().replace(/,/g, ''));
       trans.push("[");
       trans.push("label =");
       trans.push('"' + newTransitions[i].input.toString() + '"');
@@ -684,8 +483,160 @@ fsm.printDotFormat = function (machine) {
 
   result.push("}");
 
+  //console.log(result);
+
   return result.join("\n").replace(/\$/g, "$");
+
 };
+
+
+/**********Type Converting Functions for Finite State Automaton *************/
+
+fsm.determineType = function (automaton) {
+  var fsmType = fsm.constants.determine;
+  for (const key in automaton.transitions) {
+    var transition = automaton.transitions[key];
+
+    if (transition.input === fsm.constants.epsilon) {
+      fsmType = fsm.constants.e_non_determine;
+      break;
+    } else if (transition.toStates.length === 0 ||
+      transition.toStates.length > 1) {
+      fsmType = fsm.constants.non_determine;
+    }
+  }
+
+  if (fsmType == fsm.constants.determine) {
+    if (Object.keys(automaton.transitions).length < automaton.states.length * automaton.alphabet.length) {
+      fsmType = fsm.constants.non_determine;
+    }
+  }
+  return fsmType;
+};
+
+fsm.convertEnfaToNfa = function (automaton) {
+  if (fsm.determineType(automaton) !== fsm.constants.e_non_determine) {
+    return automaton;
+  }
+
+  var newFsm = util.clone(automaton);
+  var epsilonStates = fsm.forwardEpsilonTransition(automaton, [automaton.starting]);
+  if (util.containsAny(newFsm.accepting, epsilonStates) &&
+    !(util.contains(newFsm.accepting, newFsm.starting))) {
+    newFsm.accepting.push(newFsm.starting);
+  }
+
+  var newTransitions = {};
+  newFsm.states.forEach(state => {
+    newFsm.alphabet.forEach(char => {
+      var toStates = fsm.forwardTransition(newFsm, [state], char).sort();
+      toStates = [...new Set(toStates)];
+      if (toStates.length > 0) {
+        var transKey = state + ',' + char;
+        newTransitions[transKey] = {};
+        newTransitions[transKey].fromState = state;
+        newTransitions[transKey].input = char;
+        newTransitions[transKey].toStates = toStates;
+      }
+    });
+  });
+  newFsm.transitions = newTransitions;
+
+  var nonDeterminTransitions = [];
+  for (const key in automaton.transitions) {
+    var transition = automaton.transitions[key];
+    if (transition.toStates.length > 1) {
+      var existing = false;
+      for (var i = 0; i < nonDeterminTransitions.length; i++) {
+        if (util.areEqualSets(transition.toStates, nonDeterminTransitions[i])) {
+          transition.toStates = nonDeterminTransitions[i];
+          existing = true;
+          break;
+        }
+      }
+      if (!existing) {
+        nonDeterminTransitions.push(transition.toStates);
+      }
+    }
+  }
+  return newFsm;
+};
+
+fsm.convertNfaToDfa = function (automaton) {
+  var fsmType = fsm.determineType(automaton);
+  if (fsmType === fsm.constants.e_non_determine) {
+    throw new Error('FSM must be nondeterministic one');
+  } else if (fsmType === fsm.constants.determine) {
+    return automaton;
+  }
+
+  var newFsm = {
+    states: [],
+    alphabet: util.clone(automaton.alphabet),
+    starting: [util.clone(automaton.starting)],
+    accepting: [],
+    transitions: {}
+  };
+
+  automaton.states.forEach(s => {
+    newFsm.states.push([util.clone(s)]);
+  });
+
+  automaton.accepting.forEach(a => {
+    newFsm.accepting.push([util.clone(a)]);
+  });
+
+  var activeStates = [];
+
+  for (const key in automaton.transitions) {
+    var transition = util.clone(automaton.transitions[key]);
+    transition.fromState = [transition.fromState];
+    transition.toStates = [transition.toStates];
+    if (transition.toStates[0].length > 1) {
+      if (!(util.containsSet(activeStates, transition.toStates[0]))) {
+        activeStates.push(transition.toStates[0]);
+      }
+    }
+    var transKey = transition.fromState + ',' + transition.input;
+    newFsm.transitions[transKey] = transition;
+  }
+
+  while (activeStates.length > 0) {
+    var state = activeStates.pop();
+    newFsm.states.push(state);
+    if (util.containsAny(automaton.accepting, state)) {
+      newFsm.accepting.push(state);
+    }
+
+    newFsm.alphabet.forEach(char => {
+      var nextStates = fsm.forwardTransition(automaton, state, char);
+      for (const arr in [newFsm.states, activeStates]) {
+        var equalSet = util.returnEqualSet(arr, nextStates);
+        if (equalSet.length > 0) {
+          nextStates = equalSet;
+        }
+      }
+
+      if (nextStates.length > 0) {
+        var k = state + ',' + char;
+        newFsm.transitions[k] = {
+          fromState: state,
+          input: char,
+          toStates: nextStates
+        };
+      }
+
+      if (!(util.containsSet(newFsm.states, nextStates)) &&
+        !(util.containsSet(activeStates, nextStates)) && nextStates.length > 1) {
+        activeStates.push(nextStates);
+      }
+    });
+  }
+  return newFsm;
+};
+
+
+/********** States Operational Functions for Finite State Automaton *************/
 
 // determine reachable states
 fsm.getReachableStates = function (fsm, state, shouldIncludeInitialState) {
@@ -722,7 +673,7 @@ fsm.removeUnreachableStates = function (fsm) {
   var newFsm = util.clone(fsm),
     i;
   newFsm.states = [];
-  newFsm.acceptingStates = [];
+  newFsm.accepting = [];
   newFsm.transitions = [];
 
   for (i = 0; i < fsm.states.length; i++) {
@@ -731,9 +682,9 @@ fsm.removeUnreachableStates = function (fsm) {
     }
   }
 
-  for (i = 0; i < fsm.acceptingStates.length; i++) {
-    if (util.contains(reachableStates, fsm.acceptingStates[i])) {
-      newFsm.acceptingStates.push(util.clone(fsm.acceptingStates[i]));
+  for (i = 0; i < fsm.accepting.length; i++) {
+    if (util.contains(reachableStates, fsm.accepting[i])) {
+      newFsm.accepting.push(util.clone(fsm.accepting[i]));
     }
   }
 
@@ -748,8 +699,8 @@ fsm.removeUnreachableStates = function (fsm) {
 
 // determines if two states from potentially different fsms are equivalent
 fsm.areEquivalentStates = function (fsmA, stateA, fsmB, stateB) {
-  if (fsm.determineType(fsmA) !== fsm.constans.determine ||
-    fsm.determineType(fsmB) !== fsm.constans.determine) {
+  if (fsm.determineType(fsmA) !== fsm.constants.determine ||
+    fsm.determineType(fsmB) !== fsm.constants.determine) {
     throw new Error('FSMs must be DFAs');
   }
 
@@ -764,8 +715,8 @@ fsm.areEquivalentStates = function (fsmA, stateA, fsmB, stateB) {
   }
 
   function doBothStatesHaveSameAcceptance(fsmX, stateX, fsmY, stateY) {
-    var stateXAccepting = util.contains(fsmX.acceptingStates, stateX);
-    var stateYAccepting = util.contains(fsmY.acceptingStates, stateY);
+    var stateXAccepting = util.contains(fsmX.accepting, stateX);
+    var stateYAccepting = util.contains(fsmY.accepting, stateY);
 
     return (stateXAccepting && stateYAccepting) ||
       (!(stateXAccepting) && !(stateYAccepting));
@@ -802,13 +753,13 @@ fsm.areEquivalentStates = function (fsmA, stateA, fsmB, stateB) {
 };
 
 // determines if two fsms are equivalent by testing equivalence of starting states
-fsm.areEquivalentFSMs = function (fsmA, fsmB) {
-  return fsm.areEquivalentStates(fsmA, fsmA.initialState, fsmB, fsmB.initialState);
+fsm.areEquivalentFSMs = function (fsm1, fsm2) {
+  return fsm.areEquivalentStates(fsm1, fsm1.starting, fsm2, fsm2.starting);
 };
 
 // finds and removes equivalent states
 fsm.removeEquivalentStates = function (fsm) {
-  if (fsm.determineType(fsm) !== fsm.constans.determine) {
+  if (fsm.determineType(fsm) !== fsm.constants.determine) {
     throw new Error('FSM must be DFA');
   }
 
@@ -838,7 +789,7 @@ fsm.removeEquivalentStates = function (fsm) {
     states: [],
     alphabet: util.clone(fsm.alphabet),
     initialState: [],
-    acceptingStates: [],
+    accepting: [],
     transitions: []
   };
 
@@ -868,9 +819,9 @@ fsm.removeEquivalentStates = function (fsm) {
     }
   }
 
-  for (i = 0; i < fsm.acceptingStates.length; i++) {
-    if (!(isOneOfEquivalentStates(fsm.acceptingStates[i]))) {
-      newFsm.acceptingStates.push(util.clone(fsm.acceptingStates[i]));
+  for (i = 0; i < fsm.accepting.length; i++) {
+    if (!(isOneOfEquivalentStates(fsm.accepting[i]))) {
+      newFsm.accepting.push(util.clone(fsm.accepting[i]));
     }
   }
 
@@ -894,15 +845,15 @@ fsm.removeEquivalentStates = function (fsm) {
 };
 
 // minimizes the fsm by removing unreachable and equivalent states
-fsm.minimize = function (fsm) {
-  var fsmType = fsm.determineType(fsm);
-  var newFsm = fsm;
+fsm.minimize = function (automaton) {
+  var fsmType = fsm.determineType(automaton);
+  var newFsm = automaton;
 
-  if (fsmType === fsm.constans.non_determine) {
-    newFsm = fsm.convertNfaToDfa(fsm);
-  } else if (fsmType === fsm.constans.e_non_determine) {
-    newFsm = fsm.convertEnfaToNfa(fsm);
+  if (fsmType === fsm.constants.e_non_determine) {
+    newFsm = fsm.convertEnfaToNfa(automaton);
     newFsm = fsm.convertNfaToDfa(newFsm);
+  } else if (fsmType === fsm.constants.non_determine) {
+    newFsm = fsm.convertNfaToDfa(automaton);
   }
 
   var fsmWithoutUnreachableStates = fsm.removeUnreachableStates(newFsm);
@@ -926,8 +877,8 @@ fsm.convertStatesToNumbers = function (fsm) {
 
   fsm.setStartingState(newFsm, mapping[fsm.initialState.toString()]);
 
-  for (i = 0; i < fsm.acceptingStates.length; i++) {
-    fsm.addAcceptingState(newFsm, mapping[fsm.acceptingStates[i].toString()]);
+  for (i = 0; i < fsm.accepting.length; i++) {
+    fsm.addAcceptingState(newFsm, mapping[fsm.accepting[i].toString()]);
   }
 
   for (i = 0; i < fsm.transitions.length; i++) {
@@ -940,7 +891,7 @@ fsm.convertStatesToNumbers = function (fsm) {
     fsm.addTransition(newFsm,
       mapping[fsm.transitions[i].fromState.toString()],
       newToStates,
-      fsm.transitions[i].symbol);
+      fsm.transitions[i].input);
   }
 
   return newFsm;
@@ -976,12 +927,12 @@ fsm.createRandomFsm = function (fsmType, numStates, numAlphabet, maxNumToStates)
     newFsm.alphabet = "abcdefghijklmnopqrstuvwxyz".substr(0, numAlphabet).split("");
   }
 
-  newFsm.initialState = newFsm.states[0];
+  newFsm.starting = newFsm.states[0];
 
-  newFsm.acceptingStates = [];
+  newFsm.accepting = [];
   for (i = 0; i < numStates; i++) {
     if (Math.round(Math.random())) {
-      newFsm.acceptingStates.push(newFsm.states[i]);
+      newFsm.accepting.push(newFsm.states[i]);
     }
   }
 
@@ -989,7 +940,7 @@ fsm.createRandomFsm = function (fsmType, numStates, numAlphabet, maxNumToStates)
     newFsm.alphabet.push(fsm.constants.epsilon);
   }
 
-  newFsm.transitions = [];
+  newFsm.transitions = {};
   for (i = 0; i < numStates; i++) {
     for (j = 0; j < newFsm.alphabet.length; j++) {
       var numToStates = 1;
@@ -1014,11 +965,11 @@ fsm.createRandomFsm = function (fsmType, numStates, numAlphabet, maxNumToStates)
           }
         }
 
-        newFsm.transitions.push({
+        newFsm.transitions[newFsm.states[i] + ',' + newFsm.alphabet[j]] = {
           fromState: newFsm.states[i],
-          symbol: newFsm.alphabet[j],
+          input: newFsm.alphabet[j],
           toStates: toStates
-        });
+        };
       }
     }
   }
@@ -1030,209 +981,32 @@ fsm.createRandomFsm = function (fsmType, numStates, numAlphabet, maxNumToStates)
   return newFsm;
 };
 
-fsm.convertNfaToDfa = function (fsm) {
-  var fsmType = fsm.determineType(fsm);
-  if (fsmType === fsm.constans.e_non_determine) {
-    throw new Error('FSM must be an NFA');
-  }
 
-  if (fsmType === fsm.constans.determine) {
-    return fsm;
-  }
-
-  var newFsm = {},
-    i, j, k, transition;
-
-  newFsm.alphabet = util.clone(fsm.alphabet);
-  newFsm.states = [];
-  newFsm.acceptingStates = [];
-  newFsm.initialState = [util.clone(fsm.initialState)];
-  newFsm.transitions = [];
-
-  for (i = 0; i < fsm.states.length; i++) {
-    newFsm.states.push([util.clone(fsm.states[i])]);
-  }
-
-  for (i = 0; i < fsm.acceptingStates.length; i++) {
-    newFsm.acceptingStates.push([util.clone(fsm.acceptingStates[i])]);
-  }
-
-  var newStates = [];
-  var multiStates = [];
-
-  for (i = 0; i < fsm.transitions.length; i++) {
-    transition = util.clone(fsm.transitions[i]);
-    transition.fromState = [transition.fromState];
-
-    transition.toStates = [transition.toStates];
-
-    if (transition.toStates[0].length > 1) {
-      if (!(util.containsSet(newStates, transition.toStates[0]))) {
-        newStates.push(transition.toStates[0]);
-      }
-    }
-
-    newFsm.transitions.push(transition);
-  }
-
-  while (newStates.length !== 0) {
-    var state = newStates.pop();
-
-    newFsm.states.push(state);
-
-    if (util.containsAny(fsm.acceptingStates, state)) {
-      newFsm.acceptingStates.push(state);
-    }
-
-    for (i = 0; i < newFsm.alphabet.length; i++) {
-      var ts = fsm.makeTransition(fsm, state, newFsm.alphabet[i]).sort();
-
-      for (j = 0; j < newFsm.states.length; j++) {
-        if (util.areEqualSets(ts, newFsm.states[j])) {
-          ts = newFsm.states[j];
-          break;
-        }
-      }
-
-      for (j = 0; j < newStates.length; j++) {
-        if (util.areEqualSets(ts, newStates[j])) {
-          ts = newStates[j];
-          break;
-        }
-      }
-
-      if (ts.length > 0) {
-        newFsm.transitions.push({
-          fromState: state,
-          symbol: newFsm.alphabet[i],
-          toStates: [ts]
-        });
-      }
-
-      if (!(util.containsSet(newFsm.states, ts)) && !(util.containsSet(newStates, ts)) && ts.length > 1) {
-        newStates.push(ts);
-      }
-    }
-  }
-
-  var errorAdded = false;
-  var errorState = "ERROR";
-
-  for (i = 0; i < newFsm.states.length; i++) {
-    for (j = 0; j < newFsm.alphabet.length; j++) {
-      var found = false;
-      for (k = 0; k < newFsm.transitions.length; k++) {
-        transition = newFsm.transitions[k];
-
-        if (util.areEquivalent(transition.symbol, newFsm.alphabet[j]) &&
-          util.areEquivalent(transition.fromState, newFsm.states[i])) {
-          found = true;
-          break;
-        }
-      }
-
-      if (found === false) {
-        if (errorAdded === false) {
-          newFsm.states.push([errorState]);
-          errorAdded = true;
-        }
-
-        newFsm.transitions.push({
-          fromState: newFsm.states[i],
-          symbol: newFsm.alphabet[j],
-          toStates: [
-            [errorState]
-          ]
-        });
-      }
-    }
-  }
-
-  return newFsm;
-};
-
-fsm.convertEnfaToNfa = function (fsm) {
-  if (fsm.determineType(fsm) !== fsm.constans.e_non_determine) {
-    return fsm; // this is already an NFA (or a DFA which is also an NFA)
-  }
-
-  var newFsm = util.clone(fsm),
-    i, j;
-
-  var initialEpsilon = fsm.computeEpsilonClosure(fsm, [fsm.initialState]);
-
-  if (util.containsAny(newFsm.acceptingStates, initialEpsilon) &&
-    !(util.contains(newFsm.acceptingStates, newFsm.initialState))) {
-    newFsm.acceptingStates.push(newFsm.initialState);
-  }
-
-  var newTransitions = [];
-
-  for (i = 0; i < newFsm.states.length; i++) {
-    for (j = 0; j < newFsm.alphabet.length; j++) {
-      var toStates = fsm.makeTransition(newFsm, [newFsm.states[i]], newFsm.alphabet[j]).sort();
-
-      if (toStates.length > 0) {
-        newTransitions.push({
-          fromState: newFsm.states[i],
-          toStates: toStates,
-          symbol: newFsm.alphabet[j]
-        });
-      }
-    }
-  }
-
-  newFsm.transitions = newTransitions;
-
-  var multiStateTransitions = [];
-
-  for (i = 0; i < newFsm.transitions.length; i++) {
-    var transition = newFsm.transitions[i];
-
-    if (transition.toStates.length > 1) {
-      var existing = false;
-
-      for (j = 0; j < multiStateTransitions.length; j++) {
-        if (util.areEqualSets(transition.toStates, multiStateTransitions[j])) {
-          transition.toStates = multiStateTransitions[j];
-          existing = true;
-          break;
-        }
-      }
-
-      if (existing === false) {
-        multiStateTransitions.push(transition.toStates);
-      }
-    }
-  }
-
-  return newFsm;
-};
 
 // test whether if the language accepted by the fsm contains at least one string
 fsm.isLanguageNonEmpty = function (fsm) {
   var fsmType = fsm.determineType(fsm);
   var newFsm = fsm;
 
-  if (fsmType === fsm.constans.non_determine) {
+  if (fsmType === fsm.constants.non_determine) {
     newFsm = fsm.convertNfaToDfa(fsm);
-  } else if (fsmType === fsm.constans.e_non_determine) {
+  } else if (fsmType === fsm.constants.e_non_determine) {
     newFsm = fsm.convertEnfaToNfa(fsm);
     newFsm = fsm.convertNfaToDfa(newFsm);
   }
 
   newFsm = fsm.minimize(newFsm);
 
-  return newFsm.acceptingStates.length > 0;
+  return newFsm.accepting.length > 0;
 };
 
 fsm.isLanguageInfinite = function (fsm) {
   var fsmType = fsm.determineType(fsm);
   var newFsm = fsm;
 
-  if (fsmType === fsm.constans.non_determine) {
+  if (fsmType === fsm.constants.non_determine) {
     newFsm = fsm.convertNfaToDfa(fsm);
-  } else if (fsmType === fsm.constans.e_non_determine) {
+  } else if (fsmType === fsm.constants.e_non_determine) {
     newFsm = fsm.convertEnfaToNfa(fsm);
     newFsm = fsm.convertNfaToDfa(newFsm);
   }
@@ -1243,13 +1017,13 @@ fsm.isLanguageInfinite = function (fsm) {
     i, reachable;
 
   for (i = 0; i < newFsm.states.length; i++) {
-    if (util.contains(newFsm.acceptingStates, newFsm.states[i])) {
+    if (util.contains(newFsm.accepting, newFsm.states[i])) {
       continue;
     }
 
     reachable = fsm.getReachableStates(newFsm, newFsm.states[i], true);
 
-    if (util.containsAny(newFsm.acceptingStates, reachable)) {
+    if (util.containsAny(newFsm.accepting, reachable)) {
       continue;
     }
 
@@ -1276,117 +1050,7 @@ fsm.isLanguageInfinite = function (fsm) {
   return false;
 };
 
-// generate a random string which the fsm accepts
-fsm.randomStringInLanguage = function (fsm) {
-  var fsmType = fsm.determineType(fsm);
-  var newFsm = fsm;
 
-  if (fsmType === fsm.constans.non_determine) {
-    newFsm = fsm.convertNfaToDfa(fsm);
-  } else if (fsmType === fsm.constans.e_non_determine) {
-    newFsm = fsm.convertEnfaToNfa(fsm);
-    newFsm = fsm.convertNfaToDfa(newFsm);
-  }
-
-  newFsm = fsm.minimize(newFsm);
-
-  if (newFsm.acceptingStates.length === 0) {
-    return null;
-  }
-
-  var currentState = newFsm.acceptingStates[Math.floor(Math.random() * newFsm.acceptingStates.length)];
-  var trail = [];
-
-  while (true) {
-    if (util.areEquivalent(currentState, newFsm.initialState) === true) {
-      if (Math.round(Math.random())) {
-        break;
-      }
-    }
-
-    var transitions = [],
-      i;
-
-    for (i = 0; i < newFsm.transitions.length; i++) {
-      if (util.areEquivalent(newFsm.transitions[i].toStates[0], currentState)) {
-        transitions.push(newFsm.transitions[i]);
-      }
-    }
-
-    if (transitions.length === 0) {
-      break;
-    }
-
-    var transition = transitions[Math.floor(Math.random() * transitions.length)];
-
-    trail.push(transition.symbol);
-    currentState = transition.fromState;
-  }
-
-  trail.reverse();
-
-  return trail;
-};
-
-// generate a random string which the fsm doest accept
-fsm.randomStringNotInLanguage = function (fsm) {
-  var fsmType = fsm.determineType(fsm);
-  var newFsm = fsm;
-
-  if (fsmType === fsm.constans.non_determine) {
-    newFsm = fsm.convertNfaToDfa(fsm);
-  } else if (fsmType === fsm.constans.e_non_determine) {
-    newFsm = fsm.convertEnfaToNfa(fsm);
-    newFsm = fsm.convertNfaToDfa(newFsm);
-  }
-
-  newFsm = fsm.minimize(newFsm);
-
-  var nonAcceptingStates = [],
-    i;
-
-  for (i = 0; i < newFsm.states.length; i++) {
-    if (!(util.contains(newFsm.acceptingStates, newFsm.states[i]))) {
-      nonAcceptingStates.push(newFsm.states[i]);
-    }
-  }
-
-  if (nonAcceptingStates.length === 0) {
-    return null;
-  }
-
-  var currentState = nonAcceptingStates[Math.floor(Math.random() * nonAcceptingStates.length)];
-  var trail = [];
-
-  while (true) {
-    if (util.areEquivalent(currentState, newFsm.initialState) === true) {
-      if (Math.round(Math.random())) {
-        break;
-      }
-    }
-
-    var transitions = [];
-
-    for (i = 0; i < newFsm.transitions.length; i++) {
-      if (util.areEquivalent(newFsm.transitions[i].toStates[0], currentState)) {
-        transitions.push(newFsm.transitions[i]);
-      }
-    }
-
-    if (transitions.length === 0) {
-      break;
-    }
-
-    var transition = transitions[Math.floor(Math.random() * transitions.length)];
-
-    trail.push(transition.symbol);
-    currentState = transition.fromState;
-  }
-
-  trail.reverse();
-
-  return trail;
-};
 
 fsm.operators = {
   "union": function (bool1, bool2) {
@@ -1406,7 +1070,7 @@ fsm.operators = {
 fsm.crossProduct = function (fsm1, fsm2, operator) {
   var newAlphabet = util.clone(fsm1.alphabet);
   var newStates = [];
-  var newStarting = [util.clone(fsm1.initialState), util.clone(fsm2.initialState)];
+  var newStarting = [util.clone(fsm1.starting), util.clone(fsm2.starting)];
   var newAccepting = [];
   var newTransitions = {};
 
@@ -1476,104 +1140,93 @@ fsm.complement = function (fsm) {
   return newFsm;
 };
 
-// get a new fsm which accepts the language L1L2 where
-// L1 is the language accepted by fsmA and L2 is the
-// langauge accepted by fsmB
-fsm.concatenation = function (fsmA, fsmB) {
-  if (!(util.areEquivalent(fsmA.alphabet, fsmB.alphabet))) {
+fsm.concatenation = function (fsm1, fsm2) {
+  if (!(util.areEquivalent(fsm1.alphabet, fsm2.alphabet))) {
     throw new Error("Alphabets must be the same");
   }
 
-  if (util.containsAny(fsmA.states, fsmB.states)) {
+  if (util.containsAny(fsm1.states, fsm2.states)) {
     throw new Error("States must not overlap");
   }
 
-  var newFsm = {
-    alphabet: util.clone(fsmA.alphabet),
-    states: util.clone(fsmA.states).concat(util.clone(fsmB.states)),
-    initialState: util.clone(fsmA.initialState),
-    acceptingStates: util.clone(fsmB.acceptingStates),
-    transitions: util.clone(fsmA.transitions).concat(util.clone(fsmB.transitions))
+  var newAlphabet = util.clone(fsm1.alphabet);
+  var newStates = util.clone(fsm1.states).concat(util.clone(fsm2.states));
+  var newStarting = util.clone(fsm1.starting);
+  var newAccepting = util.clone(fsm2.accepting);
+  var newTransitions = {
+    ...util.clone(fsm1.transitions),
+    ...util.clone(fsm2.transitions)
   };
 
-  for (var i = 0; i < fsmA.acceptingStates.length; i++) {
-    newFsm.transitions.push({
-      fromState: util.clone(fsmA.acceptingStates[i]),
-      toStates: [util.clone(fsmB.initialState)],
-      symbol: fsm.constants.epsilon
-    });
-  }
-
-  return newFsm;
-};
-
-// get a new fsm which accepts the language L*, where L is
-// accepted by the input fsm and * is the kleene operator
-fsm.kleene = function (fsm) {
-  var newFsm = util.clone(fsm);
-
-  var newInitial = "NEW_INITIAL";
-
-  newFsm.states.push(newInitial);
-  newFsm.transitions.push({
-    fromState: newInitial,
-    toStates: [newFsm.initialState],
-    symbol: fsm.constants.epsilon
+  fsm1.accepting.forEach(state => {
+    var transKey = state + ',' + fsm.constants.epsilon;
+    newTransitions[transKey].fromState = util.clone(state);
+    newTransitions[transKey].input = fsm.constants.epsilon;
+    newTransitions[transKey].toStates = [util.clone(fsm2.starting)];
   });
-  newFsm.initialState = newInitial;
 
-  for (var i = 0; i < newFsm.acceptingStates.length; i++) {
-    newFsm.transitions.push({
-      fromState: newFsm.acceptingStates[i],
-      toStates: [newInitial],
-      symbol: fsm.constants.epsilon
-    });
-  }
+  return {
+    states: newStates,
+    alphabet: newAlphabet,
+    accepting: newAccepting,
+    starting: newStarting,
+    transitions: newTransitions
+  };
+};
+
+fsm.kleen = function (fsm) {
+  var newFsm = util.clone(fsm);
+  var newStarting = "S";
+
+  newFsm.states.push(newStarting);
+  var transKey = newStarting + ',' + fsm.constants.epsilon;
+  newFsm.transitions[transKey].fromState = newStarting;
+  newFsm.transitions[transKey].input = fsm.constants.epsilon;
+  newFsm.transitions[transKey].toStates = [newFsm.starting];
+  newFsm.starting = newStarting;
+
+  newFsm.accepting.forEach(state => {
+    var transKey = state + ',' + fsm.constants.epsilon;
+    newFsm.transitions[transKey].fromState = state;
+    newFsm.transitions[transKey].input = fsm.constants.epsilon;
+    newFsm.transitions[transKey].toStates = [newStarting];
+  });
 
   return newFsm;
 };
 
-// get a new fsm which accepts the reverse language of the input fsm
 fsm.reverse = function (fsm) {
   var newFsm = util.clone(fsm);
 
-  var newTransitions = [];
-
-  for (var i = 0; i < newFsm.transitions.length; i++) {
-    for (var j = 0; j < newFsm.transitions[i].toStates.length; j++) {
-      newTransitions.push({
-        fromState: newFsm.transitions[i].toStates[j],
-        toStates: [newFsm.transitions[i].fromState],
-        symbol: newFsm.transitions[i].symbol
-      });
-    }
+  var newTransitions = {};
+  for (var key in newFsm.transitions) {
+    var transition = newFsm.transitions[key];
+    transition.toStates.forEach(state => {
+      var transKey = state + ',' + transition.input;
+      newFsm.transitions[transKey].fromState = state;
+      newFsm.transitions[transKey].input = transition.input;
+      newFsm.transitions[transKey].toStates = [transition.fromState];
+    });
   }
-
   newFsm.transitions = newTransitions;
 
-  var oldAcceptingStates = newFsm.acceptingStates;
+  var prevAcceptings = newFsm.accepting;
+  newFsm.accepting = [newFsm.starting];
 
-  newFsm.acceptingStates = [newFsm.initialState];
+  var newStarting = "S";
+  newFsm.states.push(newStarting);
+  newFsm.starting = newStarting;
 
-  var newInitialState = "NEW_INITIAL";
-  newFsm.states.push(newInitialState);
-  newFsm.initialState = newInitialState;
-
-  newFsm.transitions.push({
-    fromState: newInitialState,
-    toStates: oldAcceptingStates,
-    symbol: fsm.constants.epsilon
-  });
+  var transKey = newStarting + ',' + fsm.constants.epsilon;
+  newFsm.transitions[transKey].fromState = newStarting;
+  newFsm.transitions[transKey].input = fsm.constants.epsilon;
+  newFsm.transitions[transKey].toStates = prevAcceptings;
 
   return newFsm;
 };
 
-// check whether the language accepted by fsmB is a subset of
-// the language accepted by fsmA
-fsm.isSubset = function (fsmA, fsmB) {
-  var fsmIntersection = fsm.intersection(fsmA, fsmB);
-
-  return fsm.areEquivalentFSMs(fsmB, fsmIntersection);
+fsm.isSubset = function (fsm1, fsm2) {
+  return fsm.areEquivalentFSMs(fsm2, fsm.intersection(fsm1, fsm2));
 };
 
 // convert the fsm into a regular grammar
@@ -1588,7 +1241,7 @@ fsm.grammar = function (fsm) {
   var i;
 
   for (i = 0; i < fsm.transitions.length; i++) {
-    if (fsm.transitions[i].symbol === fsm.constants.epsilon) {
+    if (fsm.transitions[i].input === fsm.constants.epsilon) {
       grammar.productions.push({
         left: [util.clone(fsm.transitions[i].fromState)],
         right: util.clone(fsm.transitions[i].toStates)
@@ -1596,15 +1249,15 @@ fsm.grammar = function (fsm) {
     } else {
       grammar.productions.push({
         left: [util.clone(fsm.transitions[i].fromState)],
-        right: [util.clone(fsm.transitions[i].symbol)].concat(
+        right: [util.clone(fsm.transitions[i].input)].concat(
           util.clone(fsm.transitions[i].toStates))
       });
     }
   }
 
-  for (i = 0; i < fsm.acceptingStates.length; i++) {
+  for (i = 0; i < fsm.accepting.length; i++) {
     grammar.productions.push({
-      left: [util.clone(fsm.acceptingStates[i])],
+      left: [util.clone(fsm.accepting[i])],
       right: [grammar.constants.epsilon]
     });
   }
@@ -1612,7 +1265,7 @@ fsm.grammar = function (fsm) {
   return grammar;
 };
 
-fsm.symbolsForTransitions = function (automaton, stateA, stateB) {
+fsm.inputsForTransitions = function (automaton, stateA, stateB) {
   var res = [];
 
   for (var i = 0; i < automaton.transitions.length; i++) {
@@ -1620,7 +1273,7 @@ fsm.symbolsForTransitions = function (automaton, stateA, stateB) {
 
     if (util.areEquivalent(transition.fromState, stateA) &&
       util.contains(transition.toStates, stateB)) {
-      res.push(transition.symbol);
+      res.push(transition.input);
     }
   }
 
@@ -1644,17 +1297,17 @@ fsm.toRegex = function (automaton) {
 
   for (i = 0; i < n; i++) {
     for (j = 0; j < n; j++) {
-      var symbols = fsm.symbolsForTransitions(automaton, automaton.states[i], automaton.states[j]);
+      var inputs = fsm.inputsForTransitions(automaton, automaton.states[i], automaton.states[j]);
 
-      for (z = 0; z < symbols.length; z++) {
-        symbols[z] = regex.tree.makeElement(symbols[z]);
+      for (z = 0; z < inputs.length; z++) {
+        inputs[z] = regex.tree.makeElement(inputs[z]);
       }
 
       if (i === j) {
-        symbols.push(regex.tree.makeEpsilon());
+        inputs.push(regex.tree.makeEpsilon());
       }
 
-      r[0][i][j] = regex.tree.makeUnion(symbols);
+      r[0][i][j] = regex.tree.makeUnion(inputs);
     }
   }
 
@@ -1699,7 +1352,7 @@ fsm.toRegex = function (automaton) {
       startStateIndex = i;
     }
 
-    if (util.contains(automaton.acceptingStates, automaton.states[i])) {
+    if (util.contains(automaton.accepting, automaton.states[i])) {
       acceptableStatesIndexes.push(i);
     }
   }

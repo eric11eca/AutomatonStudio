@@ -183,7 +183,8 @@ $("#startStop").click(function () {
 	let r = "";
 	if ($("#startStop").text() === "Start") {
 		r = $("#inputString").val();
-		$("#inputString").parent().html('<div id="inputString" type="text" class="input-div input-block-level monospaceRegex" placeholder="See if this fits"><br></div>');
+		$("#inputString").parent().html('<div id="inputString" type="text" placeholder="See if this fits"><br></div>');
+		$("#inputString").css("width", "10%");
 		$("#inputString").html(r === "" ? '<br>' : r);
 		resetAutomaton();
 		$("#inputString").removeAttr("contenteditable");
@@ -193,8 +194,8 @@ $("#startStop").click(function () {
 		$("#inputLast").attr("disabled", false);
 		$("#startStop").text("Stop");
 	} else {
-		r = $("#inputString").text();
-		$("#inputString").parent().html('<input id="inputString" type="text" class="input-block-level monospaceRegex" placeholder="See if this fits">');
+		//r = $("#inputString").text();
+		$("#inputString").parent().html('<input id="inputString" type="text" placeholder="See if this fits">');
 		$("#inputString").keyup(onInputStringChange);
 		$("#inputString").change(onInputStringChange);
 		$("#inputString").val(r);
@@ -364,19 +365,19 @@ function process_automaton_df(definition) {
 	var states = definition[1];
 	var start = definition[2];
 	var accept = definition[3];
-	var alphabet = definition[4]
+	var alphabet = definition[4];
 	var transition = definition[5];
 
 	states = states.replace("states", '');
-	states = states.replace(/\n/ig, ",");
+	states = states.replace(/\n/ig, ";");
 	states = states.slice(1, -1);
 
-	start = start.replace("initial", '');
+	start = start.replace("starting", '');
 	start = start.replace(/\n/ig, ",");
 	start = start.slice(1, -1);
 
 	accept = accept.replace("accepting", '');
-	accept = accept.replace(/\n/ig, ",");
+	accept = accept.replace(/\n/ig, ";");
 	accept = accept.slice(1, -1);
 
 	alphabet = alphabet.replace("alphabet", '');
@@ -449,6 +450,7 @@ $("#createAutomatonReg").click(async function () {
 	}
 
 	initialize();
+	//	$("#automatonGraph").css("background-color", "#f3f3f3");
 	drawGraph();
 	resetAutomaton();
 
@@ -464,10 +466,10 @@ $("#createAutomatonFsm").click(async function () {
 	$("#inputString").html("<br>");
 
 	var definition = {
-		states: $("#states").val().split(','),
+		states: $("#states").val().split(';'),
 		alphabet: $("#alphabet").val().split(','),
 		start: $("#start").val(),
-		accepting: $("#accept").val().split(','),
+		accepting: $("#accept").val().split(';'),
 		transitions: $("#transition").val().split('\n')
 	};
 

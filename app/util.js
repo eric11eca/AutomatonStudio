@@ -127,6 +127,15 @@ util.containsSet = function (arr1, obj) {
 	return false;
 };
 
+util.returnEqualSet = function (arr, obj) {
+	for (var i = 0; i < arr.length; i++) {
+		if (util.areEqualSets(arr[i], obj)) {
+			return arr[i];
+		}
+	}
+	return [];
+};
+
 // returns an unsorted array representation of the union of the two arrays arr1 and arr2
 // with each element included exactly once, regardless of the count in arr1 and arr2
 util.setUnion = function (arr1, arr2) {
