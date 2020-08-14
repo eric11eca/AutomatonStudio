@@ -10,7 +10,7 @@ cfg.createCFG = function(){
         starting: undefined,
         ifchecked: false,
         ifpredefined: false,
-        rules : []
+        rules : {}
     };
 };
 
@@ -58,6 +58,43 @@ cfg.preDefineAlphabet = function(grammar, arr){
         grammar.alphabet.push(arr[i]);
     }
     grammar.ifpredefined = true;
+}
+
+cfg.checkGrammar = function(grammar){
+    if(grammar.ifpredefined){
+        for (i = 0; i< grammar.rules.length;i++){
+            var temp = grammar.rules[i];
+            for (j = 0; j < grammar.rules[i].length; j++){
+                if (!util.contains(grammar.alphabet, temp[j]) && !util.contains(grammar.nonterminals, temp[j])){
+                    return false;
+                }
+            }
+        }
+    }else{
+        finites = [];
+        toCheck = [];
+        for (i = 0;i< grammar.nonterminals.length;i++){
+            if (!util.contains(toCheck, grammar.nonterminals[i])){
+                toCheck.push(grammar.nonterminals[i]);
+            }
+        }
+        for (i = 0; i< toCheck.length;i++){
+            for (j = 0; j< grammar.nonterminals.length; j++){
+                var loop = [];
+                if(toCheck[i].localeCompare(grammar.nonterminals[j])){
+                    if(grammar.rules[j].length == 1){
+                        var singleOne = grammar.rules[j];
+                        if(util.contains(alphabet,singleOne[0]) || util.contains(finites,singleOne[0])){
+                            finites.push(toCheck[i]);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    grammar.ifchecked = true;
+    return true;
 }
 
 var names = {};
