@@ -1,0 +1,153 @@
+
+{
+  "header": {
+    "reportVersion": 1,
+    "event": "Allocation failed - JavaScript heap out of memory",
+    "trigger": "FatalError",
+    "filename": "report.20200816.033457.21600.0.001.json",
+    "dumpEventTime": "2020-08-16T03:34:57Z",
+    "dumpEventTimeStamp": "1597563297748",
+    "processId": 21600,
+    "cwd": "C:\\Users\\Zeming Chen\\Desktop\\OpenSource_ws\\computational-logic-toolbox",
+    "commandLine": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "index.js"
+    ],
+    "nodejsVersion": "v12.16.1",
+    "wordSize": 64,
+    "arch": "x64",
+    "platform": "win32",
+    "componentVersions": {
+      "node": "12.16.1",
+      "v8": "7.8.279.23-node.31",
+      "uv": "1.34.0",
+      "zlib": "1.2.11",
+      "brotli": "1.0.7",
+      "ares": "1.15.0",
+      "modules": "72",
+      "nghttp2": "1.40.0",
+      "napi": "5",
+      "llhttp": "2.0.4",
+      "http_parser": "2.9.3",
+      "openssl": "1.1.1d",
+      "cldr": "35.1",
+      "icu": "64.2",
+      "tz": "2019c",
+      "unicode": "12.1"
+    },
+    "release": {
+      "name": "node",
+      "lts": "Erbium",
+      "headersUrl": "https://nodejs.org/download/release/v12.16.1/node-v12.16.1-headers.tar.gz",
+      "sourceUrl": "https://nodejs.org/download/release/v12.16.1/node-v12.16.1.tar.gz",
+      "libUrl": "https://nodejs.org/download/release/v12.16.1/win-x64/node.lib"
+    },
+    "osName": "Windows_NT",
+    "osRelease": "10.0.18363",
+    "osVersion": "Windows 10 Pro",
+    "osMachine": "x86_64",
+    "cpus": [
+      {
+        "model": "Intel(R) Xeon(R) CPU E3-1535M v6 @ 3.10GHz",
+        "speed": 3096,
+        "user": 34685640,
+        "nice": 0,
+        "sys": 38170859,
+        "idle": 715829546,
+        "irq": 9980593
+      },
+      {
+        "model": "Intel(R) Xeon(R) CPU E3-1535M v6 @ 3.10GHz",
+        "speed": 3096,
+        "user": 20902406,
+        "nice": 0,
+        "sys": 15467000,
+        "idle": 752316312,
+        "irq": 593156
+      },
+      {
+        "model": "Intel(R) Xeon(R) CPU E3-1535M v6 @ 3.10GHz",
+        "speed": 3096,
+        "user": 50382562,
+        "nice": 0,
+        "sys": 39393500,
+        "idle": 698909656,
+        "irq": 634843
+      },
+      {
+        "model": "Intel(R) Xeon(R) CPU E3-1535M v6 @ 3.10GHz",
+        "speed": 3096,
+        "user": 21669156,
+        "nice": 0,
+        "sys": 12652406,
+        "idle": 754364156,
+        "irq": 254140
+      },
+      {
+        "model": "Intel(R) Xeon(R) CPU E3-1535M v6 @ 3.10GHz",
+        "speed": 3096,
+        "user": 41126968,
+        "nice": 0,
+        "sys": 27321515,
+        "idle": 720237234,
+        "irq": 513703
+      },
+      {
+        "model": "Intel(R) Xeon(R) CPU E3-1535M v6 @ 3.10GHz",
+        "speed": 3096,
+        "user": 18468937,
+        "nice": 0,
+        "sys": 10750421,
+        "idle": 759466359,
+        "irq": 180437
+      },
+      {
+        "model": "Intel(R) Xeon(R) CPU E3-1535M v6 @ 3.10GHz",
+        "speed": 3096,
+        "user": 31801015,
+        "nice": 0,
+        "sys": 24680453,
+        "idle": 732204250,
+        "irq": 554546
+      },
+      {
+        "model": "Intel(R) Xeon(R) CPU E3-1535M v6 @ 3.10GHz",
+        "speed": 3096,
+        "user": 35909687,
+        "nice": 0,
+        "sys": 14442359,
+        "idle": 738333656,
+        "irq": 182609
+      }
+    ],
+    "networkInterfaces": [
+      {
+        "name": "Wi-Fi",
+        "internal": false,
+        "mac": "00:28:f8:6a:5e:19",
+        "address": "fe80::cc14:d760:a1fa:3acb",
+        "netmask": "ffff:ffff:ffff:ffff::",
+        "family": "IPv6",
+        "scopeid": 11
+      },
+      {
+        "name": "Wi-Fi",
+        "internal": false,
+        "mac": "00:28:f8:6a:5e:19",
+        "address": "137.112.237.123",
+        "netmask": "255.255.240.0",
+        "family": "IPv4"
+      },
+      {
+        "name": "Loopback Pseudo-Interface 1",
+        "internal": true,
+        "mac": "00:00:00:00:00:00",
+        "address": "::1",
+        "netmask": "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff",
+        "family": "IPv6",
+        "scopeid": 0
+      },
+      {
+        "name": "Loopback Pseudo-Interface 1",
+        "internal": true,
+        "mac": 

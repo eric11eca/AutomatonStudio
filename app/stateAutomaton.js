@@ -638,61 +638,42 @@ fsm.convertNfaToDfa = function (automaton) {
 
 /********** States Operational Functions for Finite State Automaton *************/
 
-// determine reachable states
-fsm.getReachableStates = function (fsm, state, shouldIncludeInitialState) {
-  var unprocessedStates = [state],
-    i, j;
-  var reachableStates = shouldIncludeInitialState ? [state] : [];
-
-  while (unprocessedStates.length !== 0) {
-    var currentState = unprocessedStates.pop();
-
-    for (i = 0; i < fsm.transitions.length; i++) {
-      var transition = fsm.transitions[i];
-
-      if (util.areEquivalent(currentState, transition.fromState)) {
-        for (j = 0; j < transition.toStates.length; j++) {
-          if (!(util.contains(reachableStates, transition.toStates[j]))) {
-            reachableStates.push(transition.toStates[j]);
-
-            if (!(util.contains(unprocessedStates, transition.toStates[j]))) {
-              unprocessedStates.push(transition.toStates[j]);
-            }
-          }
-        }
+fsm.getReachableStates = function (automaton) {
+  var states = [automaton.starting];
+  var reachableStates = new Set([automaton.starting]);
+  while (states.length != 0) {
+    var currState = states.pop();
+    Object.values(automaton.transitions).forEach(transition => {
+      if (util.areEquivalent(currState, transition.fromState)) {
+        var toStatesSet = new Set(transition.toStates);
+        var stateSet = new Set(states);
+        reachableStates = reachableStates.union(toStatesSet);
+        states.concat(toStatesSet.difference(stateSet).from());
       }
-    }
+    });
   }
-
   return reachableStates;
 };
 
 // determine and remove unreachable states
-fsm.removeUnreachableStates = function (fsm) {
-  var reachableStates = fsm.getReachableStates(fsm, fsm.initialState, true);
-  var newFsm = util.clone(fsm),
-    i;
-  newFsm.states = [];
-  newFsm.accepting = [];
-  newFsm.transitions = [];
+fsm.removeUnreachableStates = function (automaton) {
+  var reachableStates = fsm.getReachableStates(automaton);
+  var reachableStatesSet = new Set(reachableStates);
+  var newFsm = util.clone(automaton);
 
-  for (i = 0; i < fsm.states.length; i++) {
-    if (util.contains(reachableStates, fsm.states[i])) {
-      newFsm.states.push(util.clone(fsm.states[i]));
-    }
-  }
+  var oldStates = new Set(automaton.states);
+  var oldAccepting = new Set(automaton.accepting);
 
-  for (i = 0; i < fsm.accepting.length; i++) {
-    if (util.contains(reachableStates, fsm.accepting[i])) {
-      newFsm.accepting.push(util.clone(fsm.accepting[i]));
-    }
-  }
+  newFsm.states = oldStates.intersection(reachableStatesSet).from();
+  newFsm.accepting = oldAccepting.intersection(reachableStates).from();
+  newFsm.transitions = {};
 
-  for (i = 0; i < fsm.transitions.length; i++) {
-    if (util.contains(reachableStates, fsm.transitions[i].fromState)) {
-      newFsm.transitions.push(util.clone(fsm.transitions[i]));
+  Object.keys(automaton.transitions).forEach(key => {
+    var transition = automaton.transitions[key];
+    if (util.contains(reachableStates, transition.fromState)) {
+      newFsm.transitions[key] = util.clone(transition);
     }
-  }
+  });
 
   return newFsm;
 };
@@ -758,88 +739,100 @@ fsm.areEquivalentFSMs = function (fsm1, fsm2) {
 };
 
 // finds and removes equivalent states
-fsm.removeEquivalentStates = function (fsm) {
-  if (fsm.determineType(fsm) !== fsm.constants.determine) {
+fsm.removeEquivalentStates = function (automaton) {
+  if (fsm.determineType(automaton) !== fsm.constants.determine) {
     throw new Error('FSM must be DFA');
   }
 
-  var equivalentPairs = [],
-    i, j, k;
+  var stateSet = new Set(util.clone(automaton.states));
+  var accetSet = new Set(util.clone(automaton.accepting));
 
-  for (i = 0; i < fsm.states.length; i++) {
-    for (j = i + 1; j < fsm.states.length; j++) {
-      if (fsm.areEquivalentStates(fsm, fsm.states[i], fsm, fsm.states[j])) {
-        var pair = [fsm.states[i], fsm.states[j]];
+  var equivalentPairs = [accetSet, util.Difference(stateSet, accetSet)];
 
-        for (k = 0; k < equivalentPairs.length; k++) {
-          if (util.areEquivalent(equivalentPairs[k][1], pair[0])) {
-            pair[0] = equivalentPairs[k][1];
-            break;
+  var i, j = 0;
+
+  while (true) {
+    var newEquivalentPairs = [];
+    equivalentPairs.forEach(eqClass => {
+      var eqClassMap = new Map();
+      eqClass.forEach(state => {
+        //console.log("State: ", state);
+        var classKey = "";
+        automaton.alphabet.forEach(alpha => {
+          var key = state + ',' + alpha;
+          var toStateSet = new Set(automaton.transitions[key].toStates);
+          for (i = 0; i < equivalentPairs.length; i++) {
+            if (util.Equal(toStateSet,
+                util.Intersection(toStateSet, equivalentPairs[i]))) {
+              classKey += i.toString();
+            }
           }
-        }
+          //console.log("Input: ", alpha);
+          //console.log("To States: ", toStateSet);
+          //console.log("classKey: ", classKey);
+        });
 
-        if (!(util.contains(equivalentPairs, pair))) {
-          equivalentPairs.push(pair);
+        if (eqClassMap.has(classKey)) {
+          eqClassMap.get(classKey).add(state);
+        } else {
+          eqClassMap.set(classKey, new Set([state]));
         }
-      }
+        //console.log(eqClassMap);
+      });
+      newEquivalentPairs = newEquivalentPairs.concat(
+        Array.from(eqClassMap.values()));
+    });
+    //console.log(newEquivalentPairs);
+    if (util.areEquivalent(newEquivalentPairs, equivalentPairs)) {
+      break;
+    } else {
+      equivalentPairs = newEquivalentPairs;
     }
   }
+
+  for (i = 0; i < equivalentPairs.length; i++) {
+    equivalentPairs[i] = Array.from(equivalentPairs[i]);
+  }
+
+  //console.log(equivalentPairs);
 
   var newFsm = {
     states: [],
-    alphabet: util.clone(fsm.alphabet),
-    initialState: [],
+    alphabet: util.clone(automaton.alphabet),
+    starting: [],
     accepting: [],
-    transitions: []
+    transitions: {}
   };
 
-  function isOneOfEquivalentStates(s) {
-    for (var i = 0; i < equivalentPairs.length; i++) {
-      if (util.areEquivalent(equivalentPairs[i][1], s)) {
-        return true;
+  for (i = 0; i < equivalentPairs.length; i++) {
+    newFsm.states.push(equivalentPairs[i][0]);
+    if (util.containsAll(automaton.accepting, equivalentPairs[i])) {
+      newFsm.accepting.push(equivalentPairs[i][0]);
+    }
+    if (util.contains(equivalentPairs[i], automaton.starting)) {
+      newFsm.starting = equivalentPairs[i][0];
+    }
+  }
+
+  Object.values(automaton.transitions).forEach(transition => {
+    if (util.contains(newFsm.states, transition.fromState)) {
+      var key = transition.fromState + ',' + transition.input;
+      newFsm.transitions[key] = {
+        fromState: util.clone(transition.fromState),
+        input: util.clone(transition.input),
+        toStates: []
+      };
+      for (j = 0; j < transition.toStates.length; j++) {
+        for (i = 0; i < equivalentPairs.length; i++) {
+          if (util.contains(equivalentPairs[i], transition.toStates[j])) {
+            newFsm.transitions[key].toStates.push(equivalentPairs[i][0]);
+          }
+        }
       }
     }
+  });
 
-    return false;
-  }
-
-  function getEquivalentState(s) {
-    for (var i = 0; i < equivalentPairs.length; i++) {
-      if (util.areEquivalent(equivalentPairs[i][1], s)) {
-        return equivalentPairs[i][0];
-      }
-    }
-
-    return s;
-  }
-
-  for (i = 0; i < fsm.states.length; i++) {
-    if (!(isOneOfEquivalentStates(fsm.states[i]))) {
-      newFsm.states.push(util.clone(fsm.states[i]));
-    }
-  }
-
-  for (i = 0; i < fsm.accepting.length; i++) {
-    if (!(isOneOfEquivalentStates(fsm.accepting[i]))) {
-      newFsm.accepting.push(util.clone(fsm.accepting[i]));
-    }
-  }
-
-  newFsm.initialState = util.clone(getEquivalentState(fsm.initialState));
-
-  for (i = 0; i < fsm.transitions.length; i++) {
-    var transition = util.clone(fsm.transitions[i]);
-
-    if (isOneOfEquivalentStates(transition.fromState)) {
-      continue;
-    }
-
-    for (j = 0; j < transition.toStates.length; j++) {
-      transition.toStates[j] = getEquivalentState(transition.toStates[j]);
-    }
-
-    newFsm.transitions.push(transition);
-  }
+  console.log(newFsm);
 
   return newFsm;
 };
