@@ -6,6 +6,7 @@ let util = require("./util.js").data;
 cfg.createCFG = function(){
     return{
         nonterminals: [],
+        nonterminalAlphabet: [],
         alphabet: [],
         starting: undefined,
         ifchecked: false,
@@ -14,7 +15,7 @@ cfg.createCFG = function(){
     };
 };
 
-cfg._addRule = function(arr1, arr2, obj1, obj2, arr_alphabet, ifpredefined, message1, message2, message3){
+cfg._addRule = function(arr1, arr2, obj1, obj2, arr_nonterminalAlphabet, arr_alphabet, ifpredefined, message1, message2, message3){
     if(util.contains(arr1, obj1) && util.contains(arr2, obj2)){
         throw new Error(message1);
     }
@@ -31,6 +32,9 @@ cfg._addRule = function(arr1, arr2, obj1, obj2, arr_alphabet, ifpredefined, mess
         arr_alphabet.splice(arr_alphabet.indexOf(obj1),1);
     }
     arr1.push(obj1);
+    if(!util.contains(arr_nonterminalAlphabet, obj1)){
+        arr_nonterminalAlphabet.push(obj1);
+    }
     if(!ifpredefined){
     for (i = 0; i<obj2.length; i++){
         if(!util.contains(arr_alphabet, obj2[i]) && !util.contains(arr1,obj2[i])){
@@ -71,8 +75,8 @@ cfg.checkGrammar = function(grammar){
             }
         }
     }else{
-        finites = [];
-        toCheck = [];
+        var finites = [];
+        var toCheck = [];
         for (i = 0;i< grammar.nonterminals.length;i++){
             if (!util.contains(toCheck, grammar.nonterminals[i])){
                 toCheck.push(grammar.nonterminals[i]);
@@ -95,6 +99,84 @@ cfg.checkGrammar = function(grammar){
     }
     grammar.ifchecked = true;
     return true;
+}
+cfg.checkSymbol = function(nonterminals, rules, symbol){
+
+}
+cfg._eliminateEmpty = function(nonterminals, rules, nonterminalAlphabet){
+    var nullables = [];
+    for(i = 0; i< nonterminals.length; i++){
+        if(rules[i].length == 1 && util.contains(rules[i], "Epsilon")){
+            nullables.push(nonterminals[i]);
+        }
+    }
+    var uncheckNonterminals = [];
+    var uncheckRules = [];
+    for (i=0;i<nonterminals.length;i++){
+        if(!util.contains(nullables, nonterminals[i])){
+            uncheckNonterminals.push(nonterminals[i]);
+            uncheckRules.push(rules[i]);
+        }
+    }
+    var ifAdd = true;
+    while(ifAdd){
+        ifAdd = false;
+        for (i = 0; i<uncheckNonterminals.length;i++){
+            var tempRule = uncheckRules[i];
+            var ifNullable = true;
+            for(j = 0; j<tempRule.length;j++){
+                if(!util.contains(nullables, tempRule[j])){
+                    ifNullable = false;
+                    break;
+                }
+            }
+            if(ifNullable){
+                nullables.push(uncheckNonterminals[i]);
+                var comparable = uncheckNonterminals[i];
+                while(util.contains(uncheckNonterminals, comparable)){
+                    var index = uncheckNonterminals.indexOf(comparable);
+                    if(index <= i){
+                        if(i>0){
+                            i--;
+                        }else{
+                            i = -1;
+                        }
+                    }
+                    uncheckNonterminals.splice(index,1);
+                    uncheckRules.splice(index,1);
+                }
+                ifAdd = true;
+            }
+        }
+    }
+    var len = nonterminals.length;
+    for (i=0; i<len; i++){
+        if(rules[i].length > 1){
+        var temp = rules[i];
+        var ifDifferent = false;
+        var newRule = [];
+        for (j=0;j<temp.length;j++){
+            if(util.contains(nullables, temp[j])){
+                ifDifferent = true;
+            }else{
+                newRule.push(temp[j]);
+            }
+        }
+        if(ifDifferent && newRule.length != 0 && !util.contains(rules, newRule) && !(newRule.length == 1 && newRule[0].localeCompare(nonterminals[i]))){
+            nonterminals.push(nonterminals[i]);
+            rules.push(newRule);
+        }
+
+    }else{
+        var temp2 = rules[i];
+        if(temp2.length == 1 && temp2[0].localeCompare("Epsilon")){
+            nonterminals.splice(i,1);
+            rules.splice(i,1);
+            i--;    
+        }
+    }
+}
+
 }
 
 var names = {};
