@@ -38,7 +38,6 @@ router.post("/generateAutomaton", (req, res, next) => {
 router.post("/createAutomaton", (req, res, next) => {
 	var definition = req.body.definition;
 	var automaton = stateAutomaton.parseFsmFromString(definition);
-	automaton = stateAutomaton.removeEquivalentStates(automaton);
 	return res.send(automaton);
 });
 

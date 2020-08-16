@@ -639,17 +639,23 @@ fsm.convertNfaToDfa = function (automaton) {
 /********** States Operational Functions for Finite State Automaton *************/
 
 fsm.getReachableStates = function (automaton) {
-  var states = [automaton.starting];
+  var processed = [];
+  var unProcessed = [automaton.starting];
   var reachableStates = new Set([automaton.starting]);
-  while (states.length != 0) {
-    var currState = states.pop();
+  while (unProcessed.length != 0) {
+    var currState = unProcessed.pop();
     Object.values(automaton.transitions).forEach(transition => {
       if (util.areEquivalent(currState, transition.fromState)) {
         var toStatesSet = new Set(transition.toStates);
-        var stateSet = new Set(states);
-        reachableStates = reachableStates.union(toStatesSet);
-        states.concat(toStatesSet.difference(stateSet).from());
+        var processedSet = new Set(processed);
+        reachableStates = util.Union(reachableStates, toStatesSet);
+        //console.log("Reachables: ", reachableStates);
+        //console.log("toStates: ", toStatesSet);
+        unProcessed = unProcessed.concat(
+          Array.from(util.Difference(toStatesSet, processedSet)));
       }
+      //console.log("Unprocessed: ", unProcessed);
+      processed.push(currState);
     });
   }
   return reachableStates;
@@ -658,15 +664,16 @@ fsm.getReachableStates = function (automaton) {
 // determine and remove unreachable states
 fsm.removeUnreachableStates = function (automaton) {
   var reachableStates = fsm.getReachableStates(automaton);
-  var reachableStatesSet = new Set(reachableStates);
   var newFsm = util.clone(automaton);
 
   var oldStates = new Set(automaton.states);
   var oldAccepting = new Set(automaton.accepting);
 
-  newFsm.states = oldStates.intersection(reachableStatesSet).from();
-  newFsm.accepting = oldAccepting.intersection(reachableStates).from();
+  newFsm.states = Array.from(util.Intersection(oldStates, reachableStates));
+  newFsm.accepting = Array.from(util.Intersection(oldAccepting, reachableStates));
   newFsm.transitions = {};
+
+  reachableStates = Array.from(reachableStates);
 
   Object.keys(automaton.transitions).forEach(key => {
     var transition = automaton.transitions[key];
@@ -854,41 +861,7 @@ fsm.minimize = function (automaton) {
   return minimalFsm;
 };
 
-fsm.convertStatesToNumbers = function (fsm) {
-  var newFsm = fsm.makeNew();
-  var mapping = {};
 
-  for (i = 0; i < fsm.states.length; i++) {
-    mapping[fsm.states[i].toString()] = i;
-  }
-
-  newFsm.alphabet = util.clone(fsm.alphabet);
-
-  for (i = 0; i < fsm.states.length; i++) {
-    fsm.addState(newFsm, mapping[fsm.states[i].toString()]);
-  }
-
-  fsm.setStartingState(newFsm, mapping[fsm.initialState.toString()]);
-
-  for (i = 0; i < fsm.accepting.length; i++) {
-    fsm.addAcceptingState(newFsm, mapping[fsm.accepting[i].toString()]);
-  }
-
-  for (i = 0; i < fsm.transitions.length; i++) {
-    var newToStates = [];
-
-    for (j = 0; j < fsm.transitions[i].toStates.length; j++) {
-      newToStates.push(mapping[fsm.transitions[i].toStates[j].toString()]);
-    }
-
-    fsm.addTransition(newFsm,
-      mapping[fsm.transitions[i].fromState.toString()],
-      newToStates,
-      fsm.transitions[i].input);
-  }
-
-  return newFsm;
-};
 
 // generate random fsm
 fsm.createRandomFsm = function (fsmType, numStates, numAlphabet, maxNumToStates) {
