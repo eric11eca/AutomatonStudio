@@ -136,6 +136,22 @@ util.returnEqualSet = function (arr, obj) {
 	return [];
 };
 
+util.Union = function (a, b) {
+	return new Set([...a, ...b]);
+};
+
+util.Intersection = function (a, b) {
+	return new Set([...a].filter(x => b.has(x)));
+};
+
+util.Difference = function (a, b) {
+	return new Set([...a].filter(x => !b.has(x)));
+};
+
+util.Equal = function (a, b) {
+	return a.size === b.size && [...a].every(value => b.has(value));
+};
+
 // returns an unsorted array representation of the union of the two arrays arr1 and arr2
 // with each element included exactly once, regardless of the count in arr1 and arr2
 util.setUnion = function (arr1, arr2) {
