@@ -197,6 +197,40 @@ cfg.modifyRule = function(rule, arr, nonterminals, symbol, indexes){
     }
 }
 
+cfg.removeUnit = function(rules, nonterminals){
+    var ifUnitProductionExists = true;
+    var removedRules = [];
+    while(ifUnitProductionExists){
+        ifUnitProductionExists = false;
+        for(i = 0;i<nonterminals.length;i++){
+            var tempRule = util.clone(rules[i]);
+            if(rules[i].length == 1 && !tempRule[0].localeCompare("Epsilon")){
+                ifUnitProductionExists = true;
+                removedRules.push([nonterminals[i], tempRule]);
+                for(j = 0; j< nonterminals.length;j++){
+                    if(nonterminals[j].localeCompare(tempRule[0])){
+                        if(!util.contains(removedRules, [nonterminals[j], tempRule])){
+                            var ifRuleExists = false;
+                            for(k = 0;k<nonterminals.length;k++){
+                                if(nonterminals[k].localeCompare(nonterminals[j])){
+                                    if(util.areEquivalent(rules[k], tempRule)){
+                                        ifRuleExists = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            if(!RuleExists){
+                            nonterminals.push(nonterminals[j]);
+                            rules.push(tempRule);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 var names = {};
 name1 = "a1";
 name2 = 'a2';
