@@ -78,9 +78,21 @@ tree._simplify_rule_eps_concat = function (reg) {
   return false;
 };
 
+// (a) => a
+tree._simplify_single = function (reg) {
+  if (tree._isUNION(reg) && reg.children.length == 1) {
+    reg = reg.children[0];
+    return true;
+  } else if (tree._isCONCAT(reg) && reg.compoentns == 1) {
+    reg = reg.components[0];
+    return true;
+  }
+  return false;
+}
+
 // (a*)* => a*
 tree._simplify_rule_kleen_1 = function (reg) {
-  if (reg.type == tree.constants.KLEEN && tree.expr.type == tree.constants.KLEEN) {
+  if (tree._isKLEEN(reg) && tree._isKLEEN(reg.expression)) {
     reg.expression = reg.expression.expression;
     return true;
   }
@@ -90,10 +102,9 @@ tree._simplify_rule_kleen_1 = function (reg) {
 
 // (a+b*)* => (a+b)*
 tree._simplify_rule_kleen_2 = function (reg) {
-  if (reg.type == tree.constants.KLEEN && tree.expr.type == tree.constants.UNION) {
-    reg.expression = reg.expression.expression;
+  if (tree._isKLEEN(reg) && tree._isUNION(reg.expression)) {
     for (var i = 0; i < reg.expression.children.length; i++) {
-      if (reg.expression.children[i].type == tree.constants.KLEEN) {
+      if (tree._isKLEEN(reg.expression.children[i].type)) {
         reg.expression.children[i] = reg.expression.children[i].expression;
         return true;
       }
@@ -221,8 +232,8 @@ tree._simplify_rule_union_kleen = function (reg) {
 
 // a*a* => a*
 tree._simplify_rule_equal_kleen = function (reg) {
-  if (reg.type == tree.constants.CONCAT && reg.components.length > 1) {
-    for (var i = 0; i < reg.components.length; i++) {
+  if (tree._isCONCAT(reg) && reg.components.length > 1) {
+    for (var i = 0; i < reg.components.length - 1; i++) {
       var isKleen = tree._isKLEEN(reg.components[i]);
       var isKleenNext = tree._isKLEEN(reg.components[i + 1]);
       var equal = util.areEquivalent(reg.components[i], reg.components[i + 1]);
@@ -236,10 +247,8 @@ tree._simplify_rule_equal_kleen = function (reg) {
 };
 
 // (aa+a)* => (a)*
-tree._simplify_rule_multi_eq_union = function () {
-  if (reg.type == tree.constants.KLEEN &&
-    reg.expression == tree.constants.UNION &&
-    reg.expression.length > 1) {
+tree._simplify_rule_multi_eq_union = function (reg) {
+  if (tree._isKLEEN(reg) && tree._isUNION(reg.expression) && reg.expression.length > 1) {
     for (var i = 0; i < reg.expression.children.length; i++) {
       for (var j = 0; j < reg.children.length; j++) {
         if (i != j && reg.expression.children[j].type === tree.constants.CONCAT &&
@@ -276,7 +285,7 @@ tree._simplify_rule_Kleen_Union_Eps = function (reg) {
     reg.expression.children.splice(idx, 1);
     return true;
   }
-  return falkse;
+  return false;
 };
 
 // (a()) => ()
@@ -297,8 +306,7 @@ tree._simplify_rule_null_concat = function (reg) {
 
 // ()* => ()
 tree._simplify_rule_null_Kleen = function (reg) {
-  if (reg.type == tree.constans.KLEEN &&
-    reg.expression.type == tree.constans.CONCAT &&
+  if (tree._isKLEEN(reg) && tree._isCONCAT(reg.expression) &&
     reg.expression.components.length == 0) {
     reg.type = tags.CONCAT;
     delete reg.expression;
@@ -359,11 +367,11 @@ tree._simplify_rule_distributive2 = function (reg) {
   if (reg.type == tree.constants.UNION && reg.children.length > 1) {
     for (var i = 0; i < reg.children.length - 1; i++) {
       var curr = reg.children[i];
-      if (curr.type == tree.constants.CONCAT && curr.components.lenght > 1) {
+      if (curr.type == tree.constants.CONCAT && curr.components.length > 1) {
         for (var j = i + 1; j < reg.children.length; j++) {
           var next = reg.children[j];
           if (next.type == tree.constants.CONCAT && next.components.length > 1) {
-            var common1 = curr.components[curr.components.lenght - 1];
+            var common1 = curr.components[curr.components.length - 1];
             var common2 = next.components[next.components.length - 1];
             if (util.areEquivalent(common1, common2)) {
               var part1 = tree.makeConcatnation(curr.components.slice(0, curr.components.length - 1));
@@ -382,18 +390,201 @@ tree._simplify_rule_distributive2 = function (reg) {
   return false;
 };
 
-// L1+L2 => L2, if L1 is in L2
-tree._simplify_rule_union_subset = function (reg, fsmCache) {
-  if (reg.type == tree.constants.UNION && reg.children.length > 1) {
-    var fsms = [];
-    fsms.push(getOrCreateFsm(reg.children[0], fsmCache));
+tree._processSubset = function (arr, iterator, kleen, fsmCache) {
+  for (var i = 0; i < iterator.length - 1; i++) {
+    for (var j = i + 1; j < iterator.length; j++) {
+      if (fsms.length <= j) {
+        if (kleen) {
+          fsms.push(getOrCreateFsm(
+            tree.makeKleenStar(iterator[j]), fsmCache));
+        } else {
+          fsms.push(getOrCreateFsm(iterator[j], fsmCache));
+        }
+      }
 
-    for (var i = 0; i < reg.children.length; i++) {
-      for (var j = i + 1; j < reg.children.length; j++) {
-        if (1 == 1) {}
+      if (fsm.isSubset(fsms[i], fsms[j])) {
+        arr.splice(j, 1);
+        return true;
+      }
+
+      if (fsm.isSubset(fsms[j], fsms[i])) {
+        arr.splice(i, 1);
+        return true;
       }
     }
   }
+};
+
+// L1+L2 => L2, if L1 is in L2
+tree._simplify_rule_union_subset = function (reg, fsmCache) {
+  if (tree._isUNION(reg) && reg.children.length > 1) {
+    var fsms = [];
+    fsms.push(getOrCreateFsm(reg.children[0], fsmCache));
+    return tree._processSubset(reg.children, reg.children, false, fsmCache);
+  }
+  return false;
+};
+
+// (L1+L2)* => L2*, if L1* is subset of L2*
+tree._simplify_rule_union_kleen_subset = function (reg, fsmCache) {
+  if (tree._isKLEEN(reg) && tree._isUNION(reg.expression) && tree.expression.children.length > 1) {
+    var fsms = [];
+    fsms.push(tree.getOrCreateFsm(tree.makeKleenStar(reg.expression.children[0]), fsmCache));
+    return tree._processSubset(reg.expression.children, reg.expression.children, true, fsmCache);
+  }
+  return false;
+};
+
+// L1*L2* => L2, if L1* is subset of L2*
+tree._simplify_rule_kleen_subset = function (reg, fsmCache) {
+  if (tree._isCONCAT(reg) && reg.components.length > 1) {
+    var fsms = [];
+    fsms.push(getOrCreateFsm(reg.components[0], fsmCache));
+
+    var found = -1;
+
+    for (var i = 0; i < reg.components.length - 1; i++) {
+      fsms.push(getOrCreateFsm(reg.components[i + 1], fsmCache));
+
+      if (tree._isKLEEN(reg.components[i]) && tree._isKLEEN(reg.components[i + 1])) {
+
+        if (fsm.isSubset(fsms[i], fsms[i + 1])) {
+          reg.components.splice(i + 1, 1);
+          return true;
+        }
+
+        if (fsm.isSubset(fsms[i + 1], fsms[i])) {
+          reg.components.splice(i, 1);
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+};
+
+// $+L => L, if L contains $
+tree._simplify_eps_langauge = function (reg, fsmCache) {
+  if (tree._isUNION(reg) && reg.children.length > 1) {
+    var epsLoc = reg.children.findIndex(tree._isEPS);
+
+    if (epsLoc > -1) {
+      for (var i = 0; i < reg.children.length; i++) {
+        if (!(tree._isEPS(reg.children[i]))) {
+          var fsm = getOrCreateFsm(reg.children[i], fsmCache);
+          if (fsm.isAcceptingState(fsm, fsm.starting)) {
+            tree.choices.splice(epsLoc, 1);
+            return true;
+          }
+        }
+      }
+    }
+  }
+  return false;
+};
+
+tree.atomic_simplification_rules = {
+  "(a) => a": tree._simplify_single,
+  "(a*)* => a*": tree._simplify_rule_kleen_1,
+  "(a+b*)* => (a+b)*": tree._simplify_rule_kleen_2,
+  "$+a* => a*": tree._simplify_rule_eps_kleen_union,
+  "(a*b*)* => (a*+b*)*": tree._simplify_rule_kleen_3,
+  "(a+(b+c)) => a+b+c": tree._simplify_rule_concat_parent,
+  "ab(cd) => abcd": tree._simplify_rule_concat_parent,
+  "a+a => a": tree._simplify_rule_equal_union,
+  "a+a* => a*": tree._simplify_rule_union_kleen,
+  "a*a* => a*": tree._simplify_rule_equal_kleen,
+  "(aa+a)* => (a)*": tree._simplify_rule_multi_eq_union,
+  "(a+$)* => (a)*": tree._simplify_rule_Kleen_Union_Eps,
+  "(a()) => ()": tree._simplify_rule_null_concat,
+  "()* => ()": tree._simplify_rule_null_Kleen,
+  "(ab+ac) => a(b+c)": tree._simplify_rule_distributive1,
+  "a*aa* => aa*": tree._simplify_rule_multi_kleen_concat,
+  "(ab+cb) => (a+c)b": tree._simplify_rule_distributive2,
+};
+
+tree.complex_simplification_rules = {
+  "L1+L2 => L2": tree._simplify_rule_union_subset,
+  "(L1+L2)* => L2*": tree._simplify_rule_union_kleen_subset,
+  "L1*L2* => L2": tree._simplify_rule_kleen_subset,
+  "$+L => L": tree._simplify_eps_langauge,
+};
+
+tree.nestedExpr = {
+  "union": function (reg) {
+    return reg.children;
+  },
+  'concatnation': function (reg) {
+    return reg.components;
+  },
+  'kleene_star': function (reg) {
+    return [reg.expression];
+  }
+};
+
+tree.applyAllSimplificationRules = function (reg, fsmCache, isComplex) {
+  Object.keys(tree.atomic_simplification_rules).forEach(key => {
+    var rule = tree.atomic_simplification_rules[key];
+    var simplified = tree.applySimplificationRule(reg, rule, fsmCache);
+    if (simplified) {
+      return key;
+    }
+  });
+
+  if (isComplex) {
+    Object.keys(tree.complex_simplification_rules).forEach(key => {
+      var rule = tree.complex_simplification_rules[key];
+      var simplified = tree.applySimplificationRule(reg, rule, fsmCache);
+      if (simplified) {
+        return key;
+      }
+    });
+  }
+
+  return null;
+};
+
+tree.applySimplificationRule = function (reg, rule, fsmCache) {
+  var simplified = rule(reg, fsmCache);
+  if (simplified) {
+    return true;
+  }
+
+  var expression = [];
+  if (tree.nestedExpr.hasOwnProperty(reg.type)) {
+    expression = tree.nestedExpr[reg.type](reg);
+  }
+
+  if (expression.length > 0) {
+    for (var i = 0; i < expression.length; i++) {
+      simplified = tree.applySimplificationRule(expression[i], rule, fsmCache);
+      if (simplified) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+};
+
+tree.simplify = function (reg, isComplex) {
+  var treeClone = util.clone(reg);
+  var appliedPattern = "";
+  var iterCount = 0;
+  var fsmCache = {};
+  var applied = [];
+
+  while (appliedPattern != null) {
+    appliedPattern = tree.applyAllSimplificationRules(treeClone, fsmCache, isComplex);
+
+    if (appliedPattern !== null && opts.appliedPatterns !== null) {
+      applied.push(appliedPattern);
+    }
+
+    iterCount += 1;
+  }
+
+  return treeClone;
 };
 
 function getOrCreateFsm(reg, fsms) {
@@ -410,9 +601,9 @@ tree._findIndex = function (arr, dict, criteria) {
   for (var i = 0; i < arr.length; i++) {
     var satisfied = true;
     if (criteria.includes('type')) {
-      satisfied = _isType(arr[i], dict.type);
+      satisfied = tree._isType(arr[i], dict.type);
     } else if (criteria.includes('type+')) {
-      satisfied = _isType(arr[i], dict.type) && _isType(arr[i + 1], obj);
+      satisfied = tree._isType(arr[i], dict.type) && _isType(arr[i + 1], obj);
     } else if (criteria.includes('obj')) {
       satisfied = tree._areEquivalebt(arr[i], dict.obj);
     } else if (criteria.includes('obj+')) {
@@ -463,9 +654,110 @@ tree._isEPS = function (obj) {
 };
 
 
+var linearWrap = function (outter, inner, arr, length) {
+
+  if (linear.scope[outter.type] >= linear.scope[inner.type] && length > 1) {
+    //console.log("Parent: ", outter.type);
+    //console.log("Child: ", inner);
+    //console.log("Length: ", length);
+    //console.log("Before: ", arr.join(""));
+    arr.push(linear.symbol.LEFTP);
+    var prev_len = arr.length;
+    tree.linearFormat(inner, arr);
+    if ((arr.length - prev_len) == 1) {
+      arr.splice(arr.length - 2, 1);
+      //console.log("After: ", arr.join(""));
+      return;
+    }
+    arr.push(linear.symbol.RIGHTP);
+    //console.log("After: ", arr.join(""));
+  } else {
+    tree.linearFormat(inner, arr);
+  }
+};
+
+var epsilonToLinear = function (reg, arr) {
+  arr.push(linear.symbol.EPS);
+};
+
+var elementToLinear = function (reg, arr) {
+  arr.push(reg.obj);
+};
+
+var kleenToLinear = function (reg, arr) {
+  linearWrap(reg, reg.expression, arr, 2);
+  arr.push(linear.symbol.KLEEN);
+};
+
+var unionToLinear = function (reg, arr) {
+  for (var i = 0; i < reg.children.length; i++) {
+    if (i > 0) {
+      arr.push(linear.symbol.UNION);
+    }
+    linearWrap(reg, reg.children[i], arr, reg.children.length);
+  }
+};
+
+var concatToLinear = function (reg, arr) {
+  reg.components.forEach(child => {
+    linearWrap(reg, child, arr, reg.components.length);
+  });
+};
+
+tree.linearFormatter = {
+  'union': unionToLinear,
+  'concatnation': concatToLinear,
+  'kleene_star': kleenToLinear,
+  'element': elementToLinear,
+  'epsilon': epsilonToLinear
+};
+
+tree.linearFormat = function (reg, arr) {
+  tree.linearFormatter[reg.type](reg, arr);
+};
+
+tree.toLinear = function (reg) {
+  reg = tree.simplify(reg, false);
+  var arr = [];
+  tree.linearFormat(reg, arr);
+
+  return arr;
+};
+
+let linear = {};
+
+linear.scope = {
+  'union': 0,
+  'concatnation': 1,
+  'kleene_star': 2,
+  'element': 3,
+  'epsilon': 3
+};
+
+linear.symbol = {
+  UNION: '+',
+  KLEEN: '*',
+  EPS: '$',
+  LEFTP: '(',
+  RIGHTP: ')',
+};
+
+linear.toString = function (reg) {
+  var expression = [];
+  for (var i = 0; i < reg.length; i++) {
+    var sigma = reg[i];
+    if (sigma.length != 1) {
+      throw error("Conversion failed, not a single char at " + i, i);
+    }
+    expression.push(sigma);
+  }
+  return expression.join("");
+};
+
 
 let regex = {
-  tree: tree
+  tree: tree,
+  linear: linear
 };
 
 exports.data = regex;
