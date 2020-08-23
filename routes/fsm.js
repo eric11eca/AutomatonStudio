@@ -26,12 +26,7 @@ router.post("/", (req, res, next) => {
 
 router.post("/generateAutomaton", (req, res, next) => {
 	var fsmType = req.body.fsmType;
-	var automaton = stateAutomaton.createRandomFsm(fsmType, 2, 1, 1);
-	//console.log("ENFA: ", automaton);
-	//automaton = stateAutomaton.convertEnfaToNfa(automaton);
-	//console.log("NFA: ", automaton);
-	//automaton = stateAutomaton.convertNfaToDfa(automaton);
-	//console.log("DFA: ", automaton);
+	var automaton = stateAutomaton.createRandomFsm(fsmType, 2, 2, 2);
 	return res.send(stateAutomaton.serializeFsmToString(automaton));
 });
 
@@ -39,13 +34,14 @@ router.post("/createAutomaton", (req, res, next) => {
 	var definition = req.body.definition;
 	var automaton = stateAutomaton.parseFsmFromString(definition);
 	var expression = stateAutomaton.toRegex(automaton);
-	console.log(JSON.stringify(expression, null, 2));
+	//console.log(JSON.stringify(expression, null, 2));
 	var linear = regex.tree.toLinear(expression);
 	var reg = regex.linear.toString(linear);
 	console.log(reg);
 	return res.send({
 		automaton,
-		reg
+		reg,
+		expression
 	});
 });
 

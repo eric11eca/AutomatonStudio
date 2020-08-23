@@ -478,6 +478,8 @@ $("#createAutomatonFsm").click(async function () {
 
 	automaton = response.automaton;
 	regex = response.reg;
+
+	console.log(response.expression);
 	$("#regex-input").val(regex);
 
 	initialize();
