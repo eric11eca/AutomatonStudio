@@ -26,7 +26,7 @@ router.post("/", (req, res, next) => {
 
 router.post("/generateAutomaton", (req, res, next) => {
 	var fsmType = req.body.fsmType;
-	var automaton = stateAutomaton.createRandomFsm(fsmType, 2, 2, 2);
+	var automaton = stateAutomaton.createRandomFsm(fsmType, 3, 3, 4);
 	return res.send(stateAutomaton.serializeFsmToString(automaton));
 });
 

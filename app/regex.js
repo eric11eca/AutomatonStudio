@@ -73,7 +73,7 @@ function copyAndDeleteProperties(o1, o2) {
 
 // $* => $
 tree._simplify_rule_eps = function (reg) {
-  if (reg.type == tree.constants.KLEEN && reg.expression == tree.constants.EPS) {
+  if (tree._isKLEEN(reg) && util.areEquivalent(reg.expression, tree.makeEpsilon())) {
     reg.type = reg.expression.type;
     delete reg.expression;
     return true;
@@ -83,7 +83,7 @@ tree._simplify_rule_eps = function (reg) {
 
 // $a => a
 tree._simplify_rule_eps_concat = function (reg) {
-  if (reg.type == tree.constants.CONCAT && reg.components.length > 1) {
+  if (tree._isCONCAT(reg) && reg.components.length > 1) {
     for (var i = 0; i < reg.components.length; i++) {
       if (reg.components[i].type == tree.constants.EPS) {
         reg.components.splice(i, 1);
@@ -97,12 +97,10 @@ tree._simplify_rule_eps_concat = function (reg) {
 // (a) => a
 tree._simplify_single = function (reg) {
   if (tree._isUNION(reg) && reg.children.length == 1) {
-    //console.log("UNION: ", JSON.stringify(reg, null, 2));
     reg.type = reg.children[0].type;
     copyAndDeleteProperties(reg, reg.children[0]);
     return true;
-  } else if (tree._isCONCAT(reg) && reg.components == 1) {
-    //console.log("SEQ: ", JSON.stringify(reg, null, 2));
+  } else if (tree._isCONCAT(reg) && reg.components.length == 1) {
     reg.type = reg.components[0].type;
     copyAndDeleteProperties(reg, reg.components[0]);
     return true;
@@ -171,18 +169,14 @@ tree._simplify_rule_kleen_3 = function (reg) {
 };
 
 // (a+(b+c)) => a+b+c
-tree._simplify_rule_concat_parent = function (reg) {
-  if (reg.type == tree.constants.UNION && RegExp.children.length > 1) {
-    var dict = {
-      type: tree.constants.UNION,
-      obj: ""
-    };
-    var unionIdx = tree._findIndex(reg.children, dict, ['type']);
+tree._simplify_rule_union_parent = function (reg) {
+  if (tree._isUNION(reg) && reg.children.length > 1) {
+    var unionIdx = tree._findIndex(reg.children, tree.constants.UNION);
     if (unionIdx >= 0) {
       var child = reg.children[unionIdx];
       reg.children.splice(unionIdx, 1);
       for (i = 0; i < child.children.length; i++) {
-        reg.children.splice(unionIdx + 1, 0, child.children[i]);
+        reg.children.splice(unionIdx + i, 0, child.children[i]);
       }
       return true;
     }
@@ -192,16 +186,12 @@ tree._simplify_rule_concat_parent = function (reg) {
 // ab(cd) => abcd
 tree._simplify_rule_concat_parent = function (reg) {
   if (reg.type == tree.constants.CONCAT && reg.components.length > 1) {
-    var dict = {
-      type: tree.constants.CONCAT,
-      obj: ""
-    };
-    var concatIdx = tree._findIndex(reg.components, dict, ['type']);
+    var concatIdx = tree._findIndex(reg.components, tree.constants.CONCAT);
     if (concatIdx >= 0) {
       var component = reg.components[concatIdx];
       reg.components.splice(concatIdx, 1);
       for (var i = 0; i < component.components.length; i++) {
-        reg.componsnets.splice(concatIdx + 1, 0, component.components[concatIdx]);
+        reg.components.splice(concatIdx + i, 0, component.components[i]);
       }
       return true;
     }
@@ -209,24 +199,35 @@ tree._simplify_rule_concat_parent = function (reg) {
   return false;
 };
 
+tree._findIndex = function (arr, type) {
+  for (var i = 0; i < arr.length; i++) {
+    if (arr[i].type == type) {
+      return i;
+    }
+  }
+  return -1;
+};
+
 // a+a => a
 tree._simplify_rule_equal_union = function (reg) {
-  if (reg.type == tree.constants.UNION && reg.children.length > 1) {
+  if (tree._isUNION(reg) && reg.children.length > 1) {
     for (var i = 0; i < reg.children.length - 1; i++) {
-      var dict = {
-        type: "",
-        obj: reg.children[i]
-      };
-      var equivIdx = tree._findIndex(reg.children.slice(i + 1), dict, ['obj']);
-
-      if (equivIdx >= 0) {
-        reg.children.splice(equivIdx, 1);
+      var found = -1;
+      for (var j = i + 1; j < reg.children.length; j++) {
+        if (util.areEquivalent(reg.children[i], reg.children[j])) {
+          found = j;
+          break;
+        }
+      }
+      if (found >= 0) {
+        reg.children.splice(j, 1);
         return true;
       }
     }
   }
   return false;
 };
+
 
 // a+a* => a*
 tree._simplify_rule_union_kleen = function (reg) {
@@ -272,7 +273,7 @@ tree._simplify_rule_multi_eq_union = function (reg) {
     for (var i = 0; i < reg.expression.children.length; i++) {
       for (var j = 0; j < reg.children.length; j++) {
         if (i != j && reg.expression.children[j].type === tree.constants.CONCAT &&
-          reg.expression.children[j].componsnets.length > 1) {
+          reg.expression.children[j].components.length > 1) {
           var flag = true;
           for (var k = 0; k < reg.expression.children[j].components.length; k++) {
             if (!(util.areEquivalent(reg.expression[i],
@@ -292,18 +293,16 @@ tree._simplify_rule_multi_eq_union = function (reg) {
   return false;
 };
 
-// (a + $)* => (a)*
+// (a+$)* => (a)*
 tree._simplify_rule_Kleen_Union_Eps = function (reg) {
   if (reg.type == tree.constants.KLEEN &&
     reg.expression.type == tree.constants.UNION &&
     reg.expression.children.length > 1) {
-    var dict = {
-      type: tree.constants.EPS,
-      obj: ""
-    };
-    var idx = tree._findIndex(reg.expression.children, dict, ['type']);
-    reg.expression.children.splice(idx, 1);
-    return true;
+    var idx = tree._findIndex(reg.expression.children, tree.constants.EPS);
+    if (idx >= 0) {
+      reg.expression.children.splice(idx, 1);
+      return true;
+    }
   }
   return false;
 };
@@ -560,14 +559,15 @@ tree._simplify_eps_langauge = function (reg, fsmCache) {
 };
 
 tree.atomic_simplification_rules = {
+  "$* => $": tree._simplify_rule_eps,
+  "$a => a": tree._simplify_rule_eps_concat,
   "(a) => a": tree._simplify_single,
   "(a*)* => a*": tree._simplify_rule_kleen_1,
   "(a+b*)* => (a+b)*": tree._simplify_rule_kleen_2,
   "$+a* => a*": tree._simplify_rule_eps_kleen_union,
   "(a*b*)* => (a*+b*)*": tree._simplify_rule_kleen_3,
-  "(a+(b+c)) => a+b+c": tree._simplify_rule_concat_parent,
+  "(a+(b+c)) => a+b+c": tree._simplify_rule_union_parent,
   "ab(cd) => abcd": tree._simplify_rule_concat_parent,
-  "a+a => a": tree._simplify_rule_equal_union,
   "a+a* => a*": tree._simplify_rule_union_kleen,
   "a*a* => a*": tree._simplify_rule_equal_kleen,
   "(aa+a)* => (a)*": tree._simplify_rule_multi_eq_union,
@@ -578,7 +578,8 @@ tree.atomic_simplification_rules = {
   "a*aa* => aa*": tree._simplify_rule_multi_kleen_concat,
   "(ab+cb) => (a+c)b": tree._simplify_rule_distributive2,
   "a*($+b(a+b)*) => (a+b)*": tree._simplify_kleen_contain1,
-  "($+(a+b)*a)b* => (a+b)*": tree._simplify_kleen_contain2
+  "($+(a+b)*a)b* => (a+b)*": tree._simplify_kleen_contain2,
+  "a+a => a": tree._simplify_rule_equal_union
 };
 
 tree.complex_simplification_rules = {
@@ -651,15 +652,26 @@ tree.applySimplificationRule = function (reg, rule, fsmCache) {
 tree.simplify = function (reg, isComplex) {
   var treeClone = util.clone(reg);
   var appliedPattern = "";
-  var iterCount = 0;
+  //var iterCount = 0;
   var fsmCache = {};
-  var applied = [];
+  var applied = {};
 
   while (appliedPattern != null) {
+    //console.log("BATCH: ", iterCount);
     appliedPattern = tree.applyAllSimplificationRules(treeClone, fsmCache, isComplex);
     if (appliedPattern != null) {
-      applied.push(appliedPattern);
+      //console.log("Pattern: ", appliedPattern);
+      if (applied.hasOwnProperty(appliedPattern)) {
+        applied[appliedPattern] += 1;
+      } else {
+        applied[appliedPattern] = 1;
+      }
     }
+    //var arr = [];
+    //tree.linearFormat(treeClone, arr);
+    //console.log(linear.toString(arr));
+    //iterCount += 1;
+    //console.log("**************************");
   }
   return treeClone;
 };
@@ -673,23 +685,6 @@ function getOrCreateFsm(reg, fsms) {
   fsms[reg] = fsm;
   return fsm;
 }
-
-tree._findIndex = function (arr, dict, criteria) {
-  for (var i = 0; i < arr.length; i++) {
-    var satisfied = true;
-    if (criteria.includes('type')) {
-      satisfied = tree._isType(arr[i], dict.type);
-    } else if (criteria.includes('type+')) {
-      satisfied = tree._isType(arr[i], dict.type) && _isType(arr[i + 1], obj);
-    } else if (criteria.includes('obj')) {
-      satisfied = tree._areEquivalebt(arr[i], dict.obj);
-    } else if (criteria.includes('obj+')) {
-      satisfied = tree._areEquivalebt(arr[i], arr[i + 1]);
-    }
-    if (satisfied) return i;
-  }
-  return -1;
-};
 
 tree._automatonFromUnion = function (regex, automaton, stateCounter) {
   var l = fsm.addState(automaton, stateCounter.getAndAdvance());
@@ -739,9 +734,7 @@ var linearWrap = function (outter, inner, arr, length) {
     //console.log("Length: ", length);
     //console.log("Before: ", arr.join(""));
     arr.push(linear.symbol.LEFTP);
-    var prev_len = arr.length;
     tree.linearFormat(inner, arr);
-
     arr.push(linear.symbol.RIGHTP);
     //console.log("After: ", arr.join(""));
   } else {
