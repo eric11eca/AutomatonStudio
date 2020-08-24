@@ -56,6 +56,15 @@ util.areEquivalent = function (object1, object2) {
 	return true;
 };
 
+util.containsInSet = function (set1, obj){
+	for (var itemInSet of set1){
+		if(util.areEquivalent(itemInSet, obj)){
+			return true;
+		}
+	}
+	return false;
+};
+
 // check if array arr contains obj starting from index startIndex
 util.contains = function (arr, obj, startIndex) {
 	startIndex = startIndex ? startIndex : 0;

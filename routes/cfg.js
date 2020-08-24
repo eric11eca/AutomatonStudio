@@ -7,7 +7,8 @@ router.use(bodyParser.urlencoded({
 	extended: true
 }));
 
-let stateAutomaton = require("../app/cfg.js").data;
+let cfgGrammar = require("../app/cfg.js").data;
+let cfgInput = "";
 
 router.get("/", (request, response) => {
 	response.render("cfg", {
@@ -22,5 +23,15 @@ router.post("/", (req, res, next) => {
 		redirect: '/cfg'
 	});
 });
+
+router.post('/generateCFG', (req, res, next) => {
+	cfgInput = req.body.cfgInput;
+	//console.log(cfgInput.split('->'));
+	var result = cfgGrammar.createCFG();
+	cfgGrammar.parseInputIn(cfgInput.split('\n') , result);
+	console.log(result);
+	return res.send("1");
+	//return res.send(result);
+})
 
 module.exports = router;

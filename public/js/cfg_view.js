@@ -11,6 +11,9 @@ var box_x = wrapper_x.querySelector('#cfg-raw');
 //var box_x_right = wrapper_x_right.querySelector('#cfg-right');
 var isDividerXDragged = false;
 //var isDividerXDraggedRight = false;
+let generate = document.querySelector('#run');
+let cfgInput = document.querySelector('#cfg-input');
+let result = document.querySelector('#cfg-right');
 
 document.addEventListener('mousedown', function (e) {
   if (e.target === divider_x) {
@@ -49,3 +52,34 @@ function divider_horizontal_handler(e, isleft) {
   box.style.height = (Math.max(boxMinHeight, pointerRelativeYpos - 8)) + 'px';
   box.style.flexGrow = 0;
 }
+
+generate.addEventListener('click', function (e) {
+    e.preventDefault();
+    if(cfgInput.value == ""){
+      return;
+    }
+    result.innerHTML = "";
+    
+    fetch('/cfg/generateCFG', {
+      method: "POST",
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({cfgInput: cfgInput.value})
+    }).then((response) => {
+      //console.log(response);
+      if(!response.ok){
+        throw new Error("Unable to generate context-free grammar");
+      }
+      response.text().then(text => {
+        //console.log(text);
+        result.innerHTML = text;
+      });
+
+      return result;
+    }).catch((err) => {
+      //console.log(err);
+    });
+    
+});

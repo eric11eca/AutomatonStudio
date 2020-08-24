@@ -25,17 +25,17 @@ cfg._addRule = function(arr1, arr2, obj1, obj2, arr_alphabet, ifpredefined, mess
         throw new Error(message3);
     }
 
-    if(!ifpredefined && util.contains(arr_alphabet, obj1)){
-        arr_alphabet.delete(obj);
+    if(!ifpredefined && util.containsInSet(arr_alphabet, obj1)){
+        arr_alphabet.delete(obj1);
     }
     arr1.add(obj1);
     if(!ifpredefined){
     for (i = 0; i<obj2.length; i++){
-        if(!util.contains(arr_alphabet, obj2[i]) && !util.contains(arr1,obj2[i])){
+        if(!util.containsInSet(arr_alphabet, obj2[i]) && !util.containsInSet(arr1,obj2[i])){
             arr_alphabet.add(obj2[i]);
         }
     }
-    }   
+    }
     arr2.add([obj1,obj2]);
     return true;
 }
@@ -43,7 +43,7 @@ cfg._addRule = function(arr1, arr2, obj1, obj2, arr_alphabet, ifpredefined, mess
 cfg.addRule = function(grammar, leftside, rightside){
     
     grammar.ifchecked = false;
-    var output = cfg._addRule(grammar.nonterminals, grammar.rules, leftside, rightside, grmmar.alphabet, grammar.ifpredefined, "Empty given Leftside", "Empty given rightside");
+    var output = cfg._addRule(grammar.nonterminalAlphabet, grammar.rules, leftside, rightside, grammar.alphabet, grammar.ifpredefined, "Empty given Leftside", "Empty given rightside");
     if (grammar.nonterminalAlphabet.size == 1){
         grammar.starting = leftside;
     }
@@ -66,7 +66,7 @@ cfg.checkGrammar = function(grammar){
             }
             for (j = 0; j < temp[1].length; j++){
                 var rightside = temp[1];
-                if (!util.contains(grammar.alphabet, rightside[j]) && !util.contains(grammar.nonterminals, rightside[j])){
+                if (!util.containsInSet(grammar.alphabet, rightside[j]) && !util.containsInSet(grammar.nonterminals, rightside[j])){
                     return false;
                 }
             }
@@ -76,7 +76,7 @@ cfg.checkGrammar = function(grammar){
         var toCheck = util.clone(grammar.nonterminalAlphabet);
         for (var itemToCheck of toCheck){
             var loop = new Set();
-            if(!util.contains(finites, itemToCheck)){
+            if(!util.containsInSet(finites, itemToCheck)){
                 if(!cfg.checkSymbol(toCheck, grammar.rules, itemToCheck, loop, finites)){
                     return false;
                 }
@@ -93,8 +93,8 @@ cfg.checkSymbol = function(nonterminals, rules, symbol, looped, finites){
         if(rule[0].localeCompare(symbol)){
             var rightside = rule[1];
             for(i = 0; i<rightside.length;i++){
-                if(!(util.contains(finites, rightside[i]) || !util.contains(nonterminals, rightside[i]))){
-                if(!util.contains(looped, rightside[i])){
+                if(!(util.containsInSet(finites, rightside[i]) || !util.containsInSet(nonterminals, rightside[i]))){
+                if(!util.containsInSet(looped, rightside[i])){
                     looped.add(rightside[i]);
                     if(cfg.checkSymbol(nonterminals, rules, rightside[i], looped, finites)){
                         finites.add(rightside[i]);
@@ -204,7 +204,7 @@ cfg.modifyRule = function(rule, arr, nonterminals, symbol, indexes){
         arr1.splice(i,1);
         var ruleNext = util.clone(rule);
         ruleNext.splice(arr1[i],1);
-        if(!util.contains(arr, ruleNext) && !(ruleNext.length == 1 && ruleNext[0].localeCompare(symbol))){
+        if(!util.containsInSet(arr, ruleNext) && !(ruleNext.length == 1 && ruleNext[0].localeCompare(symbol))){
             arr.push(ruleNext);
             if(ruleNext.length>1 && arr1.length != 0){
             cfg.modifyRule(ruleNext, arr, nonterminals, symbol, arr1);
@@ -248,7 +248,7 @@ cfg.removeMixed = function(rules, terminals){
         if(ruleToModify[1].length > 1){
             var rightSideRule = ruleToModify[1];
             for(j = 0; j < rightSideRule.length; j++){
-                if(util.contains(terminals, rightSideRule[j])){
+                if(util.containsInSet(terminals, rightSideRule[j])){
                     rightSideRule[j] = terminalNames[terminalsArray.indexOf(rightSideRule[j])];
                 }
             }
@@ -286,6 +286,46 @@ cfg.convertToChomskyNormalForm = function(grammar){
     cfg.removeLong(grammar.rules);
 }
 
+cfg.parseInputIn = function(ruleArray, grammar){
+    for(k = 0; k<ruleArray.length; k++){
+        var leftSideCorrect = false;
+        var rightSideCorrect = false;
+        var ruleArr = ruleArray[k].split('->');
+        if(ruleArr.length != 2){
+            throw new Error("One Side is incorrect");
+        }
+        var leftSide = cfg.removeSpace(ruleArr[0]);
+        var rightSide = cfg.removeSpace(ruleArr[1]);
+        if(leftSide.length != 1){
+            throw new Error("Left Side length wrong");
+        }
+        if(rightSide.length == 0){
+            throw new Error('Right Side Empty');
+        }
+        rightSideArray = [];
+        for(j = 0; j< rightSide.length; j++){
+            if(rightSide[j] == '$'){
+                rightSideArray.push('Epsilon');
+            }else{
+                rightSideArray.push(rightSide[j]);
+            }
+        }
+        
+        cfg.addRule(grammar, leftSide, rightSideArray);
+    }
+}
+
+cfg.removeSpace = function(objString){
+    var output = "";
+    for(i = 0; i<objString.length;i++){
+        if(objString[i] != ' '){
+            output += objString[i];
+        }
+    }
+    return output;
+}
+
+exports.data = cfg;
 var names = {};
 name1 = "a1";
 name2 = 'a2';
