@@ -7,7 +7,8 @@ router.use(bodyParser.urlencoded({
 	extended: true
 }));
 
-let stateAutomaton = require("../app/stateAutomaton.js").data;
+let stateAutomaton = require("../app/stateAutomaton").data;
+let regex = require("../app/regex").data;
 
 router.get("/", (request, response) => {
 	response.render("fsm", {
@@ -25,20 +26,23 @@ router.post("/", (req, res, next) => {
 
 router.post("/generateAutomaton", (req, res, next) => {
 	var fsmType = req.body.fsmType;
-	var automaton = stateAutomaton.createRandomFsm(fsmType, 4, 3, 3);
-	//var expression = stateAutomaton.toRegex(automaton);
-	//console.log("ENFA: ", automaton);
-	//automaton = stateAutomaton.convertEnfaToNfa(automaton);
-	//console.log("NFA: ", automaton);
-	//automaton = stateAutomaton.convertNfaToDfa(automaton);
-	//console.log("DFA: ", automaton);
+	var automaton = stateAutomaton.createRandomFsm(fsmType, 3, 3, 4);
 	return res.send(stateAutomaton.serializeFsmToString(automaton));
 });
 
 router.post("/createAutomaton", (req, res, next) => {
 	var definition = req.body.definition;
 	var automaton = stateAutomaton.parseFsmFromString(definition);
-	return res.send(automaton);
+	var expression = stateAutomaton.toRegex(automaton);
+	//console.log(JSON.stringify(expression, null, 2));
+	var linear = regex.tree.toLinear(expression);
+	var reg = regex.linear.toString(linear);
+	console.log(reg);
+	return res.send({
+		automaton,
+		reg,
+		expression
+	});
 });
 
 router.post("/printDotFormat", (req, res, next) => {

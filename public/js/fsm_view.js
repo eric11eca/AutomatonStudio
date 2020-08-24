@@ -416,6 +416,7 @@ async function convertToAutomaton(regex) {
 }
 
 async function convertAutomaton(req, automaton) {
+	console.log(req);
 	let response = await fetch(req, {
 		method: "POST",
 		headers: {
@@ -450,7 +451,6 @@ $("#createAutomatonReg").click(async function () {
 	}
 
 	initialize();
-	//	$("#automatonGraph").css("background-color", "#f3f3f3");
 	drawGraph();
 	resetAutomaton();
 
@@ -473,8 +473,14 @@ $("#createAutomatonFsm").click(async function () {
 		transitions: $("#transition").val().split('\n')
 	};
 
-	automaton = await createAutomaton(definition);
-	automaton = JSON.parse(automaton);
+	var response = await createAutomaton(definition);
+	response = JSON.parse(response);
+
+	automaton = response.automaton;
+	regex = response.reg;
+
+	console.log(response.expression);
+	$("#regex-input").val(regex);
 
 	initialize();
 	drawGraph();

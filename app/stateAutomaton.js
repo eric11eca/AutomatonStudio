@@ -1234,8 +1234,10 @@ fsm.grammar = function (fsm) {
 fsm.inputsForTransitions = function (automaton, stateA, stateB) {
   var res = [];
 
-  for (var i = 0; i < automaton.transitions.length; i++) {
-    var transition = automaton.transitions[i];
+  var transitions = Object.values(automaton.transitions);
+
+  for (var i = 0; i < transitions.length; i++) {
+    var transition = transitions[i];
 
     if (util.areEquivalent(transition.fromState, stateA) &&
       util.contains(transition.toStates, stateB)) {
@@ -1280,17 +1282,19 @@ fsm.toRegex = function (automaton) {
   for (k = 1; k < n + 1; k++) {
     for (i = 0; i < n; i++) {
       for (j = 0; j < n; j++) {
-        var t1 = ((typeof r[k - 1][i][k - 1].choices !== "undefined" && r[k - 1][i][k - 1].choices.length === 0) ||
-          (typeof r[k - 1][k - 1][j].choices !== "undefined" && r[k - 1][k - 1][j].choices.length === 0) ||
-          (typeof r[k - 1][k - 1][k - 1].choices !== "undefined" && r[k - 1][k - 1][k - 1].choices.length === 0));
-        var t2 = (typeof r[k - 1][i][j].choices !== "undefined" && r[k - 1][i][j].choices.length === 0);
+        var t1 = ((typeof r[k - 1][i][k - 1].children !== "undefined" && r[k - 1][i][k - 1].children.length === 0) ||
+          (typeof r[k - 1][k - 1][j].children !== "undefined" && r[k - 1][k - 1][j].children.length === 0) ||
+          (typeof r[k - 1][k - 1][k - 1].children !== "undefined" && r[k - 1][k - 1][k - 1].children.length === 0));
+        var t2 = (typeof r[k - 1][i][j].children !== "undefined" && r[k - 1][i][j].children.length === 0);
 
         var seq = null;
 
         if (r[k - 1][k - 1][k - 1].tag === regex.tree.constants.EPS) {
           seq = regex.tree.makeConcatnation([r[k - 1][i][k - 1], r[k - 1][k - 1][j]]);
         } else {
-          seq = regex.tree.makeConcatnation([r[k - 1][i][k - 1], regex.tree.makeKleenStar(r[k - 1][k - 1][k - 1]), r[k - 1][k - 1][j]]);
+          seq = regex.tree.makeConcatnation([r[k - 1][i][k - 1],
+            regex.tree.makeKleenStar(r[k - 1][k - 1][k - 1]), r[k - 1][k - 1][j]
+          ]);
         }
 
         var alt = [];
@@ -1314,7 +1318,7 @@ fsm.toRegex = function (automaton) {
   var acceptableStatesIndexes = [];
 
   for (i = 0; i < automaton.states.length; i++) {
-    if (util.areEquivalent(automaton.states[i], automaton.initialState)) {
+    if (util.areEquivalent(automaton.states[i], automaton.starting)) {
       startStateIndex = i;
     }
 
