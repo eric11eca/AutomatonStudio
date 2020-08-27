@@ -34,14 +34,22 @@ router.post("/createAutomaton", (req, res, next) => {
 	var definition = req.body.definition;
 	var automaton = stateAutomaton.parseFsmFromString(definition);
 	var expression = stateAutomaton.toRegex(automaton);
-	//console.log(JSON.stringify(expression, null, 2));
 	var linear = regex.tree.toLinear(expression);
 	var reg = regex.linear.toString(linear);
-	console.log(reg);
 	return res.send({
 		automaton,
 		reg,
 		expression
+	});
+});
+
+router.post("/convertToAutomaton", (req, res, next) => {
+	var regular = req.body.regex;
+	var regularLinear = regex.linear.fromString(regular);
+	var regularTree = regex.linear.toTree(regularLinear);
+	var automaton = regex.tree.toAutomaton(regularTree);
+	return res.send({
+		automaton
 	});
 });
 

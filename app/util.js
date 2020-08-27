@@ -1,5 +1,38 @@
 util = {};
 
+util.Stack = function (capacity) {
+	this._capacity = capacity || Infinity;
+	this._storage = {};
+	this.count = 0;
+};
+
+util.Stack.prototype.push = function (val) {
+	if (this._count < this._capacity) {
+		this._storage[this._count + 1] = val;
+		this._count += 1;
+		return this._count;
+	}
+	return 'Max capacity already reached. Remove element before adding a new one.';
+};
+
+util.Stack.prototype.pop = function () {
+	var value = this._storage[this._count - 1];
+	this._count -= 1;
+	delete this._storage[this._count];
+	if (this._count < 0) {
+		this._count = 0;
+	}
+	return value;
+};
+
+util.Stack.prototype.peek = function () {
+	return this._storaget[this._count - 1];
+};
+
+util.Stack.prototype.size = function (val) {
+	return this._count;
+};
+
 util.areEquivalent = function (object1, object2) {
 	if (object1 === object2) {
 		return true;
@@ -56,9 +89,9 @@ util.areEquivalent = function (object1, object2) {
 	return true;
 };
 
-util.containsInSet = function (set1, obj){
-	for (var itemInSet of set1){
-		if(util.areEquivalent(itemInSet, obj)){
+util.containsInSet = function (set1, obj) {
+	for (var itemInSet of set1) {
+		if (util.areEquivalent(itemInSet, obj)) {
 			return true;
 		}
 	}
@@ -223,6 +256,10 @@ util.makeCounter = (function () {
 // Returns a random integer from the interval [from, to].
 util.randint = function (from, to) {
 	return Math.floor(Math.random() * (to - from + 1)) + from;
+};
+
+util.printJson = function (expression) {
+	console.log(JSON.stringify(expression, null, 2));
 };
 
 exports.data = util;

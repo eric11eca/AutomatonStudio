@@ -435,7 +435,7 @@ $("#createAutomatonReg").click(async function () {
 	$("#automatonGraph").html("");
 	$("#inputString").html("<br>");
 
-	regex = $("#regex").val();
+	regex = $("#regex-input").val();
 	automatonType = $("#automatonType").val();
 	automaton = await convertToAutomaton(regex);
 
@@ -450,15 +450,15 @@ $("#createAutomatonReg").click(async function () {
 		automaton = await convertAutomaton("\fsm\convertStatesToNumbers", automaton);
 	}
 
-	initialize();
-	drawGraph();
-	resetAutomaton();
+	//initialize();
+	//drawGraph();
+	//resetAutomaton();
 
-	$("#generateRandomString").attr("disabled", false);
-	$("#generateRandomAcceptableString").attr("disabled", false);
-	$("#generateRandomUnacceptableString").attr("disabled", false);
-	$("#inputString").attr("disabled", false);
-	$("#startStop").attr("disabled", false);
+	//$("#generateRandomString").attr("disabled", false);
+	//$("#generateRandomAcceptableString").attr("disabled", false);
+	//$("#generateRandomUnacceptableString").attr("disabled", false);
+	//$("#inputString").attr("disabled", false);
+	//$("#startStop").attr("disabled", false);
 });
 
 $("#createAutomatonFsm").click(async function () {
@@ -479,7 +479,6 @@ $("#createAutomatonFsm").click(async function () {
 	automaton = response.automaton;
 	regex = response.reg;
 
-	console.log(response.expression);
 	$("#regex-input").val(regex);
 
 	initialize();

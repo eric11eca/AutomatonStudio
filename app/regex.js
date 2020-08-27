@@ -1,6 +1,3 @@
-let fsm = require("./stateAutomaton").data,
-  util = require("./util").data;
-
 let tree = {};
 
 tree.constants = {
@@ -11,6 +8,8 @@ tree.constants = {
   EPS: 'epsilon'
 };
 
+let util = require("./util").data;
+let fsm = require("./stateAutomaton").data;
 
 // Returns the root of a new tree that represents the expression that is the union of
 // all the choices.
@@ -686,17 +685,6 @@ function getOrCreateFsm(reg, fsms) {
   return fsm;
 }
 
-tree._automatonFromUnion = function (regex, automaton, stateCounter) {
-  var l = fsm.addState(automaton, stateCounter.getAndAdvance());
-  var r = fsm.addState(automaton, stateCounter.getAndAdvance());
-  for (var i = 0; i < regex.choices.length; i++) {
-    var statePair = _dispatchToAutomaton(regex.choices[i], automaton, stateCounter);
-    noam.fsm.addEpsilonTransition(automaton, l, [statePair[0]]);
-    noam.fsm.addEpsilonTransition(automaton, statePair[1], [r]);
-  }
-  return [l, r];
-};
-
 tree._areEquivalebt = function (obj1, obj2) {
   return util.areEquivalent(obj1, obj2);
 };
@@ -790,6 +778,102 @@ tree.toLinear = function (reg) {
   return arr;
 };
 
+function _recursiveConstruction(regex, automaton, stateGenerator) {
+  return tree.regexToAutomaton[regex.type](regex, automaton, stateGenerator);
+}
+
+tree._automatonFromUnion = function (regex, automaton, stateCounter) {
+  var l = fsm.addState(automaton, stateCounter.generate());
+  var r = fsm.addState(automaton, stateCounter.generate());
+  for (var i = 0; i < regex.children.length; i++) {
+    var statePair = _recursiveConstruction(regex.children[i], automaton, stateCounter);
+    fsm.addEpsilonTransition(automaton, l, [statePair[0]]);
+    fsm.addEpsilonTransition(automaton, statePair[1], [r]);
+  }
+  return [l, r];
+};
+
+tree._automatonFromConcat = function (regex, automaton, stateGenerator) {
+  var pair = _recursiveConstruction(regex.components[0], automaton, stateGenerator);
+  var fromState = pair[1];
+  var toState = pair[0];
+  for (var i = 0; i < regex.components.length; i++) {
+    fsm.addEpsilonTransition(automaton, fromState, [pair[0]]);
+  }
+  if (toState == undefined) {
+    fromState = fsm.addState(automaton, stateGenerator.generate());
+    toState = fsm.addState(automaton, stateGenerator.generate());
+  }
+  return [toState, fromState];
+};
+
+tree._automatonFromKleen = function (regex, automaton, stateGenerator) {
+  var fromState = fsm.addState(automaton, stateGenerator.generate());
+  var toState = fsm.addState(automaton, stateGenerator.generate());
+  var composition = _recursiveConstruction(regex.expression, automaton, stateGenerator);
+  var compToState = composition[0];
+  var compFromState = composition[1];
+
+  fsm.addEpsilonTransition(automaton, fromState, [toState]);
+  fsm.addEpsilonTransition(automaton, fromState, [compToState]);
+  fsm.addEpsilonTransition(automaton, compFromState, [compToState]);
+  fsm.addEpsilonTransition(automaton, compFromState, [toState]);
+
+  return [fromState, toState];
+};
+
+tree._automatonFromElement = function (regex, automaton, stateGenerator) {
+  var fromState = fsm.addState(automaton, stateGenerator.generate());
+  var toState = fsm.addState(automaton, stateGenerator.generate());
+
+  if (!(util.contains(automaton.alphabet, regex.obj))) {
+    fsm.addAlphabet(automaton, regex.obj);
+  }
+
+  fsm.addTransition(automaton, fromState, [toState], regex.obj);
+  return [fromState, toState];
+};
+
+tree._automatonFromEpsilon = function (regex, automaton, stateGenerator) {
+  var fromState = fsm.addState(automaton, stateGenerator.generate());
+  var toState = fsm.addState(automaton, stateGenerator.generate());
+  fsm.addEpsilonTransition(automaton, fromState, [toState]);
+  return [fromState, toState];
+};
+
+tree.toAutomaton = function (regex) {
+  fsm = require("./stateAutomaton").data;
+  var automaton = fsm.createFSM();
+  var statePair = _recursiveConstruction(regex, automaton, tree.stateGenerator(0));
+  fsm.setStartingState(automaton, statePair[0]);
+  fsm.addAcceptingState(automaton, statePair[1]);
+  return automaton;
+};
+
+tree.regexToAutomaton = {
+  "union": tree._automatonFromUnion,
+  "concatnation": tree._automatonFromConcat,
+  'kleene_star': tree._automatonFromKleen,
+  'element': tree._automatonFromElement,
+  'epsilon': tree._automatonFromEpsilon
+};
+
+tree.stateGenerator = (function () {
+  function generate() {
+    this.index += 1;
+    return 's' + this.index.toString();
+  }
+
+  function stateGenerator(init) {
+    return {
+      index: init,
+      generate: generate
+    };
+  }
+
+  return stateGenerator;
+})();
+
 let linear = {};
 
 linear.scope = {
@@ -808,6 +892,106 @@ linear.symbol = {
   RIGHTP: ')',
 };
 
+linear.toTree = function (arr) {
+  if (arr.length == 0) {
+    return tree.makeConcatnation([]);
+  }
+  var reg = linear.regular(arr);
+  var parsedReg = linear._parseRegex(reg);
+  if (peek(reg) != undefined) {
+    throw new error("Parse Incomplete");
+  }
+  return parsedReg;
+};
+
+/**
+ * EBNF context-free grammar for parsing regular expression
+ * <regex>  :: = <regex> :: = <term> '|' <regex> | <term>
+   <term>   :: = { <factor> }
+   <factor> :: = <base> { '*' }
+   <base>   :: = <char> | '\' <char> | '(' <regex> ')'
+ */
+
+linear.regular = function (arr) {
+  return {
+    arr: arr,
+    parseIdx: 0,
+  };
+};
+let peek = function (reg) {
+  return reg.arr[reg.parseIdx];
+};
+let next = function (reg) {
+  reg.parseIdx += 1;
+};
+
+//<regex> :: = <term> '|' <regex> | <term>
+linear._parseRegex = function (reg) {
+  terms = [];
+  while (reg.parseIdx < reg.arr.length) {
+    terms.push(linear._parseTerm(reg));
+    if (peek(reg) == linear.symbol.UNION) {
+      next(reg);
+    } else {
+      break;
+    }
+  }
+  return tree.makeUnion(terms);
+};
+
+//<term> :: = { <factor> }
+linear._parseTerm = function (reg) {
+  var factors = [];
+  var factor;
+  while (true) {
+    factor = this._parseFactor(reg);
+    if (factor == undefined) {
+      break;
+    }
+    factors.push(factor);
+  }
+  if (factors.length === 0) {
+    throw new error("empty concatnation");
+  }
+  return tree.makeConcatnation(factors);
+};
+
+
+//<factor> :: = <base> { '*' }
+linear._parseFactor = function (reg) {
+  var base = linear._parseBase(reg);
+  if (peek(reg) == linear.symbol.KLEEN) {
+    next(reg);
+    base = tree.makeKleenStar(base);
+  }
+  return base;
+};
+
+//<base> :: = <char> | '\' <char> | '(' <regex> ')'
+linear._parseBase = function (reg) {
+  if (peek(reg) == linear.symbol.LEFTP) {
+    next(reg);
+    var parsed = linear._parseRegex(reg);
+    if (peek(reg) !== linear.symbol.RIGHTP) {
+      throw new error("Expression not enclosed");
+    }
+    next(reg);
+    return parsed;
+  } else if (peek(reg) == linear.symbol.EPS) {
+    next(reg);
+    return tree.makeEpsilon();
+  } else if (peek(reg) == linear.symbol.UNION || peek(reg) == linear.symbol.RIGHTP ||
+    peek(reg) == undefined) {
+    return undefined;
+  } else if (peek(reg) == linear.symbol.KLEEN) {
+    throw new error("Kleen set on an empty expression");
+  } else {
+    var char = tree.makeElement(peek(reg));
+    next(reg);
+    return char;
+  }
+};
+
 linear.toString = function (reg) {
   var expression = [];
   for (var i = 0; i < reg.length; i++) {
@@ -820,6 +1004,13 @@ linear.toString = function (reg) {
   return expression.join("");
 };
 
+linear.fromString = function (reg) {
+  var arr = [];
+  for (var i = 0; i < reg.length; i++) {
+    arr.push(reg[i]);
+  }
+  return arr;
+};
 
 let regex = {
   tree: tree,
