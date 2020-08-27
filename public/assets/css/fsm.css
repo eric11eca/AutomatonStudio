@@ -3,10 +3,30 @@
 	display: flex;
 	flex-direction: column;
 	flex-grow: 1;
-	background-color: #283745;
+	background-color: #222425;
 	color: white;
-	padding: 0 5%;
+	padding: 1% 5%;
 	align-items: center;
+}
+
+#composeRegex {
+	border-top-color: rgb(66, 70, 72);
+	border-right-color: rgb(66, 70, 72);
+	border-bottom-color: rgb(66, 70, 72);
+	border-left-color: rgb(66, 70, 72);
+	padding: 20px;
+	background-color: #283745;
+	height: 70%;
+}
+
+#composeAutomaton {
+	border-top-color: rgb(66, 70, 72);
+	border-right-color: rgb(66, 70, 72);
+	border-bottom-color: rgb(66, 70, 72);
+	border-left-color: rgb(66, 70, 72);
+	padding: 20px;
+	background-color: #283745;
+	height: 70%;
 }
 
 .control-bar {
@@ -296,7 +316,7 @@ th {
 
 .graph {
 	margin-top: 5%;
-	min-height: 300px;
+	min-height: 250px;
 	background-color: #f3f3f3;
 }
 

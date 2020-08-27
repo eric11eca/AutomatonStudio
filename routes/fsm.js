@@ -43,11 +43,35 @@ router.post("/createAutomaton", (req, res, next) => {
 	});
 });
 
-router.post("/convertToAutomaton", (req, res, next) => {
+router.post("/convertRegexToAutomaton", (req, res, next) => {
 	var regular = req.body.regex;
 	var regularLinear = regex.linear.fromString(regular);
 	var regularTree = regex.linear.toTree(regularLinear);
 	var automaton = regex.tree.toAutomaton(regularTree);
+	return res.send({
+		automaton
+	});
+});
+
+router.post("/convertEnfaToNfa", (req, res, next) => {
+	var automaton = req.body.automaton;
+	automaton = stateAutomaton.convertEnfaToNfa(automaton);
+	return res.send({
+		automaton
+	});
+});
+
+router.post("/convertNfaToDfa", (req, res, next) => {
+	var automaton = req.body.automaton;
+	automaton = stateAutomaton.convertNfaToDfa(automaton);
+	return res.send({
+		automaton
+	});
+});
+
+router.post("/minimizeAutomaton", (req, res, next) => {
+	var automaton = req.body.automaton;
+	automaton = stateAutomaton.minimize(automaton);
 	return res.send({
 		automaton
 	});

@@ -23,53 +23,41 @@ block content
 							.toolbar__title Compose Automaton
 							.toolbar__spinner
 
-				//h3  &#x2460; Compose Automaton 
-				//ul.nav.nav-tabs
-					li#fsminput.active
-						a(href='#tab1' data-toggle='tab') Input automaton
-					li#regexinput
-						a(href='#tab2' data-toggle='tab') Input regex
-				//.tab-content
-				//#tab1.tab-pane.active
-				//.instructions
+				#composeAutomaton
+					p(style="margin-top: 10px")
+						button#generateDFA Generate random DFA
+						button#generateNFA Generate random NFA
+						button#generateENFA Generate random eNFA
 					p
-						| Compose FSM from definition and transitions
-					p
-						| Follow the formal definition of a FSM
-				p(style="margin-top: 10px")
-					button#generateDFA Generate random DFA
-					button#generateNFA Generate random NFA
-					button#generateENFA Generate random eNFA
-				p
-					table.state-table
-						colgroup
-							col(span='1' style='width: 10%;')
-							col(span='1' style='width: 35%;')
-							col(span='1' style='width: 55%;')
-						tr
-							td
-								span(style='margin-left: 10px;') States:  
-							td
-								input#states.input-block-level(type='text' placeholder='...' spellcheck='false')
-							td(rowspan='4')
-								span(style='margin-left: 10px;') Transitions:
-								textarea#transition.input-block-level(type='text' placeholder='...' spellcheck='false')
-						tr
-							td
-								span(style='margin-left: 10px;') Alphabet:
-							td
-								input#alphabet.input-block-level(type='text' placeholder='...' spellcheck='false')
-						tr
-							td
-								span(style='margin-left: 10px;') Starting:
-							td
-								input#start.input-block-level(type='text' placeholder='...' spellcheck='false')
-						tr
-							td
-								span(style='margin-left: 10px;') Accepting:
-							td
-								input#accept.input-block-level(type='text' placeholder='...' spellcheck='false')
-				p#fsmError.text-error
+						table.state-table
+							colgroup
+								col(span='1' style='width: 10%;')
+								col(span='1' style='width: 35%;')
+								col(span='1' style='width: 55%;')
+							tr
+								td
+									span(style='margin-left: 10px;') States:  
+								td
+									input#states.input-block-level(type='text' placeholder='...' spellcheck='false')
+								td(rowspan='4')
+									span(style='margin-left: 10px;') Transitions:
+									textarea#transition.input-block-level(type='text' placeholder='...' spellcheck='false')
+							tr
+								td
+									span(style='margin-left: 10px;') Alphabet:
+								td
+									input#alphabet.input-block-level(type='text' placeholder='...' spellcheck='false')
+							tr
+								td
+									span(style='margin-left: 10px;') Starting:
+								td
+									input#start.input-block-level(type='text' placeholder='...' spellcheck='false')
+							tr
+								td
+									span(style='margin-left: 10px;') Accepting:
+								td
+									input#accept.input-block-level(type='text' placeholder='...' spellcheck='false')
+					p#fsmError.text-error
 
 			.span6.column 
 				.control-bar
@@ -88,47 +76,19 @@ block content
 							.toolbar__spinner
 							.toolbar__title Compose Regular Expression
 							.toolbar__spinner
-					//#tab2.tab-pane
-					//h3  &#x2460; Regular Expression 
-					//.instructions
-						p
-							| Enter a regular expression into the input field below or click 
-							strong Generate random regex
-							|  to have the app generate a simple regex randomly for you.
-							| &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Next, click 
-							strong Create automaton
-							|  to create a FSM for the defined regex and display its transition graph.
-						p
-							| A valid regex consists of alphanumeric characters representing the set of input symbols (e.g. 
-							code a
-							| , 
-							code B
-							| , 
-							code 9
-							| ), the 
-							code $
-							|  character representing the empty string, the choice operator 
-							code +
-							| , the Kleene operator 
-							code *
-							| , and parentheses 
-							code (
-							|  and 
-							code )
-							| . An example of a valid regex is: 
-							code (a+B)*(c9+$)+$
-							| .
-				p
-					button#generateRegex Generate random regex
-				p
-					.control-group
-						input#regex-input.input-block-level(type='text' placeholder='or write your own' spellcheck='false')
-				p
-					.control-group
-						select#automatonType
-							option(value='eNFA' default='true') eNFA
-							option(value='NFA') NFA
-							option(value='DFA') DFA
+				#composeRegex
+					p
+						button#generateRegex Generate random regex
+					p
+						.control-group
+							input#regex-input.input-block-level(type='text' placeholder='or write your own' spellcheck='false')
+					p
+						.control-group
+							select#automatonType
+								option(value='eNFA' default='true') eNFA
+								option(value='NFA') NFA
+								option(value='DFA') DFA
+								
 		.sim-graph 
 			.control-bar
 				.toolbar
