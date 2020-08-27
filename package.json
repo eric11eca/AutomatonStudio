@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Toolbox for computational logic",
   "main": "index.js",
-  "repository": "https://github.com/eric11eca/computational-logic-toolbox.git",
+  "repository": "https://github.com/eric11eca/AutomatonStudio.git",
   "directories": {
     "app": "app",
     "views": "views",
