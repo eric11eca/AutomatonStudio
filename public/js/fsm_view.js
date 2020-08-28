@@ -400,7 +400,7 @@ $("#generateENFA").click(function () {
 	generateAutomaton("ENFA");
 });
 
-async function convertRegexToAutomaton(regex) {
+async function convertRegexToAutomaton(regex, automatonType) {
 	let response = await fetch('/fsm/convertRegexToAutomaton', {
 		method: "POST",
 		headers: {
@@ -408,31 +408,8 @@ async function convertRegexToAutomaton(regex) {
 			"Content-Type": "application/json"
 		},
 		body: JSON.stringify({
-			regex: regex
-		})
-	}).then((response) => {
-		if (!response.ok) {
-			throw new Error("Unable to convert regex to FSM");
-		}
-		response.text().then(text => {
-			process_automaton_df(text.split('#'));
-		});
-		return true;
-	}).catch((err) => {
-		console.log(err);
-	});
-}
-
-async function convertAutomaton(req, automaton) {
-	console.log(req);
-	let response = await fetch(req, {
-		method: "POST",
-		headers: {
-			"Accept": "application/json",
-			"Content-Type": "application/json"
-		},
-		body: JSON.stringify({
-			automaton: automaton
+			regex: regex,
+			automatonType: automatonType
 		})
 	});
 	let newFSM = await response.text();
@@ -445,18 +422,10 @@ $("#createAutomatonReg").click(async function () {
 
 	regex = $("#regex-input").val();
 	automatonType = $("#automatonType").val();
-	automaton = await convertRegexToAutomaton(regex);
-
-	if (automatonType == "NFA") {
-		automaton = await convertAutomaton("\fsm\convertEnfaToNfa", automaton);
-	}
-
-	if (automatonType == "DFA") {
-		automaton = await convertAutomaton("\fsm\convertEnfaToNfa", automaton);
-		automaton = await convertAutomaton("\fsm\convertNfaToDfa", automaton);
-		automaton = await convertAutomaton("\fsm\minimizeAutomaton", automaton);
-		//automaton = await convertAutomaton("\fsm\convertStatesToNumbers", automaton);
-	}
+	var response = await convertRegexToAutomaton(regex, automatonType);
+	response = JSON.parse(response);
+	automaton = response.automaton;
+	process_automaton_df(response.fsmString.split('#'));
 
 	initialize();
 	drawGraph();
@@ -521,72 +490,72 @@ $("#fsm").change(onRegexOrAutomatonChange);
 $("#fsm").keyup(onRegexOrAutomatonChange);*/
 
 /*function onRegexOrAutomatonChange() {
-  $("#automatonGraph").html("");
-  $("#inputString").html("<br>");
+	$("#automatonGraph").html("");
+	$("#inputString").html("<br>");
 
-  $("#generateRandomString").attr("disabled", true);
-  $("#generateRandomAcceptableString").attr("disabled", true);
-  $("#generateRandomUnacceptableString").attr("disabled", true);
-  $("#createAutomaton").attr("disabled", true);
-  $("#startStop").attr("disabled", true);
-  $("#inputFirst").attr("disabled", true);
-  $("#inputNext").attr("disabled", true);
-  $("#inputPrevious").attr("disabled", true);
-  $("#inputLast").attr("disabled", true);
-  $("#inputString").parent().html('<input id="inputString" type="text" class="input-block-level monospaceRegex" placeholder="See if this fits" disabled>');
-  $("#inputString").parent().removeClass("success error");
-  $("#inputString").keyup(onInputStringChange);
-  $("#inputString").change(onInputStringChange);
-  $("#startStop").text("Start");
-  $("#inputError").hide();
+	$("#generateRandomString").attr("disabled", true);
+	$("#generateRandomAcceptableString").attr("disabled", true);
+	$("#generateRandomUnacceptableString").attr("disabled", true);
+	$("#createAutomaton").attr("disabled", true);
+	$("#startStop").attr("disabled", true);
+	$("#inputFirst").attr("disabled", true);
+	$("#inputNext").attr("disabled", true);
+	$("#inputPrevious").attr("disabled", true);
+	$("#inputLast").attr("disabled", true);
+	$("#inputString").parent().html('<input id="inputString" type="text" class="input-block-level monospaceRegex" placeholder="See if this fits" disabled>');
+	$("#inputString").parent().removeClass("success error");
+	$("#inputString").keyup(onInputStringChange);
+	$("#inputString").change(onInputStringChange);
+	$("#startStop").text("Start");
+	$("#inputError").hide();
 
-  if (inputIsFSM) {
-    validateRegex();
-  } else {
-    validateFsm();
-  }
+	if (inputIsFSM) {
+		validateRegex();
+	} else {
+		validateFsm();
+	}
 }
 
 function validateFsm() {
-  var fsm = $("#transition").val();
+	var fsm = $("#transition").val();
 
-  if (fsm.length === 0) {
-    $("#transition").parent().removeClass("success error");
-    $("#fsmError").hide();
-  } else {
-    try {
-      noam.fsm.parseFsmFromString(fsm);
-      $("#transition").parent().removeClass("error");
-      $("#transition").parent().addClass("success");
-      $("#createAutomaton").attr("disabled", false);
-      $("#fsmError").hide();
-    } catch (e) {
-      $("#transition").parent().removeClass("success");
-      $("#transition").parent().addClass("error");
-      $("#fsmError").text("Error: " + e.message);
-      $("#fsmError").show();
-    }
-  }
+	if (fsm.length === 0) {
+		$("#transition").parent().removeClass("success error");
+		$("#fsmError").hide();
+	} else {
+		try {
+			noam.fsm.parseFsmFromString(fsm);
+			$("#transition").parent().removeClass("error");
+			$("#transition").parent().addClass("success");
+			$("#createAutomaton").attr("disabled", false);
+			$("#fsmError").hide();
+		} catch (e) {
+			$("#transition").parent().removeClass("success");
+			$("#transition").parent().addClass("error");
+			$("#fsmError").text("Error: " + e.message);
+			$("#fsmError").show();
+		}
+	}
 }
 
 function validateRegex() {
-  var regex = $("#regex").val();
+	var regex = $("#regex").val();
 
-  if (regex.length === 0) {
-    $("#regex").parent().removeClass("success error");
-    $("#fsmError").hide();
-  } else {
-    try {
-      noam.re.string.toTree(regex);
-      $("#regex").parent().removeClass("error");
-      $("#regex").parent().addClass("success");
-      $("#createAutomaton").attr("disabled", false);
-      $("#fsmError").hide();
-    } catch (e) {
-      $("#regex").parent().removeClass("success");
-      $("#regex").parent().addClass("error");
-      $("#fsmError").text("Error: " + e.message);
-      $("#fsmError").show();
-    }
-  }
+	if (regex.length === 0) {
+		$("#regex").parent().removeClass("success error");
+		$("#fsmError").hide();
+	} else {
+		try {
+			noam.re.string.toTree(regex);
+			$("#regex").parent().removeClass("error");
+			$("#regex").parent().addClass("success");
+			$("#createAutomaton").attr("disabled", false);
+			$("#fsmError").hide();
+		} catch (e) {
+			$("#regex").parent().removeClass("success");
+			$("#regex").parent().addClass("error");
+			$("#fsmError").text("Error: " + e.message);
+			$("#fsmError").show();
+		}
+	}
 }*/

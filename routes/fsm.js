@@ -45,35 +45,27 @@ router.post("/createAutomaton", (req, res, next) => {
 
 router.post("/convertRegexToAutomaton", (req, res, next) => {
 	var regular = req.body.regex;
+	var automatonType = req.body.automatonType;
 	var regularLinear = regex.linear.fromString(regular);
 	var regularTree = regex.linear.toTree(regularLinear);
 	var automaton = regex.tree.toAutomaton(regularTree);
-	return res.send({
-		automaton
-	});
-});
 
-router.post("/convertEnfaToNfa", (req, res, next) => {
-	var automaton = req.body.automaton;
-	automaton = stateAutomaton.convertEnfaToNfa(automaton);
-	return res.send({
-		automaton
-	});
-});
+	if (automatonType == "NFA") {
+		automaton = stateAutomaton.convertEnfaToNfa(automaton);
+	} else if (automatonType == "DFA") {
+		automaton = stateAutomaton.convertEnfaToNfa(automaton);
+		console.log("NFA: ", automaton);
+		automaton = stateAutomaton.convertNfaToDfa(automaton);
+		console.log("DFA: ", automaton);
+		automaton = stateAutomaton.minimize(automaton);
+		console.log("minimizedFA: ", automaton);
+	}
 
-router.post("/convertNfaToDfa", (req, res, next) => {
-	var automaton = req.body.automaton;
-	automaton = stateAutomaton.convertNfaToDfa(automaton);
-	return res.send({
-		automaton
-	});
-});
+	var fsmString = stateAutomaton.serializeFsmToString(automaton);
 
-router.post("/minimizeAutomaton", (req, res, next) => {
-	var automaton = req.body.automaton;
-	automaton = stateAutomaton.minimize(automaton);
 	return res.send({
-		automaton
+		automaton,
+		fsmString
 	});
 });
 

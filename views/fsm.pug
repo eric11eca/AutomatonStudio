@@ -88,7 +88,7 @@ block content
 								option(value='eNFA' default='true') eNFA
 								option(value='NFA') NFA
 								option(value='DFA') DFA
-								
+
 		.sim-graph 
 			.control-bar
 				.toolbar
@@ -120,34 +120,6 @@ block content
 								| &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Read all
 					.toolbar-inner--right
 						.toolbar__title Simulate Automaton
-			//.simulator 
-				h3  &#x2461; Simulate 
-				p
-					| Enter a sequence of input symbols into the input field below. 
-				p
-					| Or click the three buttons to generate random string.
-				p
-					button#generateRandomString.btn(disabled='')  Random string 
-					button#generateRandomAcceptableString.btn(disabled='')  Acceptable string 
-					button#generateRandomUnacceptableString.btn(disabled='')  Unacceptable string 
-				p
-					.control-group
-						input#inputString.input-block-level(type='text' placeholder='See if this fits' disabled='' spellcheck='false')
-				p
-					button#startStop.btn(disabled='')
-						| Start
-					button#inputFirst.btn(disabled='')
-						i.icon-fast-backward
-						| &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Reset
-					button#inputPrevious.btn(disabled='')
-						i.icon-backward
-						| &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Step backward
-					button#inputNext.btn(disabled='')
-						i.icon-forward
-						| &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Read next
-					button#inputLast.btn(disabled='')
-						i.icon-fast-forward
-						| &#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Read all
 			#automatonGraph.container.graph
 				p#inputError.text-error
 				#automatonGraph  
