@@ -837,7 +837,33 @@ fsm.minimize = function (automaton) {
 
   var fsmWithoutUnreachableStates = fsm.removeUnreachableStates(newFsm);
   var minimalFsm = fsm.removeEquivalentStates(fsmWithoutUnreachableStates);
-  return minimalFsm;
+  return fsm.canonicalForm(minimalFsm);
+};
+
+fsm.canonicalForm = function (automaton) {
+  var stateMap = new Map();
+  for (var i = 0; i < automaton.states.length; i++) {
+    var state = automaton.states[i];
+    stateMap.set(JSON.stringify(state), 's' + i.toString());
+  }
+
+  var newTransitions = {};
+  Object.values(automaton.transitions).forEach(transition => {
+    var newKey = stateMap.get(JSON.stringify(transition.fromState)) + transition.input;
+    newTransitions[newKey] = {
+      fromState: stateMap.get(JSON.stringify(transition.fromState)),
+      input: transition.input,
+      toStates: transition.toStates.map(x => stateMap.get(JSON.stringify(x)))
+    };
+  });
+
+  return {
+    states: Array.from(stateMap.values()),
+    alphabet: util.clone(automaton.alphabet),
+    starting: stateMap.get(JSON.stringify(automaton.starting)),
+    accepting: automaton.accepting.map(x => stateMap.get(JSON.stringify(x))),
+    transitions: newTransitions
+  };
 };
 
 

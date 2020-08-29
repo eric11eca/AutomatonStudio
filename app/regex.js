@@ -782,9 +782,9 @@ function _recursiveConstruction(regex, automaton, stateGenerator) {
   return tree.regexToAutomaton[regex.type](regex, automaton, stateGenerator);
 }
 
-tree._automatonFromUnion = function (regex, automaton, stateCounter) {
-  var l = fsm.addState(automaton, stateCounter.generate());
-  var r = fsm.addState(automaton, stateCounter.generate());
+tree._automatonFromUnion = function (regex, automaton, stateGenerator) {
+  var l = fsm.addState(automaton, stateGenerator.generate());
+  var r = fsm.addState(automaton, stateGenerator.generate());
   for (var i = 0; i < regex.children.length; i++) {
     var statePair = _recursiveConstruction(regex.children[i], automaton, stateGenerator);
     fsm.addEpsilonTransition(automaton, l, [statePair[0]]);

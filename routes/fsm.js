@@ -58,7 +58,7 @@ router.post("/convertRegexToAutomaton", (req, res, next) => {
 		automaton = stateAutomaton.convertNfaToDfa(automaton);
 		//console.log("DFA: ", automaton);
 		automaton = stateAutomaton.minimize(automaton);
-		//console.log("minimizedFA: ", automaton);
+		console.log("minimizedFA: ", automaton);
 	}
 
 	var fsmString = stateAutomaton.serializeFsmToString(automaton);
