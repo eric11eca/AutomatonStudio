@@ -1,3 +1,5 @@
+const e = require("express");
+
 let cfg = {};
 let util = require("./util.js").data;
 
@@ -30,7 +32,7 @@ cfg._addRule = function(arr1, arr2, obj1, obj2, arr_alphabet, ifpredefined, mess
     }
     arr1.add(obj1);
     if(!ifpredefined){
-    for (i = 0; i<obj2.length; i++){
+    for (var i = 0; i<obj2.length; i++){
         if(!util.containsInSet(arr_alphabet, obj2[i]) && !util.containsInSet(arr1,obj2[i])){
             arr_alphabet.add(obj2[i]);
         }
@@ -52,7 +54,7 @@ cfg.addRule = function(grammar, leftside, rightside){
 
 cfg.preDefineAlphabet = function(grammar, arr){
     grammar.alphabet = new Set();
-    for (i = 0; i<arr.length; i++){
+    for (var i = 0; i<arr.length; i++){
         grammar.alphabet.add(arr[i]);
     }
     grammar.ifpredefined = true;
@@ -64,7 +66,7 @@ cfg.checkGrammar = function(grammar){
             if(temp.length != 2){
                 return false;
             }
-            for (j = 0; j < temp[1].length; j++){
+            for (var j = 0; j < temp[1].length; j++){
                 var rightside = temp[1];
                 if (!util.containsInSet(grammar.alphabet, rightside[j]) && !util.containsInSet(grammar.nonterminals, rightside[j])){
                     return false;
@@ -92,7 +94,7 @@ cfg.checkSymbol = function(nonterminals, rules, symbol, looped, finites){
         var currentRuleFalse = false;
         if(rule[0].localeCompare(symbol)){
             var rightside = rule[1];
-            for(i = 0; i<rightside.length;i++){
+            for(var i = 0; i<rightside.length;i++){
                 if(!(util.containsInSet(finites, rightside[i]) || !util.containsInSet(nonterminals, rightside[i]))){
                 if(!util.containsInSet(looped, rightside[i])){
                     looped.add(rightside[i]);
@@ -136,12 +138,12 @@ cfg._eliminateEmpty = function(nonterminals, rules){
     var ifAdd = true;
     while(ifAdd){
         ifAdd = false;
-        for (i = 0; i<uncheckNonterminals.length;i++){
+        for (var i = 0; i<uncheckNonterminals.length;i++){
             var tempRule = uncheckRules[i];
             var ifNullable = true;
-            for(k = 0; k<tempRule.length; k++){
+            for(var k = 0; k<tempRule.length; k++){
                 var tempRuleK = tempRule[k];
-            for(j = 0; j<tempRuleK.length;j++){
+            for(var j = 0; j<tempRuleK.length;j++){
                 if(!util.contains(nullables, tempRuleK[j])){
                     ifNullable = false;
                     break;
@@ -166,7 +168,7 @@ cfg._eliminateEmpty = function(nonterminals, rules){
         var temp = ruleItem2[1];
         var ifDifferent = false;
         var nullableIndexes = [];
-        for (j=0;j<temp.length;j++){
+        for (var j=0;j<temp.length;j++){
             if(util.contains(nullables, temp[j])){
                 ifDifferent = true;
                 nullableIndexes.push(j);
@@ -195,9 +197,9 @@ cfg.eliminateEmpty = function(grammar){
 }
 
 cfg.modifyRule = function(rule, arr, nonterminals, symbol, indexes){
-    for (i = 0;i<indexes.length;i++){
+    for (var i = 0;i<indexes.length;i++){
         var arr1 = util.clone(indexes);
-        for(j = i+1;j<arr1.length;j++){
+        for(var j = i+1;j<arr1.length;j++){
             arr1[j] = arr1[j] - 1;
         }
         nonterminals.push(symbol);
@@ -223,7 +225,7 @@ cfg.removeUnit = function(rules, nonterminals){
             if(tempRule.length == 1 && !tempRule[0].localeCompare("Epsilon")){
                 ifUnitProductionExists = true;
                 removedRules.push([rule1[0], tempRule]);
-                for(j = 0; j< nonterminals.length;j++){
+                for(var j = 0; j< nonterminals.length;j++){
                     if(nonterminals[j].localeCompare(tempRule[0])){
                         if(!util.contains(removedRules, [nonterminals[j], tempRule])){
                             rules.add([nonterminals[j], tempRule]);
@@ -239,7 +241,7 @@ cfg.removeMixed = function(rules, terminals){
     var terminalsArray = Array.from(terminals);
     var capChar = "T";
     var terminalNames = [];
-    for(i = 0; i< terminalsArray.length; i++){
+    for(var i = 0; i< terminalsArray.length; i++){
         var tempName = capChar.concat(terminalsArray[i].toLowerCase());
         terminalNames.push(tempName);
         rules.add([terminalsArray[i], tempName]);
@@ -247,7 +249,7 @@ cfg.removeMixed = function(rules, terminals){
     for(var ruleToModify of rules){
         if(ruleToModify[1].length > 1){
             var rightSideRule = ruleToModify[1];
-            for(j = 0; j < rightSideRule.length; j++){
+            for(var j = 0; j < rightSideRule.length; j++){
                 if(util.containsInSet(terminals, rightSideRule[j])){
                     rightSideRule[j] = terminalNames[terminalsArray.indexOf(rightSideRule[j])];
                 }
@@ -287,7 +289,7 @@ cfg.convertToChomskyNormalForm = function(grammar){
 }
 
 cfg.parseInputIn = function(ruleArray, grammar){
-    for(k = 0; k<ruleArray.length; k++){
+    for(var k = 0; k<ruleArray.length; k++){
         var leftSideCorrect = false;
         var rightSideCorrect = false;
         var ruleArr = ruleArray[k].split('->');
@@ -303,7 +305,7 @@ cfg.parseInputIn = function(ruleArray, grammar){
             throw new Error('Right Side Empty');
         }
         rightSideArray = [];
-        for(j = 0; j< rightSide.length; j++){
+        for(var j = 0; j< rightSide.length; j++){
             if(rightSide[j] == '$'){
                 rightSideArray.push('Epsilon');
             }else{
@@ -317,10 +319,130 @@ cfg.parseInputIn = function(ruleArray, grammar){
 
 cfg.removeSpace = function(objString){
     var output = "";
-    for(i = 0; i<objString.length;i++){
+    for(var i = 0; i<objString.length;i++){
         if(objString[i] != ' '){
             output += objString[i];
         }
+    }
+    return output;
+}
+
+cfg.LRParsing = function(grammar, target){
+    var table = cfg.parseTable;
+}
+
+cfg.generateItemSets = function(grammar){
+    var itemSets = [];
+    var initSet = cfg.generateZeroSet (['#', ['.', grammar.starting]], grammar.alphabet, symbolLooped, grammar.rules);
+    itemSets.push(initSet);
+    var symbolArray = [];
+    var firstRow = [];
+    var outPutTable = [];
+    for(var nonterminal of grammar.nonterminalAlphabet){
+        symbolArray.push(nonterminal);
+        var tempResult = cfg.itemSetSimulate(initSet, nonterminal);
+        if(util.areEquivalent(tempResult, [])){
+            firstRow.push(undefined);
+        }else{
+            if(!util.contains(itemSets, tempResult)){
+                itemSets.push(tempResult);
+                firstRow.push(itemSets.length-1);
+           }else{
+               firstRow.push(itemSets.indexOf(tempResult));
+           }
+        }
+    }
+    for(var terminal of grammar.terminal){
+        symbolArray.push(terminal);
+        var tempResult = cfg.itemSetSimulate(initSet, terminal);
+        if(util.areEquivalent(tempResult, [])){
+            firstRow.push(undefined);
+        }else{
+            if(!util.contains(itemSets, tempResult)){
+                itemSets.push(tempResult);
+                firstRow.push(itemSets.length-1);
+            }else{
+                firstRow.push(itemSets.indexOf(tempResult));
+            }
+        }
+    }
+    outPutTable.push(firstRow);
+    for (var i = 1;i<itemSets.length;i++){
+        var rowElement = [];
+        for(var j  = 0;j<symbolArray.length;j++){
+            var tempResult = cfg.itemSetSimulate(initSet, terminal);
+            if(util.areEquivalent(tempResult, [])){
+                rowElement.push(undefined);
+            }else{
+                if(!util.contains(itemSets, tempResult)){
+                    itemSets.push(tempResult);
+                    rowElement.push(itemSets.length-1);
+                }else{
+                    rowElement.push(itemSets.indexOf(tempResult));
+                }
+            }
+        }
+        outPutTable.push(rowElement);
+    }
+    return rowElement;
+}
+
+cfg.generateZeroSet = function(rule, alphabet, looped, rules){
+    var startSymbol = cfg.findNextSymbol(rule[1]);
+    var result = [];
+    if(util.contains(looped, startSymbol)){
+        result.push(rule);
+        return result;
+    }else{
+        looped.push(startSymbol);
+    }
+    if(util.contains(alphabet, startSymbol)){
+        result.push(rule);
+        return result;
+    }else{
+        for(var ruleInSet1 of rules){
+            if(ruleInSet1[0].localeCompare(startSymbol)){
+                var rightSideCopy = util.clone(ruleInSet1[1]);
+                var dot = ['.'];
+                result = result.concat(cfg.generateZeroSet (dot.concat(rightSideCopy), alphabet, looped, rules));
+            }
+        }
+
+    }
+    return result;
+}
+
+cfg.findNextSymbol =  function(ruleRightSide){
+    for(var i = 0;i< ruleRightSide.length;i++){
+        if(ruleRightSide[i].localeCompare('.')){
+            if(ruleRightSide.length == (i+1)){
+                throw new Error('No next Symbol');
+            }else{
+                return ruleRightSide[i+1];
+            }
+        }
+    }
+    throw new Error('No dot symbol');
+}
+
+cfg.itemSetSimulate = function(itemSet, input){
+    var output = [];
+    for(var i = 0;i<itemSet.length;i++){
+        var tempRule = itemSet[i];
+        if(input.localeCompare(cfg.findNextSymbol(tempRule[1]))){
+            output.push(tempRule);
+        }
+    }
+    return cfg.moveDot(output);
+}
+
+cfg.moveDot = function(itemSet){
+    var output = [];
+    for(var i = 0; i<itemSet.length;i++){
+        var target = util.clone(itemSet[i]);
+        var tempRule = target[1].splice(target[1].indexOf('.')+2,0,'.');
+        tempRule.splice(tempRule.indexOf('.'),1);
+        output.push(tempRule);
     }
     return output;
 }
