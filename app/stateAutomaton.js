@@ -329,7 +329,6 @@ fsm.forwardTransition = function (automaton, currentStates, input) {
   }
 
   var newStates = util.clone(currentStates);
-
   newStates = fsm.forwardEpsilonTransition(automaton, newStates);
   newStates = fsm.forwardinputTransition(automaton, newStates, input);
   newStates = fsm.forwardEpsilonTransition(automaton, newStates);
@@ -506,11 +505,11 @@ fsm.determineType = function (automaton) {
     }
   }
 
-  if (fsmType == fsm.constants.determine) {
-    if (Object.keys(automaton.transitions).length < automaton.states.length * automaton.alphabet.length) {
-      fsmType = fsm.constants.non_determine;
-    }
-  }
+  //if (fsmType == fsm.constants.determine) {
+  //  if (Object.keys(automaton.transitions).length < automaton.states.length * automaton.alphabet.length) {
+  //    fsmType = fsm.constants.non_determine;
+  //  }
+  //}
   return fsmType;
 };
 
@@ -622,7 +621,7 @@ fsm.convertNfaToDfa = function (automaton) {
         newFsm.transitions[k] = {
           fromState: state,
           input: char,
-          toStates: nextStates
+          toStates: [nextStates]
         };
       }
 
@@ -639,24 +638,18 @@ fsm.convertNfaToDfa = function (automaton) {
 /********** States Operational Functions for Finite State Automaton *************/
 
 fsm.getReachableStates = function (automaton) {
-  var processed = [];
+  var processed = new Set();
   var unProcessed = [automaton.starting];
   var reachableStates = new Set([automaton.starting]);
   while (unProcessed.length != 0) {
     var currState = unProcessed.pop();
-    Object.values(automaton.transitions).forEach(transition => {
-      if (util.areEquivalent(currState, transition.fromState)) {
-        var toStatesSet = new Set(transition.toStates);
-        var processedSet = new Set(processed);
-        reachableStates = util.Union(reachableStates, toStatesSet);
-        //console.log("Reachables: ", reachableStates);
-        //console.log("toStates: ", toStatesSet);
-        unProcessed = unProcessed.concat(
-          Array.from(util.Difference(toStatesSet, processedSet)));
-      }
-      //console.log("Unprocessed: ", unProcessed);
-      processed.push(currState);
-    });
+    for (var i = 0; i < automaton.alphabet.length; i++) {
+      var nextStates = fsm.forwardTransition(automaton, [currState], automaton.alphabet[i]);
+      reachableStates = util.Union(reachableStates, new Set(nextStates));
+      unProcessed = unProcessed.concat(
+        Array.from(util.Difference(new Set(nextStates), processed)));
+    }
+    processed.add(currState);
   }
   return reachableStates;
 };
@@ -751,57 +744,45 @@ fsm.removeEquivalentStates = function (automaton) {
     throw new Error('FSM must be DFA');
   }
 
-  var stateSet = new Set(util.clone(automaton.states));
-  var accetSet = new Set(util.clone(automaton.accepting));
-
-  var equivalentPairs = [accetSet, util.Difference(stateSet, accetSet)];
-
+  var fromStates = Object.values(automaton.transitions).map(x => {
+    return x.fromState;
+  });
+  var stateSet = new Set(util.clone(fromStates));
+  var acceptSet = new Set(util.clone(automaton.accepting));
+  var equivalentSets = [acceptSet, util.Difference(stateSet, acceptSet)];
   var i, j = 0;
 
   while (true) {
-    var newEquivalentPairs = [];
-    equivalentPairs.forEach(eqClass => {
-      var eqClassMap = new Map();
-      eqClass.forEach(state => {
-        //console.log("State: ", state);
-        var classKey = "";
-        automaton.alphabet.forEach(alpha => {
-          var key = state + ',' + alpha;
-          var toStateSet = new Set(automaton.transitions[key].toStates);
-          for (i = 0; i < equivalentPairs.length; i++) {
-            if (util.Equal(toStateSet,
-                util.Intersection(toStateSet, equivalentPairs[i]))) {
-              classKey += i.toString();
-            }
-          }
-          //console.log("Input: ", alpha);
-          //console.log("To States: ", toStateSet);
-          //console.log("classKey: ", classKey);
-        });
+    var newEquivalentSets = [];
 
-        if (eqClassMap.has(classKey)) {
-          eqClassMap.get(classKey).add(state);
+    equivalentSets.forEach(equivalentClass => {
+      equivalentClassMap = new Map();
+      equivalentClass.forEach(state => {
+        var nextStates = [];
+        automaton.alphabet.forEach(alpha => {
+          nextStates.concat(fsm.forwardTransition(automaton, [state], alpha));
+        });
+        if (equivalentClassMap.has(nextStates)) {
+          equivalentClassMap.get(nextStates).add(state);
         } else {
-          eqClassMap.set(classKey, new Set([state]));
+          equivalentClassMap.set(nextStates, new Set([state]));
         }
-        //console.log(eqClassMap);
       });
-      newEquivalentPairs = newEquivalentPairs.concat(
-        Array.from(eqClassMap.values()));
+      equivalentClassMap.forEach((value, key, map) => {
+        newEquivalentSets.push(value);
+      });
     });
-    //console.log(newEquivalentPairs);
-    if (util.areEquivalent(newEquivalentPairs, equivalentPairs)) {
+
+    if (util.areEquivalent(newEquivalentSets, equivalentSets)) {
       break;
     } else {
-      equivalentPairs = newEquivalentPairs;
+      equivalentSets = newEquivalentSets;
     }
   }
 
-  for (i = 0; i < equivalentPairs.length; i++) {
-    equivalentPairs[i] = Array.from(equivalentPairs[i]);
+  for (i = 0; i < equivalentSets.length; i++) {
+    equivalentSets[i] = Array.from(equivalentSets[i]);
   }
-
-  //console.log(equivalentPairs);
 
   var newFsm = {
     states: [],
@@ -811,13 +792,13 @@ fsm.removeEquivalentStates = function (automaton) {
     transitions: {}
   };
 
-  for (i = 0; i < equivalentPairs.length; i++) {
-    newFsm.states.push(equivalentPairs[i][0]);
-    if (util.containsAll(automaton.accepting, equivalentPairs[i])) {
-      newFsm.accepting.push(equivalentPairs[i][0]);
+  for (i = 0; i < equivalentSets.length; i++) {
+    newFsm.states.push(equivalentSets[i][0]);
+    if (util.containsAll(automaton.accepting, equivalentSets[i])) {
+      newFsm.accepting.push(equivalentSets[i][0]);
     }
-    if (util.contains(equivalentPairs[i], automaton.starting)) {
-      newFsm.starting = equivalentPairs[i][0];
+    if (util.contains(equivalentSets[i], automaton.starting)) {
+      newFsm.starting = equivalentSets[i][0];
     }
   }
 
@@ -830,16 +811,14 @@ fsm.removeEquivalentStates = function (automaton) {
         toStates: []
       };
       for (j = 0; j < transition.toStates.length; j++) {
-        for (i = 0; i < equivalentPairs.length; i++) {
-          if (util.contains(equivalentPairs[i], transition.toStates[j])) {
-            newFsm.transitions[key].toStates.push(equivalentPairs[i][0]);
+        for (i = 0; i < equivalentSets.length; i++) {
+          if (util.contains(equivalentSets[i], transition.toStates[j])) {
+            newFsm.transitions[key].toStates.push(equivalentSets[i][0]);
           }
         }
       }
     }
   });
-
-  console.log(newFsm);
 
   return newFsm;
 };

@@ -786,7 +786,7 @@ tree._automatonFromUnion = function (regex, automaton, stateCounter) {
   var l = fsm.addState(automaton, stateCounter.generate());
   var r = fsm.addState(automaton, stateCounter.generate());
   for (var i = 0; i < regex.children.length; i++) {
-    var statePair = _recursiveConstruction(regex.children[i], automaton, stateCounter);
+    var statePair = _recursiveConstruction(regex.children[i], automaton, stateGenerator);
     fsm.addEpsilonTransition(automaton, l, [statePair[0]]);
     fsm.addEpsilonTransition(automaton, statePair[1], [r]);
   }
@@ -795,16 +795,18 @@ tree._automatonFromUnion = function (regex, automaton, stateCounter) {
 
 tree._automatonFromConcat = function (regex, automaton, stateGenerator) {
   var pair = _recursiveConstruction(regex.components[0], automaton, stateGenerator);
-  var fromState = pair[1];
-  var toState = pair[0];
-  for (var i = 0; i < regex.components.length; i++) {
-    fsm.addEpsilonTransition(automaton, fromState, [pair[0]]);
+  var ls = pair[0];
+  var rs = pair[1];
+  for (var i = 1; i < regex.components.length; i++) {
+    pair = _recursiveConstruction(regex.components[i], automaton, stateGenerator);
+    fsm.addEpsilonTransition(automaton, rs, [pair[0]]);
+    rs = pair[1];
   }
-  if (toState == undefined) {
-    fromState = fsm.addState(automaton, stateGenerator.generate());
-    toState = fsm.addState(automaton, stateGenerator.generate());
+  if (ls == undefined) {
+    ls = fsm.addState(automaton, stateGenerator.generate());
+    rs = fsm.addState(automaton, stateGenerator.generate());
   }
-  return [toState, fromState];
+  return [ls, rs];
 };
 
 tree._automatonFromKleen = function (regex, automaton, stateGenerator) {
@@ -825,7 +827,6 @@ tree._automatonFromKleen = function (regex, automaton, stateGenerator) {
 tree._automatonFromElement = function (regex, automaton, stateGenerator) {
   var fromState = fsm.addState(automaton, stateGenerator.generate());
   var toState = fsm.addState(automaton, stateGenerator.generate());
-
   if (!(util.contains(automaton.alphabet, regex.obj))) {
     fsm.addAlphabet(automaton, regex.obj);
   }
@@ -901,7 +902,7 @@ linear.toTree = function (arr) {
   if (peek(reg) != undefined) {
     throw new error("Parse Incomplete");
   }
-  return parsedReg;
+  return tree.simplify(parsedReg);
 };
 
 /**

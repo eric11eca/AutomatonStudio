@@ -1,4 +1,4 @@
-util = {};
+let util = {};
 
 util.Stack = function (capacity) {
 	this._capacity = capacity || Infinity;
@@ -103,6 +103,12 @@ util.contains = function (arr, obj, startIndex) {
 	startIndex = startIndex ? startIndex : 0;
 
 	for (var i = startIndex; i < arr.length; i++) {
+		if (Array.isArray(arr[i])) {
+			arr[i].sort();
+		}
+		if (Array.isArray(obj)) {
+			obj.sort();
+		}
 		if (util.areEquivalent(arr[i], obj)) {
 			return true;
 		}
@@ -179,15 +185,30 @@ util.returnEqualSet = function (arr, obj) {
 };
 
 util.Union = function (a, b) {
-	return new Set([...a, ...b]);
+	var arr1 = Array.from(a);
+	var arr2 = Array.from(b);
+	var union = new Set(arr1.concat(arr2));
+	return util.Difference(union, util.Intersection(a, b));
 };
 
 util.Intersection = function (a, b) {
-	return new Set([...a].filter(x => b.has(x)));
+	return new Set([...a].filter(x => {
+		if (Array.isArray(x)) {
+			return util.contains(Array.from(b), x);
+		} else {
+			return b.has(x);
+		}
+	}));
 };
 
 util.Difference = function (a, b) {
-	return new Set([...a].filter(x => !b.has(x)));
+	return new Set([...a].filter(x => {
+		if (Array.isArray(x)) {
+			return !(util.contains(Array.from(b), x));
+		} else {
+			return !(b.has(x));
+		}
+	}));
 };
 
 util.Equal = function (a, b) {

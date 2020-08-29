@@ -54,11 +54,11 @@ router.post("/convertRegexToAutomaton", (req, res, next) => {
 		automaton = stateAutomaton.convertEnfaToNfa(automaton);
 	} else if (automatonType == "DFA") {
 		automaton = stateAutomaton.convertEnfaToNfa(automaton);
-		console.log("NFA: ", automaton);
+		//console.log("NFA: ", automaton);
 		automaton = stateAutomaton.convertNfaToDfa(automaton);
-		console.log("DFA: ", automaton);
+		//console.log("DFA: ", automaton);
 		automaton = stateAutomaton.minimize(automaton);
-		console.log("minimizedFA: ", automaton);
+		//console.log("minimizedFA: ", automaton);
 	}
 
 	var fsmString = stateAutomaton.serializeFsmToString(automaton);
