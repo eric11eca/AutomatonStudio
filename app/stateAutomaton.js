@@ -276,6 +276,8 @@ fsm.parseFsmFromString = function (definition) {
 
 fsm.forwardEpsilonTransition = function (automaton, currentStates) {
   if (!(util.containsAll(automaton.states, currentStates))) {
+    console.log(automaton.states);
+    console.log(currentStates);
     throw new Error('FSM must contain all the given states.');
   }
 
@@ -321,6 +323,8 @@ fsm.forwardinputTransition = function (automaton, currentStates, input) {
 
 fsm.forwardTransition = function (automaton, currentStates, input) {
   if (!(util.containsAll(automaton.states, currentStates))) {
+    console.log(automaton.states);
+    console.log(currentStates);
     throw new Error('Some states are not in the automaton states');
   }
 
@@ -332,7 +336,6 @@ fsm.forwardTransition = function (automaton, currentStates, input) {
   newStates = fsm.forwardEpsilonTransition(automaton, newStates);
   newStates = fsm.forwardinputTransition(automaton, newStates, input);
   newStates = fsm.forwardEpsilonTransition(automaton, newStates);
-
   return newStates;
 };
 
@@ -505,11 +508,11 @@ fsm.determineType = function (automaton) {
     }
   }
 
-  //if (fsmType == fsm.constants.determine) {
-  //  if (Object.keys(automaton.transitions).length < automaton.states.length * automaton.alphabet.length) {
-  //    fsmType = fsm.constants.non_determine;
-  //  }
-  //}
+  if (fsmType == fsm.constants.determine) {
+    if (Object.keys(automaton.transitions).length < automaton.states.length * automaton.alphabet.length) {
+      fsmType = fsm.constants.non_determine;
+    }
+  }
   return fsmType;
 };
 
@@ -608,11 +611,19 @@ fsm.convertNfaToDfa = function (automaton) {
     }
 
     newFsm.alphabet.forEach(char => {
-      var nextStates = fsm.forwardTransition(automaton, state, char);
-      for (const arr in [newFsm.states, activeStates]) {
-        var equalSet = util.returnEqualSet(arr, nextStates);
-        if (equalSet.length > 0) {
-          nextStates = equalSet;
+      var nextStates = fsm.forwardTransition(automaton, state, char).sort();
+
+      for (var j = 0; j < newFsm.states.length; j++) {
+        if (util.areEqualSets(nextStates, newFsm.states[j])) {
+          nextStates = newFsm.states[j];
+          break;
+        }
+      }
+
+      for (j = 0; j < activeStates.length; j++) {
+        if (util.areEqualSets(nextStates, activeStates[j])) {
+          nextStates = activeStates[j];
+          break;
         }
       }
 
@@ -630,6 +641,39 @@ fsm.convertNfaToDfa = function (automaton) {
         activeStates.push(nextStates);
       }
     });
+  }
+
+  var errorAdded = false;
+  var errorState = "ERROR";
+
+  for (i = 0; i < newFsm.states.length; i++) {
+    for (j = 0; j < newFsm.alphabet.length; j++) {
+      var found = false;
+      for (var k in newFsm.transitions) {
+        var trans = newFsm.transitions[k];
+
+        if (util.areEquivalent(trans.input, newFsm.alphabet[j]) &&
+          util.areEquivalent(trans.fromState, newFsm.states[i])) {
+          found = true;
+          break;
+        }
+      }
+
+      if (found === false) {
+        if (errorAdded === false) {
+          newFsm.states.push([errorState]);
+          errorAdded = true;
+        }
+        var errorKey = newFsm.states[i] + ',' + newFsm.alphabet[j];
+        newFsm.transitions[errorKey] = {
+          fromState: newFsm.states[i],
+          input: newFsm.alphabet[j],
+          toStates: [
+            [errorState]
+          ]
+        };
+      }
+    }
   }
   return newFsm;
 };
@@ -678,66 +722,6 @@ fsm.removeUnreachableStates = function (automaton) {
   return newFsm;
 };
 
-// determines if two states from potentially different fsms are equivalent
-fsm.areEquivalentStates = function (fsmA, stateA, fsmB, stateB) {
-  if (fsm.determineType(fsmA) !== fsm.constants.determine ||
-    fsm.determineType(fsmB) !== fsm.constants.determine) {
-    throw new Error('FSMs must be DFAs');
-  }
-
-  if (fsmA.alphabet.length !== fsmB.alphabet.length ||
-    !(util.containsAll(fsmA.alphabet, fsmB.alphabet))) {
-    throw new Error('FSM alphabets must be the same');
-  }
-
-  if (!(util.contains(fsmA.states, stateA)) ||
-    !(util.contains(fsmB.states, stateB))) {
-    throw new Error('FSMs must contain states');
-  }
-
-  function doBothStatesHaveSameAcceptance(fsmX, stateX, fsmY, stateY) {
-    var stateXAccepting = util.contains(fsmX.accepting, stateX);
-    var stateYAccepting = util.contains(fsmY.accepting, stateY);
-
-    return (stateXAccepting && stateYAccepting) ||
-      (!(stateXAccepting) && !(stateYAccepting));
-  }
-
-  var unprocessedPairs = [
-    [stateA, stateB]
-  ];
-  var processedPairs = [],
-    i, j;
-
-  while (unprocessedPairs.length !== 0) {
-    var currentPair = unprocessedPairs.pop();
-
-    if (!(doBothStatesHaveSameAcceptance(fsmA, currentPair[0], fsmB, currentPair[1]))) {
-      return false;
-    }
-
-    processedPairs.push(currentPair);
-
-    for (j = 0; j < fsmA.alphabet.length; j++) {
-      var pair = [fsm.forwardTransition(fsmA, [currentPair[0]], fsmA.alphabet[j])[0],
-        fsm.forwardTransition(fsmB, [currentPair[1]], fsmA.alphabet[j])[0]
-      ];
-
-      if (!(util.contains(processedPairs, pair)) &&
-        !(util.contains(unprocessedPairs, pair))) {
-        unprocessedPairs.push(pair);
-      }
-    }
-  }
-
-  return true;
-};
-
-// determines if two fsms are equivalent by testing equivalence of starting states
-fsm.areEquivalentFSMs = function (fsm1, fsm2) {
-  return fsm.areEquivalentStates(fsm1, fsm1.starting, fsm2, fsm2.starting);
-};
-
 // finds and removes equivalent states
 fsm.removeEquivalentStates = function (automaton) {
   if (fsm.determineType(automaton) !== fsm.constants.determine) {
@@ -756,19 +740,22 @@ fsm.removeEquivalentStates = function (automaton) {
     var newEquivalentSets = [];
 
     equivalentSets.forEach(equivalentClass => {
-      equivalentClassMap = new Map();
+      equivalentClassMap = {};
       equivalentClass.forEach(state => {
         var nextStates = [];
         automaton.alphabet.forEach(alpha => {
-          nextStates.concat(fsm.forwardTransition(automaton, [state], alpha));
+          var toStates = fsm.forwardTransition(automaton, [state], alpha);
+          nextStates = nextStates.concat(toStates);
         });
-        if (equivalentClassMap.has(nextStates)) {
-          equivalentClassMap.get(nextStates).add(state);
+
+        if (equivalentClassMap.hasOwnProperty(nextStates)) {
+          equivalentClassMap[nextStates].add(state);
         } else {
-          equivalentClassMap.set(nextStates, new Set([state]));
+          equivalentClassMap[nextStates] = new Set([state]);
         }
       });
-      equivalentClassMap.forEach((value, key, map) => {
+      //console.log(equivalentClassMap);
+      Object.values(equivalentClassMap).forEach((value) => {
         newEquivalentSets.push(value);
       });
     });
@@ -783,6 +770,8 @@ fsm.removeEquivalentStates = function (automaton) {
   for (i = 0; i < equivalentSets.length; i++) {
     equivalentSets[i] = Array.from(equivalentSets[i]);
   }
+
+  //console.log(equivalentSets);
 
   var newFsm = {
     states: [],
@@ -837,14 +826,22 @@ fsm.minimize = function (automaton) {
 
   var fsmWithoutUnreachableStates = fsm.removeUnreachableStates(newFsm);
   var minimalFsm = fsm.removeEquivalentStates(fsmWithoutUnreachableStates);
+  //fsm.prettyPrint(minimalFsm);
   return fsm.canonicalForm(minimalFsm);
 };
 
 fsm.canonicalForm = function (automaton) {
   var stateMap = new Map();
+  automaton.states.sort();
+  stateMap.set(JSON.stringify(automaton.starting), 's0');
+
+  var canon = 1;
   for (var i = 0; i < automaton.states.length; i++) {
     var state = automaton.states[i];
-    stateMap.set(JSON.stringify(state), 's' + i.toString());
+    if (!stateMap.has(JSON.stringify(state))) {
+      stateMap.set(JSON.stringify(state), 's' + canon.toString());
+      canon += 1;
+    }
   }
 
   var newTransitions = {};
@@ -955,14 +952,14 @@ fsm.createRandomFsm = function (fsmType, numStates, numAlphabet, maxNumToStates)
 
 
 // test whether if the language accepted by the fsm contains at least one string
-fsm.isLanguageNonEmpty = function (fsm) {
-  var fsmType = fsm.determineType(fsm);
-  var newFsm = fsm;
+fsm.isLanguageNonEmpty = function (automaton) {
+  var fsmType = fsm.determineType(automaton);
+  var newFsm = automaton;
 
   if (fsmType === fsm.constants.non_determine) {
-    newFsm = fsm.convertNfaToDfa(fsm);
+    newFsm = fsm.convertNfaToDfa(automaton);
   } else if (fsmType === fsm.constants.e_non_determine) {
-    newFsm = fsm.convertEnfaToNfa(fsm);
+    newFsm = fsm.convertEnfaToNfa(automaton);
     newFsm = fsm.convertNfaToDfa(newFsm);
   }
 
@@ -1025,10 +1022,10 @@ fsm.isLanguageInfinite = function (fsm) {
 
 fsm.operators = {
   "union": function (bool1, bool2) {
-    return bool1 && bool2;
+    return bool1 || bool2;
   },
   "intersection": function (bool1, bool2) {
-    return bool1 || bool2;
+    return bool1 && bool2;
   },
   "difference": function (bool1, bool2) {
     return bool1 && !(bool2);
@@ -1051,18 +1048,23 @@ fsm.crossProduct = function (fsm1, fsm2, operator) {
       newStates.push(newState);
 
       newAlphabet.forEach(char => {
-        var transKey = newState + ',' + char;
-        newTransitions[transKey].fromState = newState;
-        newTransitions[transKey].input = char;
-        newTransitions[transKey].toStates = [
-          fsm.forwardTransition(fsm1, [state1, char])[0],
-          fsm.forwardTransition(fsm2, [state2, char])[0]
-        ];
+        var toStates1 = fsm.forwardTransition(fsm1, [state1], char);
+        var toStates2 = fsm.forwardTransition(fsm2, [state2], char);
+        if (toStates1.length > 0 && toStates2.length > 0) {
+          var toStates = [toStates1[0], toStates2[0]];
+          var transKey = newState + ',' + char;
+          newTransitions[transKey] = {
+            fromState: newState,
+            input: char,
+            toStates: [toStates]
+          };
+        }
       });
 
       if (fsm.operators[operator](
-          fsm1.accepting.include(state1),
-          fsm2.accepting.include(state2))) {
+          util.contains(fsm1.accepting, state1),
+          util.contains(fsm2.accepting, state2)
+        )) {
         newAccepting.push(newState);
       }
     });
@@ -1097,11 +1099,11 @@ fsm.difference = function (fsm1, fsm2) {
   return fsm.crossProduct(fsm1, fsm2, "difference");
 };
 
-fsm.complement = function (fsm) {
-  var newFsm = util.clone(fsm);
+fsm.complement = function (automaton) {
+  var newFsm = util.clone(automaton);
   var newAccepting = [];
 
-  newFsms.states.forEach(state => {
+  newFsm.states.forEach(state => {
     if (fsm.operators.complement(newFsm.accepting, state)) {
       newAccepting.push(state);
     }
@@ -1196,8 +1198,21 @@ fsm.reverse = function (fsm) {
   return newFsm;
 };
 
+fsm.prettyPrint = function (automaton) {
+  console.log("=============================================");
+  Object.values(automaton.transitions).forEach(transition => {
+    console.log(transition.fromState, ":", transition.input, "==>", transition.toStates);
+  });
+  console.log("=============================================");
+};
+
 fsm.isSubset = function (fsm1, fsm2) {
-  return fsm.areEquivalentFSMs(fsm2, fsm.intersection(fsm1, fsm2));
+  var fsmA = fsm.minimize(fsm1),
+    fsmB = fsm.minimize(fsm2);
+  var fsmAComplement = fsm.complement(fsmA);
+  var fsmAB = fsm.minimize(fsm.intersection(fsmAComplement, fsmB));
+
+  return !(fsm.isLanguageNonEmpty(fsmAB));
 };
 
 // convert the fsm into a regular grammar
@@ -1255,7 +1270,36 @@ fsm.inputsForTransitions = function (automaton, stateA, stateB) {
 
 let regex = require("./regex").data;
 
+fsm.convertToGNFA = function (automaton) {
+  var fsmClone = util.clone(automaton);
+  var initState = 'I';
+  var initkey = initState + ',' + '$';
+  fsmClone.transitions[initkey] = {
+    fromState: initState,
+    input: '$',
+    toStates: [fsmClone.starting]
+  };
+  fsmClone.starting = initState;
+
+  var finalState = "A";
+  for (var i = 0; i < fsmClone.accepting.length; i++) {
+    var accepState = fsmClone.accepting[i];
+    var finalKey = accepState + ',' + '$';
+    fsmClone.transitions[finalKey] = {
+      fromState: accepState,
+      input: '$',
+      toStates: [finalState]
+    };
+  }
+  fsmClone.accepting = [finalState];
+};
+
 fsm.toRegex = function (automaton) {
+  //var GNFA = fsm.convertToGNFA(automaton);
+
+  //for (var i = 0; i < 1; )
+
+
   var r = [];
   var n = automaton.states.length;
 

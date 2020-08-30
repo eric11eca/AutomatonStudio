@@ -112,6 +112,11 @@ util.contains = function (arr, obj, startIndex) {
 		if (util.areEquivalent(arr[i], obj)) {
 			return true;
 		}
+		if (Array.isArray(arr[i]) && Array.isArray(obj)) {
+			if (JSON.stringify(arr[i]) == JSON.stringify(obj)) {
+				return true;
+			}
+		}
 	}
 
 	return false;
@@ -187,8 +192,7 @@ util.returnEqualSet = function (arr, obj) {
 util.Union = function (a, b) {
 	var arr1 = Array.from(a);
 	var arr2 = Array.from(b);
-	var union = new Set(arr1.concat(arr2));
-	return util.Difference(union, util.Intersection(a, b));
+	return new Set(arr1.concat(arr2));
 };
 
 util.Intersection = function (a, b) {

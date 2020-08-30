@@ -466,7 +466,8 @@ tree._simplify_kleen_contain2 = function (reg) {
   return false;
 };
 
-tree._processSubset = function (arr, iterator, kleen, fsmCache) {
+tree._processSubset = function (arr, iterator, kleen, fsmCache, fsms) {
+  let fsm = require("./stateAutomaton").data;
   for (var i = 0; i < iterator.length - 1; i++) {
     for (var j = i + 1; j < iterator.length; j++) {
       if (fsms.length <= j) {
@@ -496,7 +497,7 @@ tree._simplify_rule_union_subset = function (reg, fsmCache) {
   if (tree._isUNION(reg) && reg.children.length > 1) {
     var fsms = [];
     fsms.push(getOrCreateFsm(reg.children[0], fsmCache));
-    return tree._processSubset(reg.children, reg.children, false, fsmCache);
+    return tree._processSubset(reg.children, reg.children, false, fsmCache, fsms);
   }
   return false;
 };
@@ -545,8 +546,8 @@ tree._simplify_eps_langauge = function (reg, fsmCache) {
     if (epsLoc > -1) {
       for (var i = 0; i < reg.children.length; i++) {
         if (!(tree._isEPS(reg.children[i]))) {
-          var fsm = getOrCreateFsm(reg.children[i], fsmCache);
-          if (fsm.isAcceptingState(fsm, fsm.starting)) {
+          var automaton = getOrCreateFsm(reg.children[i], fsmCache);
+          if (fsm.isAcceptingState(automaton, automaton.starting)) {
             tree.choices.splice(epsLoc, 1);
             return true;
           }
@@ -648,15 +649,22 @@ tree.applySimplificationRule = function (reg, rule, fsmCache) {
   return false;
 };
 
-tree.simplify = function (reg, isComplex) {
+tree.simplify = function (reg, isComplex, automaton) {
   var treeClone = util.clone(reg);
   var appliedPattern = "";
-  //var iterCount = 0;
+  var iterCount = 0;
   var fsmCache = {};
   var applied = {};
 
+  if (automaton != undefined) {
+    fsmCache[reg] = automaton;
+  }
+
   while (appliedPattern != null) {
-    //console.log("BATCH: ", iterCount);
+    //console.log("R" + iterCount.toString(), ": ");
+    //var arr = [];
+    //tree.linearFormat(treeClone, arr);
+    //console.log(linear.toString(arr));
     appliedPattern = tree.applyAllSimplificationRules(treeClone, fsmCache, isComplex);
     if (appliedPattern != null) {
       //console.log("Pattern: ", appliedPattern);
@@ -666,12 +674,11 @@ tree.simplify = function (reg, isComplex) {
         applied[appliedPattern] = 1;
       }
     }
-    //var arr = [];
-    //tree.linearFormat(treeClone, arr);
-    //console.log(linear.toString(arr));
     //iterCount += 1;
-    //console.log("**************************");
+    //console.log("===============================");
+    //((((a)+($)($)*(a))+((a)+($)($)*(a))((b+$))*((b+$))))
   }
+  //console.log(applied);
   return treeClone;
 };
 
@@ -679,10 +686,10 @@ function getOrCreateFsm(reg, fsms) {
   if (fsms.hasOwnProperty(reg)) {
     return fsms[reg];
   }
-
-  var fsm = fsm.minimize(tree.toAutomaton(reg));
-  fsms[reg] = fsm;
-  return fsm;
+  var automaton = tree.toAutomaton(reg);
+  automaton = fsm.minimize(automaton);
+  fsms[reg] = automaton;
+  return automaton;
 }
 
 tree._areEquivalebt = function (obj1, obj2) {
@@ -771,10 +778,8 @@ tree.linearFormat = function (reg, arr) {
 };
 
 tree.toLinear = function (reg) {
-  reg = tree.simplify(reg, false);
   var arr = [];
   tree.linearFormat(reg, arr);
-
   return arr;
 };
 
@@ -902,7 +907,7 @@ linear.toTree = function (arr) {
   if (peek(reg) != undefined) {
     throw new error("Parse Incomplete");
   }
-  return tree.simplify(parsedReg);
+  return tree.simplify(parsedReg, true);
 };
 
 /**

@@ -33,7 +33,9 @@ router.post("/generateAutomaton", (req, res, next) => {
 router.post("/createAutomaton", (req, res, next) => {
 	var definition = req.body.definition;
 	var automaton = stateAutomaton.parseFsmFromString(definition);
-	var expression = stateAutomaton.toRegex(automaton);
+	var miniAutomaton = stateAutomaton.minimize(automaton);
+	var expression = stateAutomaton.toRegex(miniAutomaton);
+	expression = regex.tree.simplify(expression, true, miniAutomaton);
 	var linear = regex.tree.toLinear(expression);
 	var reg = regex.linear.toString(linear);
 	return res.send({
@@ -58,7 +60,7 @@ router.post("/convertRegexToAutomaton", (req, res, next) => {
 		automaton = stateAutomaton.convertNfaToDfa(automaton);
 		//console.log("DFA: ", automaton);
 		automaton = stateAutomaton.minimize(automaton);
-		console.log("minimizedFA: ", automaton);
+		//console.log("minimizedFA: ", automaton);
 	}
 
 	var fsmString = stateAutomaton.serializeFsmToString(automaton);
