@@ -497,7 +497,6 @@ tree._simplify_rule_union_subset = function (reg, fsmCache) {
   if (tree._isUNION(reg) && reg.children.length > 1) {
     var fsms = [];
     var firstFsm = getOrCreateFsm(reg.children[0], fsmCache);
-    console.log(firstFsm);
     fsms.push(firstFsm);
     return tree._processSubset(reg.children, reg.children, false, fsmCache, fsms);
   }
@@ -669,7 +668,7 @@ tree.simplify = function (reg, isComplex, automaton) {
     console.log(linear.toString(arr));
     appliedPattern = tree.applyAllSimplificationRules(treeClone, fsmCache, isComplex);
     if (appliedPattern != null) {
-      //console.log("Pattern: ", appliedPattern);
+      console.log("Pattern: ", appliedPattern);
       if (applied.hasOwnProperty(appliedPattern)) {
         applied[appliedPattern] += 1;
       } else {
@@ -1004,7 +1003,10 @@ linear.toString = function (reg) {
   for (var i = 0; i < reg.length; i++) {
     var sigma = reg[i];
     if (sigma.length != 1) {
-      throw error("Conversion failed, not a single char at " + i, i);
+      console.log({
+        sigma: sigma
+      });
+      throw Error("Conversion failed, not a single char at " + i, i);
     }
     expression.push(sigma);
   }

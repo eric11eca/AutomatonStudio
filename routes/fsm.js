@@ -26,7 +26,7 @@ router.post("/", (req, res, next) => {
 
 router.post("/generateAutomaton", (req, res, next) => {
 	var fsmType = req.body.fsmType;
-	var automaton = stateAutomaton.createRandomFsm(fsmType, 3, 3, 4);
+	var automaton = stateAutomaton.createRandomFsm(fsmType, 3, 2, 4);
 	return res.send(stateAutomaton.serializeFsmToString(automaton));
 });
 
@@ -35,7 +35,6 @@ router.post("/createAutomaton", (req, res, next) => {
 	var automaton = stateAutomaton.parseFsmFromString(definition);
 	var miniAutomaton = stateAutomaton.minimize(automaton);
 	var expression = stateAutomaton.toRegex(miniAutomaton);
-	expression = regex.tree.simplify(expression, true, miniAutomaton);
 	var linear = regex.tree.toLinear(expression);
 	var reg = regex.linear.toString(linear);
 	return res.send({

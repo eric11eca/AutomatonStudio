@@ -1344,12 +1344,12 @@ fsm.toRegex = function (automaton) {
       var fromStates = [];
       var toStates = [];
       var transition = {};
-      var selfExpr = regex.tree.makeKleenStar(regex.tree.makeEpsilon());
+      var selfExpr = [];
       for (const key in GNFA.transitions) {
         transition = GNFA.transitions[key];
         if (util.areEquivalent(transition.fromState, state)) {
           if (util.areEquivalent(state, transition.toStates[0])) {
-            selfExpr = regex.tree.makeKleenStar(regex.tree.makeElement(transition.input));
+            selfExpr.push(regex.tree.makeKleenStar(checkInput(transition.input)));
           } else {
             for (j = 0; j < transition.toStates.length; j++) {
               toStates.push({
@@ -1368,11 +1368,20 @@ fsm.toRegex = function (automaton) {
         }
       }
 
+      if (selfExpr.length < 1) {
+        selfExpr = regex.tree.makeKleenStar(regex.tree.makeEpsilon());
+      } else if (selfExpr.length > 1) {
+        selfExpr = regex.tree.makeUnion(selfExpr);
+      } else {
+        selfExpr = selfExpr[0];
+      }
+
       for (k = 0; k < fromStates.length; k++) {
         for (z = 0; z < toStates.length; z++) {
           var expression = regex.tree.makeConcatnation(
             [fromStates[k].expr, selfExpr, toStates[z].expr]);
-          var newKey = fromStates[k].state + ',' + expression;
+          console.log(regex.linear.toString(regex.tree.toLinear(expression)));
+          var newKey = util.randint(1, 100);
           GNFA.transitions[newKey] = {
             fromState: fromStates[k].state,
             toStates: [toStates[z].state],
@@ -1381,12 +1390,18 @@ fsm.toRegex = function (automaton) {
         }
       }
     }
+    //util.printJson(GNFA);
+    fsm.prettyPrint(GNFA);
   }
 
+  fsm.prettyPrint(GNFA);
+  var children = [];
   for (k in GNFA.transitions) {
-    var reg = regex.tree.simplify(GNFA.transitions[k].input);
-    return reg;
+    children.push(GNFA.transitions[k].input);
   }
+
+  var reg = regex.tree.simplify(regex.tree.makeUnion(children), false, {});
+  return reg;
 
   /*var r = [];
   var n = automaton.states.length;
