@@ -676,7 +676,6 @@ tree.simplify = function (reg, isComplex, automaton) {
     }
     //iterCount += 1;
     //console.log("===============================");
-    //((((a)+($)($)*(a))+((a)+($)($)*(a))((b+$))*((b+$))))
   }
   //console.log(applied);
   return treeClone;

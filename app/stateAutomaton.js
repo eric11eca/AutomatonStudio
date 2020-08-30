@@ -386,7 +386,9 @@ fsm.serializeFsmToString = function (autoamton) {
   var lines = [];
   lines.push("#states");
   for (var i = 0; i < autoamton.states.length; i++) {
-    lines.push(autoamton.states[i].toString());
+    if (autoamton.states[i] != 'E') {
+      lines.push(autoamton.states[i].toString());
+    }
   }
   lines.push("#starting");
   lines.push(autoamton.starting.toString());
@@ -400,9 +402,12 @@ fsm.serializeFsmToString = function (autoamton) {
   }
   lines.push("#transitions");
   for (const key in autoamton.transitions) {
-    lines.push(autoamton.transitions[key].fromState.toString() + ":" +
-      autoamton.transitions[key].input.toString() + "->" +
-      autoamton.transitions[key].toStates.join(";"));
+    if (autoamton.transitions[key].fromState != 'E' &&
+      autoamton.transitions[key].toStates[0] != 'E') {
+      lines.push(autoamton.transitions[key].fromState.toString() + ":" +
+        autoamton.transitions[key].input.toString() + "->" +
+        autoamton.transitions[key].toStates.join(";"));
+    }
   }
   return lines.join("\n");
 };
@@ -812,6 +817,21 @@ fsm.removeEquivalentStates = function (automaton) {
   return newFsm;
 };
 
+
+fsm.removeErrorState = function (automaton) {
+  const index = automaton.states.indexOf('E');
+  if (index > -1) {
+    automaton.states.splice(index, 1);
+  }
+
+  for (const key in automaton.transitions) {
+    var transition = automaton.transitions[key];
+    if (transition.fromState == 'E' || transition.toStates[0] == 'E') {
+      delete automaton.transitions[key];
+    }
+  }
+};
+
 // minimizes the fsm by removing unreachable and equivalent states
 fsm.minimize = function (automaton) {
   var fsmType = fsm.determineType(automaton);
@@ -826,19 +846,26 @@ fsm.minimize = function (automaton) {
 
   var fsmWithoutUnreachableStates = fsm.removeUnreachableStates(newFsm);
   var minimalFsm = fsm.removeEquivalentStates(fsmWithoutUnreachableStates);
-  //fsm.prettyPrint(minimalFsm);
-  return fsm.canonicalForm(minimalFsm);
+  var canonicalFsm = fsm.canonicalForm(minimalFsm);
+  fsm.removeErrorState(canonicalFsm);
+  //fsm.prettyPrint(canonicalFsm);
+  return canonicalFsm;
 };
 
 fsm.canonicalForm = function (automaton) {
   var stateMap = new Map();
   automaton.states.sort();
+
   stateMap.set(JSON.stringify(automaton.starting), 's0');
 
   var canon = 1;
   for (var i = 0; i < automaton.states.length; i++) {
     var state = automaton.states[i];
-    if (!stateMap.has(JSON.stringify(state))) {
+    if (state == 'ERROR') {
+      stateMap.set(JSON.stringify(state), 'E');
+    } else if (Array.isArray(state) && state[0] == 'ERROR') {
+      stateMap.set(JSON.stringify(state), 'E');
+    } else if (!stateMap.has(JSON.stringify(state))) {
       stateMap.set(JSON.stringify(state), 's' + canon.toString());
       canon += 1;
     }
