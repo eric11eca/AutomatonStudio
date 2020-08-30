@@ -496,7 +496,9 @@ tree._processSubset = function (arr, iterator, kleen, fsmCache, fsms) {
 tree._simplify_rule_union_subset = function (reg, fsmCache) {
   if (tree._isUNION(reg) && reg.children.length > 1) {
     var fsms = [];
-    fsms.push(getOrCreateFsm(reg.children[0], fsmCache));
+    var firstFsm = getOrCreateFsm(reg.children[0], fsmCache);
+    console.log(firstFsm);
+    fsms.push(firstFsm);
     return tree._processSubset(reg.children, reg.children, false, fsmCache, fsms);
   }
   return false;
@@ -662,9 +664,9 @@ tree.simplify = function (reg, isComplex, automaton) {
 
   while (appliedPattern != null) {
     //console.log("R" + iterCount.toString(), ": ");
-    //var arr = [];
-    //tree.linearFormat(treeClone, arr);
-    //console.log(linear.toString(arr));
+    var arr = [];
+    tree.linearFormat(treeClone, arr);
+    console.log(linear.toString(arr));
     appliedPattern = tree.applyAllSimplificationRules(treeClone, fsmCache, isComplex);
     if (appliedPattern != null) {
       //console.log("Pattern: ", appliedPattern);

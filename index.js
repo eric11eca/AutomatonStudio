@@ -54,6 +54,6 @@ for (let pages in routes) {
 
 app.use(morgan('dev'));
 
-server.listen(process.env.PORT || 4000, () => {
+server.listen(process.env.PORT || 4000, '0.0.0.0', () => {
   console.log("server is live on port 4000");
 });

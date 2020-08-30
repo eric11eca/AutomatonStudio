@@ -1319,18 +1319,77 @@ fsm.convertToGNFA = function (automaton) {
     };
   }
   fsmClone.accepting = [finalState];
+  return fsmClone;
 };
 
 fsm.toRegex = function (automaton) {
-  //var GNFA = fsm.convertToGNFA(automaton);
-
-  //for (var i = 0; i < 1; )
-
-
-  var r = [];
-  var n = automaton.states.length;
-
+  var GNFA = fsm.convertToGNFA(automaton);
   var i, j, k, z;
+
+  function checkInput(input) {
+    if (input.type == regex.tree.constants.CONCAT) {
+      return input;
+    } else {
+      if (input == '$') {
+        return regex.tree.makeEpsilon();
+      } else {
+        return regex.tree.makeElement(input);
+      }
+    }
+  }
+
+  for (i = 0; i < GNFA.states.length; i++) {
+    var state = GNFA.states[i];
+    if (state != 'I' || state != 'A') {
+      var fromStates = [];
+      var toStates = [];
+      var transition = {};
+      var selfExpr = regex.tree.makeKleenStar(regex.tree.makeEpsilon());
+      for (const key in GNFA.transitions) {
+        transition = GNFA.transitions[key];
+        if (util.areEquivalent(transition.fromState, state)) {
+          if (util.areEquivalent(state, transition.toStates[0])) {
+            selfExpr = regex.tree.makeKleenStar(regex.tree.makeElement(transition.input));
+          } else {
+            for (j = 0; j < transition.toStates.length; j++) {
+              toStates.push({
+                state: transition.toStates[j],
+                expr: checkInput(transition.input)
+              });
+            }
+          }
+          delete GNFA.transitions[key];
+        } else if (util.contains(transition.toStates, state)) {
+          fromStates.push({
+            state: transition.fromState,
+            expr: checkInput(transition.input)
+          });
+          delete GNFA.transitions[key];
+        }
+      }
+
+      for (k = 0; k < fromStates.length; k++) {
+        for (z = 0; z < toStates.length; z++) {
+          var expression = regex.tree.makeConcatnation(
+            [fromStates[k].expr, selfExpr, toStates[z].expr]);
+          var newKey = fromStates[k].state + ',' + expression;
+          GNFA.transitions[newKey] = {
+            fromState: fromStates[k].state,
+            toStates: [toStates[z].state],
+            input: expression
+          };
+        }
+      }
+    }
+  }
+
+  for (k in GNFA.transitions) {
+    var reg = regex.tree.simplify(GNFA.transitions[k].input);
+    return reg;
+  }
+
+  /*var r = [];
+  var n = automaton.states.length;
 
   for (k = 0; k < n + 1; k++) {
     r[k] = [];
@@ -1409,7 +1468,7 @@ fsm.toRegex = function (automaton) {
     elements.push(r[n][startStateIndex][acceptableStatesIndexes[i]]);
   }
 
-  return regex.tree.makeUnion(elements);
+  return regex.tree.makeUnion(elements);*/
 };
 
 exports.data = fsm;
