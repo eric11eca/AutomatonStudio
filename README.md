@@ -7,11 +7,17 @@ A toolbox for automaton theory, language theory, lambda calculus, propositional 
 	- [x] Convert Non-deterministic FSM to Deterministic FSM
 	- [x] Convert FSM to regular expression
 	- [x] FSM simulation
+	- [x] FSM Union, Intersection, and Difference
+	- [ ] FSM Reverse, Complement, and Kleen
+	- [ ] FSM language subset, infinite, and empty 
+	- [ ] FSM to Regular Grammar
+	- [ ] FSM enumeration
 2. [x] Regular Expression
 	- [x] Convert regular expression to FSM
 	- [x] Parse regular expression from string
 	- [x] Regular expression simulation
 	- [x] Regular expression simplification 
+	- [ ] Regular expression enumeration
 3. [ ] Context-free Grammar
 	- [ ] Context-free Grammar simulation
 	- [ ] Context-free Grammar parsing
