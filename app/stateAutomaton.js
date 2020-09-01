@@ -1380,7 +1380,7 @@ fsm.toRegex = function (automaton) {
         for (z = 0; z < toStates.length; z++) {
           var expression = regex.tree.makeConcatnation(
             [fromStates[k].expr, selfExpr, toStates[z].expr]);
-          console.log(regex.linear.toString(regex.tree.toLinear(expression)));
+          //console.log(regex.linear.toString(regex.tree.toLinear(expression)));
           var newKey = util.randint(1, 100);
           GNFA.transitions[newKey] = {
             fromState: fromStates[k].state,
@@ -1390,11 +1390,9 @@ fsm.toRegex = function (automaton) {
         }
       }
     }
-    //util.printJson(GNFA);
-    fsm.prettyPrint(GNFA);
+    //fsm.prettyPrint(GNFA);
   }
 
-  fsm.prettyPrint(GNFA);
   var children = [];
   for (k in GNFA.transitions) {
     children.push(GNFA.transitions[k].input);

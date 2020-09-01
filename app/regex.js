@@ -238,10 +238,10 @@ tree._simplify_rule_union_kleen = function (reg) {
         var isKleenNext = tree._isKLEEN(reg.children[j]);
         var equal = util.areEquivalent(reg.children[i], reg.children[j]);
         if (isKleen && equal) {
-          reg.splice(j, 1);
+          reg.children.splice(j, 1);
           return true;
         } else if (isKleenNext && equal) {
-          reg.splice(i, 1);
+          reg.children.splice(i, 1);
           return true;
         }
       }
@@ -663,12 +663,12 @@ tree.simplify = function (reg, isComplex, automaton) {
 
   while (appliedPattern != null) {
     //console.log("R" + iterCount.toString(), ": ");
-    var arr = [];
-    tree.linearFormat(treeClone, arr);
-    console.log(linear.toString(arr));
+    //var arr = [];
+    //tree.linearFormat(treeClone, arr);
+    //console.log(linear.toString(arr));
     appliedPattern = tree.applyAllSimplificationRules(treeClone, fsmCache, isComplex);
     if (appliedPattern != null) {
-      console.log("Pattern: ", appliedPattern);
+      //console.log("Pattern: ", appliedPattern);
       if (applied.hasOwnProperty(appliedPattern)) {
         applied[appliedPattern] += 1;
       } else {
@@ -678,7 +678,7 @@ tree.simplify = function (reg, isComplex, automaton) {
     //iterCount += 1;
     //console.log("===============================");
   }
-  //console.log(applied);
+  console.log(applied);
   return treeClone;
 };
 
@@ -907,7 +907,7 @@ linear.toTree = function (arr) {
   if (peek(reg) != undefined) {
     throw new error("Parse Incomplete");
   }
-  return tree.simplify(parsedReg, true);
+  return tree.simplify(parsedReg, false);
 };
 
 /**

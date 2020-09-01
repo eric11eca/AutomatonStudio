@@ -1,21 +1,36 @@
 extends layout
 append head
+	link(rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous")
 	link(rel="stylesheet", href="/assets/css/truth.css")
-
+	
 block content
-	#particles.main-content
+	.main-content
 		.truth-content
-			h1.intro Truth Table Generator
+			h1.intro Logic and Semantic Notebook
 			h2.intro-content
-				| A generator for logical expressions that automatically generates and displays a truth table for the given statement.
-			.editor
-				textarea.premises(placeholder='Type logic statement here' onpaste='dosanitize(this)')
-				.conclusion
-					h2 Truth Table Display
-				button.generate
-					i.fas.fa-hammer
+				| A notebook of live coding for proporsitional logic, lambda calculus, set logic, formal semantics, and monotonicity tagging.
+			.card.cell
+				.card-header
+				.notebook.card-body
+					blockquote.blockquote.mb-0
+						p
+							input#input1
+						#buttonbar1.conclusion
+							.addNew
+								button#add1.add(type="button" class="btn btn-light" onclick='addNewCell(this.id)')
+									ion-icon(name="add-outline")
+								button#compile1.compile(type="button" class="btn btn-light" onclick='compileLogic(this.id)')
+									ion-icon(name="caret-forward-outline")
+			//.card.cell
+				.card-header
+				.card-body
+					blockquote.blockquote.mb-0
+						p
+							input
 
 block script
+	script(src="https://unpkg.com/ionicons@5.1.2/dist/ionicons.js")
+	script(src='https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js')
 	script(type='text/javascript' src='/js/truth_view.js')
 	script(type='text/javascript' src='/lib/particles.min.js')
 	script(type='text/javascript' src='/js/partical.js')
