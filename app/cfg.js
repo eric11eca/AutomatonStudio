@@ -331,60 +331,270 @@ cfg.LRParsing = function(grammar, target){
     var table = cfg.parseTable;
 }
 
-cfg.generateItemSets = function(grammar){
-    var itemSets = [];
-    var initSet = cfg.generateZeroSet (['#', ['.', grammar.starting]], grammar.alphabet, symbolLooped, grammar.rules);
-    itemSets.push(initSet);
-    var symbolArray = [];
-    var firstRow = [];
-    var outPutTable = [];
-    for(var nonterminal of grammar.nonterminalAlphabet){
-        symbolArray.push(nonterminal);
-        var tempResult = cfg.itemSetSimulate(initSet, nonterminal);
-        if(util.areEquivalent(tempResult, [])){
-            firstRow.push(undefined);
-        }else{
-            if(!util.contains(itemSets, tempResult)){
-                itemSets.push(tempResult);
-                firstRow.push(itemSets.length-1);
-           }else{
-               firstRow.push(itemSets.indexOf(tempResult));
-           }
+cfg.generateParseTable = function(grammar){
+    var transitionTable = cfg.generateTransitionTable(grammar);
+    var acceptSymbolArr = ['$'];
+    var row = acceptSymbolArr.concat(transitionTable.row);
+    var acceptRule = ['#', [grammar.starting, '.']];
+    var extend_Grammar = cfg.generateExt_Grammar(grammar.rules, transitionTable, grammar.starting, grammar.alphabet.length);
+    var firstSetsGenerating = cfg.generateFirstSets(extend_Grammar.rules, extend_Grammar.nonterminalAlphabet);
+    var followingSetsGenerating = cfg.generateFollowingSets(firstSetsGenerating, extend_Grammar.rules, extend_Grammar.nonterminalAlphabet, extend_Grammar.starting);
+    var extend_Rules = extend_Grammar.rules;
+
+}
+
+cfg.mergeExtendRules = function(rules, followSets, checked, originalRules){
+    for(var rule of rules){
+        if(!checked.has(rule)){
+            cfg.constructMergedRules(rule, rules, followSets, checked, originalRules);
+
         }
     }
-    for(var terminal of grammar.terminal){
-        symbolArray.push(terminal);
-        var tempResult = cfg.itemSetSimulate(initSet, terminal);
-        if(util.areEquivalent(tempResult, [])){
-            firstRow.push(undefined);
-        }else{
-            if(!util.contains(itemSets, tempResult)){
-                itemSets.push(tempResult);
-                firstRow.push(itemSets.length-1);
-            }else{
-                firstRow.push(itemSets.indexOf(tempResult));
-            }
-        }
-    }
-    outPutTable.push(firstRow);
-    for (var i = 1;i<itemSets.length;i++){
-        var rowElement = [];
-        for(var j  = 0;j<symbolArray.length;j++){
-            var tempResult = cfg.itemSetSimulate(initSet, terminal);
-            if(util.areEquivalent(tempResult, [])){
-                rowElement.push(undefined);
-            }else{
-                if(!util.contains(itemSets, tempResult)){
-                    itemSets.push(tempResult);
-                    rowElement.push(itemSets.length-1);
-                }else{
-                    rowElement.push(itemSets.indexOf(tempResult));
+}
+
+cfg.constructMergedRules = function(rule, rules, followSets, checked, originalRules){
+    var rightSideGivenRule = rule[1];
+    var outputForm = [];
+    outputForm.push(rightSideGivenRule[rightSideGivenRule.length-1].charAt(2));
+    for(var ruleCurrent of rules){
+        var rightSideCurrent = ruleCurrent[1];
+        if(rightSideCurrent[rightSideCurrent.length-1].charAt(2).localeCompare(rightSideGivenRule[rightSideGivenRule.length-1].charAt(2))){
+            var originalRule = cfg.compareOriginalRuleFrom(rule, ruleCurrent);
+            if(originalRule != false){
+                if(!(util.contains(checked, ruleCurrent) || util.areEquivalent(rule, ruleCurrent))){
+                    checked.add(ruleCurrent);
+                    if(outputForm.length == 1){
+                        outputForm.push(originalRule);
+                        outputForm.push(util.Union(followSets[ruleCurrent[0]], followSets[rule[0]]));
+                    }else{
+                        outputForm[2] = util.Union(outputForm[2], followSets[ruleCurrent[0]]);
+                    }
                 }
             }
         }
-        outPutTable.push(rowElement);
     }
-    return rowElement;
+}
+
+cfg.compareOriginalRuleFrom(ext_rule1, ext_rule2){
+
+}
+
+
+
+cfg.generateFollowingSets = function(firstSets, rules, nonterminals, startSymbol){
+    var followingSets = [];
+    follwingSets[startSymbol] = new Set();
+    follwingSets[startSymbol].add('$');
+    for(var rule of rules){
+        var rightSide = rule[1];
+        for(var i = 0;i<rightSide.length;i++){
+            if(util.contains(nonterminals, rightSide[i])){
+                if(followingSets[rightSide[i]] == undefined){
+                    followingSets[rightSide[i]] = new Set();
+                }
+                for(var j = i+1; j<rightSide.length;j++){
+                    if(util.contains(nonterminals, rightSide[j])){
+                        if(firstSets[rightSide[j]] == undefined){
+                            throw new Error ("first sets are not corresponding with following sets function");
+                        }
+                        followingSets[rightSide[i]].add(firstSets[rightSide[j]]);
+                        if(!util.contains(firstSets[rightSide[j]], "Epsilon")){
+                            break;
+                        }
+                    }else{
+                        followingSets.push(rightSide[j]);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    for(var rule1 of rules){
+        var rightSide1 = rule1[1];
+        if(util.contains(nonterminals, rightSide1[rightSide1.length-1])){
+            if(rule1[0] == undefined){
+                followingSets[rule1[0]] = new Set();
+            }else{
+                followingSets[rightSide1[rightSide1.length-1]].add(followingSets[rule1[0]]);   
+            }
+        }
+    }
+    for(var nonterminalIter1 of nonterminals){
+        if(followingSets[nonterminalIter1] == undefined){
+            throw new Error("Given grammar is incorrect");
+        }
+        util.flat(followingSets[nonterminalIter1]);
+    }
+}
+
+
+
+cfg.generateFirstSets = function(rules, nonterminals){
+    var symbolRules = cfg.orderRules(rules);
+    var firstSets = [];
+    for (var nonterminal of nonterminals){
+        var tempSymbolRules = symbolRules[nonterminal];
+        for (var i = 0; i<symbolRules[nonterminal].length; i++){
+            var tempSymbolRule = tempSymbolRules[i];
+            var rightSides = tempSymbolRule[1];
+            if(!util.contains(nonterminals, rightSides[0])){
+                if(rightSides[0].localeCompare("Epsilon") && rightSides.length != 1){
+                    throw new Error ("wrong right side of rule");
+                }
+                if(firstSets[nonterminal] == undefined){
+                    firstSets[nonterminal] = [rightSides[0]];
+                }else{
+                    firstSets[nonterminal].push(rightSides[0]);
+                }
+            }
+        }
+    }
+    for (var nonterminal1 of nonterminals){
+        cfg.generateFirst(symbolRules, nonterminal1, nonterminals, firstSets);
+    }
+    
+    return firstSets;
+}
+ 
+cfg.generateFirst = function(symbolRules, symbol, nonterminals, firstSets){
+    var cfgFirstSet = new Set();
+    if(firstSets[symbol] != undefined){
+        cfgFirstSet = firstSets[symbol];
+    }
+    for(var symbolRule of symbolRules[symbol]){
+        var rightSide1 = symbolRule[1];
+        for(var i = 0; i<rightSide1;i++){
+
+            if(nonterminals.has(rightSide1[i])){
+                if(firstSets[rightSide1[i]] == undefined){
+                    firstSets[rightSide1[i]] = new Set();
+                }
+                cfgFirstSet.add(firstSets[rightSide1[i]]);
+                if(!firstSets[rightSide1[i]].has("Epsilon")){
+                    break;
+                }else{
+                    if(i == rightSide1.length-1){
+                        cfgFirstSet.add("Epsilon");
+                    }
+                }
+            }else{
+                if(i==0){
+                    if(firstSets[symbol] == undefined || !firstSets[symbol].has(rightSide1[0]) ){
+                        throw new Error ('func cfg.generateFirst receives wrong firstSets'); 
+                    }
+                }else{
+                    cfgFirstSet.add(rightSide1[i]);
+                    break;
+                }
+            }
+        }
+    }
+    firstSets[symbol] = util.flat(cfgFirstSet);
+}
+
+cfg.loadFirsts = function(firstSet, loadingSet){
+    for(var loadingItem of loadingSet){
+        if(!loadingItem.localeCompare("Epsilon")){
+            firstSet.add(loadingItem);
+        }
+    }
+}
+
+
+cfg.orderRules = function(rules){
+    var orderedRules = [];
+    for(var ruleIter2 of rules){
+        if(orderedRules[ruleIter2[0]] == undefined){
+            orderedRules[ruleIter2[0]] = [ruleIter2];
+        }else{
+            orderedRules[ruleIter2[0]].push(ruleIter2);
+        }
+    }
+    return orderedRules;
+}
+
+cfg.generateExt_Grammar = function (rules, transitionTable, startSymbol, startIndex){
+    var ext_rules = [];
+    var row = transitionTable.row;
+    var column = transitionTable.column;
+    var content = transitionTable.tableContent;
+    var ext_Grammar = cfg.createCFG();
+    ext_rules.push(cfg.constructExt_Rule(['#',[startSymbol]], 0, row.indexOf(startSymbol)));
+    for (var i = startIndex; i<row.length;i++){
+        var ruleSet = cfg.gatherRuleSet(rules, row[i]);
+        for(var j = 0;j<column.length;j++){
+            if(content[j][i] != undefined){
+                for (var ruleIter of ruleSet){
+                    var ruleToAdd = cfg.constructExt_Rule(ruleIter, j, i);
+                    ext_rules.push(ruleToAdd);
+                    cfg.addRule(ext_Grammar, ruleToAdd[0], ruleToAdd[1]);
+                }
+            }
+        }
+    }
+    return ext_Grammar;
+}
+
+cfg.constructExt_Rule = function(rule, rowIndex, columnIndex, tableContent, row){
+    var rightSide = [];
+    var originalRightSide = rule[1];
+    var startIndex = rowIndex;
+    for (var i = 0;i<rule[1].length;i++){
+        var symbolColumnIndex = row.indexOf(originalRightSide[i]);
+        if(tableContent[startIndex][symbolColumnIndex] == undefined){
+            throw new Error("Wrong transition table");
+        }else{
+            rightSide.push(startIndex+originalRightSide[i]+tableContent[startIndex][symbolColumnIndex]);
+            startIndex = tableContent[startIndex][symbolColumnIndex];
+        }
+    }
+    return [rowIndex+rule[0]+tableContent[rowIndex][columnIndex], rightSide];
+}
+
+cfg.gatherRuleSet = function (rules, symbol){
+    var ruleSet = new Set();
+    for(var ruleItem2 of rules){
+        if(ruleItem2[0].localeCompare(symbol)){
+            ruleSet.add(ruleItem2);
+        }
+    }
+    return ruleSet;
+}
+
+cfg.generateTransitionTable = function(grammar){
+    var itemSets = [];
+    var initSet = cfg.generateZeroSet (['#', ['.', grammar.starting]], grammar.alphabet, symbolLooped, grammar.rules);
+    itemSets.push(initSet);
+    var symbolArray = Array.from(grammar.alphabet);
+    symbolArray.concat(Array.from(grammar.nonterminalAlphabet));
+    var outputTable = [];
+    for(var i = 0;i<itemSets.length;i++){
+        outputTable.push(cfg.generateTransitionRow(itemSets[i], Array.from(grammar.alphabet).concat(Array.from(grammar.nonterminalAlphabet)), itemSets));    
+    }
+    return {
+        row: symbolArray,
+        column: itemSets,
+        tableContent: outputTable
+    };
+}
+
+cfg.generateTransitionRow = function (itemSet, symbols, itemSets){
+    var output = [];
+    for (var i = 0; i< symbols;i++){
+        var tempResult = cfg.itemSetSimulate(itemSet, symbols[i]);
+        if(util.areEquivalent(tempResult, [])){
+            rowElement.push(undefined);
+        }else{
+            if(!util.contains(itemSets, tempResult)){
+                itemSets.push(tempResult);
+                output.push(itemSets.length-1);
+            }else{
+                output.push(itemSets.indexOf(tempResult));
+            }
+        }
+        
+    }
 }
 
 cfg.generateZeroSet = function(rule, alphabet, looped, rules){
@@ -455,3 +665,7 @@ name2 = 'a2';
 //console.log(typeof name1);
 names[name1] = 5;
 //console.log(cfg.createCFG());
+var logs = new Set();
+logs['c'] = 2;
+console.log(logs['c']);
+console.log(logs['a']);
