@@ -12,6 +12,7 @@ cfg.createCFG = function(){
         starting: undefined,
         ifchecked: false,
         ifpredefined: false,
+        parseTable: undefined,
         rules : new Set()
     };
 };
@@ -328,7 +329,53 @@ cfg.removeSpace = function(objString){
 }
 
 cfg.LRParsing = function(grammar, target){
-    var table = cfg.parseTable;
+    if(grammar.parseTable == undefined){
+        grammar.parseTable = cfg.generateParseTable(grammar);
+    }
+    var outputArr = [];
+    var table = grammar.parseTable;
+    var stack1 = [];
+    var iteratingIndex = 0;
+    stack1.push(iteratingIndex);
+    for(var i = 0; i<target.length ;i++){
+        var func = table.tableContent[stack1[stack1.length-1]][table.row.indexOf(target.charAt(i))];
+        if(func == undefined){
+            return false;
+        }
+        if(func.length != 2){
+            throw new Error('Given grammar is incorrect');
+        }
+        if(func.charAt(0).localeCompare('r')){
+            var tempRule = table.rulesArr[parseInt(func.charAt(1))];
+            var removeNum = tempRule[1].length;
+            if(stack1.length - 1 < removeNum){
+                return false;
+            }
+            stack1.splice(stack1.length-removeNum, removeNum);
+            stack1.push(table.tableContent[stack1[stack1.length-1]][table.row.indexOf(tempRule[0])]);
+            outputArr.push(func.charAt(1));
+            i--;
+        }else if (func.charAt(0).localeCompare('s')){
+            stack1.push(parseInt(func.charAt(1)));
+        }
+    }
+    var operating = true;
+    while(operating){
+        var func2 = table.tableContent[stack1[stack1.length-1]][0];
+        var tempRule3 = table.rulesArr[parseInt(func2.charAt(1))];
+        var removeNum4 = tempRule3[1].length;
+        if(func2.localeCompare('accept')){
+            operating = false;
+        }else{
+            if(stack1.length <= removeNum4){
+                return false;
+            }
+            stack1.splice(stack1.length-removeNum4, removeNum4);
+            stack1.push(table.tableContent[stack1[stack1.length-1]][table.row.indexOf(tempRule[0])]);
+            outputArr.push(parseInt(func2.charAt(1)));
+        }
+    }
+    return outputArr;
 }
 
 cfg.generateParseTable = function(grammar){
@@ -340,19 +387,71 @@ cfg.generateParseTable = function(grammar){
     var firstSetsGenerating = cfg.generateFirstSets(extend_Grammar.rules, extend_Grammar.nonterminalAlphabet);
     var followingSetsGenerating = cfg.generateFollowingSets(firstSetsGenerating, extend_Grammar.rules, extend_Grammar.nonterminalAlphabet, extend_Grammar.starting);
     var extend_Rules = extend_Grammar.rules;
-
-}
-
-cfg.mergeExtendRules = function(rules, followSets, checked, originalRules){
-    for(var rule of rules){
-        if(!checked.has(rule)){
-            cfg.constructMergedRules(rule, rules, followSets, checked, originalRules);
-
+    var column = transitionTable.column;
+    var tableContent = transitionTable.tableContent;
+    var tableParseContent = [];
+    var mergedForms = cfg.mergeExtendRules (extend_Rules, followingSetsGenerating, new Set());
+    var rulesArr = [['#', [grammar.starting]]].concat(Array.from(grammar.rules));
+    for(var i = 0; i < column.length;i++){
+        tableParseContent[i] = [];
+        var reduceNeeds = cfg.lookForCertainItemSet(mergedForms, i);
+        if(util.contains(column[i], acceptRule )){
+            tableParseContent[i].push("accept");
+        }else{
+            if(reduceNeeds != false && reduceNeeds.followingSet.has('$')){
+                tableParseContent[i].push('r'+ rulesArr.indexOf(reduceNeeds.rule));
+            }else{
+                tableParseContent[i].push(undefined);
+            }
         }
+        for(var j = 1;j<row.length; j++){
+            if(j<=grammar.alphabet.length){
+                if(reduceNeeds != false && reduceNeeds.followingSet.has(row[j])){
+                    tableParseContent[i].push('r' + rulesArr.indexOf(reduceNeeds.rule));
+                }else if(tableContent[i][j] != undefined){
+                    tableParseContent[i].push('s' +tableContent[i][j]);
+                }else{
+                    tableParseContent.push(undefined);
+                }
+            }else{
+                tableParseContent[i].push(tableContent[i][j]);
+            }
+        }
+    }
+    grammar.parseTable = {
+        row: row,
+        column: column,
+        rulesArr: rulesArr,
+        tableContent: tableParseContent
     }
 }
 
-cfg.constructMergedRules = function(rule, rules, followSets, checked, originalRules){
+
+cfg.lookForCertainItemSet = function(mergedRuleArrs, index){
+    for(var i = 0; i<mergedRuleArrs.length; i++){
+        var tempForm = mergedRuleArrs[i];
+        if(tempForm[0] == index){
+            return {
+                followingSet: tempForm[2],
+                rule: tempForm[1]
+            }
+        }
+    }
+    return false;
+}
+
+cfg.mergeExtendRules = function(rules, followSets, checked){
+    var outputTuples = [];
+    for(var rule of rules){
+        if(!checked.has(rule)){
+            outputTuples.push(cfg.constructMergedRules(rule, rules, followSets, checked));
+
+        }
+    }
+    return outputTuples;
+}
+
+cfg.constructMergedRules = function(rule, rules, followSets, checked){
     var rightSideGivenRule = rule[1];
     var outputForm = [];
     outputForm.push(rightSideGivenRule[rightSideGivenRule.length-1].charAt(2));
@@ -373,9 +472,29 @@ cfg.constructMergedRules = function(rule, rules, followSets, checked, originalRu
             }
         }
     }
+    return outputForm;
 }
 
-cfg.compareOriginalRuleFrom(ext_rule1, ext_rule2){
+cfg.compareOriginalRuleFrom = function (ext_rule1, ext_rule2){
+    var originalRuleOutput = [];
+    if(ext_rule1[0].charAt(1).localeCompare(ext_rule2[0].charAt(1))){
+        originalRuleOutput.push(ext_rule1[0].charAt(1));
+        var rightSideExt1 = ext_rule1[1];
+        var rightSideExt2 = ext_rule2[1];
+        if(rightSideExt1.length == rightSideExt2.length){
+            for(var i = 0;i<rightSideExt2.length;i++){
+                if(!rightSideExt1[i].charAt(1).localeCompare(rightSideExt2[i].charAt(1))){
+                    return false;
+                }
+                if(orignalRuleOutput.length == 1){
+                    orignalRuleOutput[1] = [];
+                }
+                orignalRuleOutput[1].push(rightSideExt1[i].charAt(1));
+            }
+        }
+    }
+
+    return originalRuleOutput;
 
 }
 
