@@ -27,7 +27,8 @@ function addNewCell(button_id) {
   var newInputID = 'input' + global_index.toString();
   var newAddID = 'add' + global_index.toString();
   var newCompileID = 'compile' + global_index.toString();
-  var newCell = '<p><input id="newInputID" /></p> <div class="conclusion" id="newButtonBarID"> <div class="addNew">' +
+  var newCell = '<p><textarea id="newInputID" onkeyup="compileKeyDown(event, this.id)"></textarea></p>' +
+    '<div class="conclusion" id="newButtonBarID"> <div class="addNew">' +
     '<button class="add btn btn-light" id="newAddID" type="button" onclick="addNewCell(this.id)">' +
     '<ion-icon name="add-outline"></ion-icon></button>' +
     '<button class="compile btn btn-light" id="newCompileID" type="button" onclick="compileLogic(this.id)">' +
@@ -37,6 +38,12 @@ function addNewCell(button_id) {
   newCell = newCell.replace('newAddID', newAddID);
   newCell = newCell.replace('newCompileID', newCompileID);
   document.querySelector('#buttonbar' + index).insertAdjacentHTML('afterend', newCell);
+}
+
+function compileKeyDown(event, button_id) {
+  if (event.keyCode == 13 && event.shiftKey) {
+    compileLogic(button_id);
+  }
 }
 
 function compileLogic(button_id) {
@@ -59,8 +66,19 @@ function compileLogic(button_id) {
     if (!response.ok) {
       throw new Error("Unable to generate truth table");
     }
+
+    var truth_tables = document.getElementById('truth_tables' + index);
+    if (truth_tables != undefined) {
+      truth_tables.parentNode.removeChild(truth_tables);
+    }
+
+    truth_tables = document.createElement('div');
+    truth_tables.classList.add("truth_tables");
+    truth_tables.setAttribute('id', 'truth_tables' + index);
+
     response.text().then(text => {
-      document.querySelector('#buttonbar' + index).insertAdjacentHTML('beforeend', text);
+      truth_tables.innerHTML = text;
+      document.querySelector('#buttonbar' + index).insertAdjacentHTML('beforeend', outerHTML(truth_tables));
     });
 
     return result;
@@ -69,41 +87,14 @@ function compileLogic(button_id) {
   });
 }
 
+function outerHTML(node) {
+  var wrapper = document.createElement("div");
+  wrapper.appendChild(node);
+  return wrapper.innerHTML;
+}
 
-let generate = document.querySelector(".generate"),
-  premises = document.querySelector(".premises"),
-  result = document.querySelector(".conclusion");
 
-generate.addEventListener('click', function (e) {
-  e.preventDefault();
-  if (premises.value == "") {
-    return;
-  }
-  result.innerHTML = "";
 
-  fetch('/truth/generateTable', {
-    method: "POST",
-    headers: {
-      "Accept": "application/json",
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      premises: premises.value
-    })
-  }).then((response) => {
-    if (!response.ok) {
-      throw new Error("Unable to generate truth table");
-    }
-    response.text().then(text => {
-      console.log(text);
-      result.innerHTML = text;
-    });
-
-    return result;
-  }).catch((err) => {
-    console.log(err);
-  });
-});
 
 
 function toggleinstructions(toggle) {

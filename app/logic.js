@@ -1,6 +1,6 @@
 let logic = {};
 
-logic.symbolp = function(x) {
+logic.symbolp = function (x) {
     return typeof x == 'string';
 }
 
@@ -28,7 +28,7 @@ function newsym() {
     return 'c' + counter;
 }
 
-logic.seq = function() {
+logic.seq = function () {
     var exp = new Array(arguments.length);
     for (var i = 0; i < arguments.length; i++) {
         exp[i] = arguments[i];
@@ -110,8 +110,8 @@ function makestep() {
     exp[0] = 'step';
     for (var i = 0; i < arguments.length; i++) {
         exp[i + 1] = arguments[i]
-    }
-    ;return exp
+    };
+    return exp
 }
 
 function makeproof() {
@@ -123,21 +123,21 @@ function makeproof() {
 function maksand(s) {
     if (s.length === 0) {
         return 'true'
-    }
-    ;if (s.length === 1) {
+    };
+    if (s.length === 1) {
         return s[0]
-    }
-    ;return logic.seq('and').concat(s)
+    };
+    return logic.seq('and').concat(s)
 }
 
 function maksor(s) {
     if (s.length === 0) {
         return 'false'
-    }
-    ;if (s.length === 1) {
+    };
+    if (s.length === 1) {
         return s[0]
-    }
-    ;return logic.seq('or').concat(s)
+    };
+    return logic.seq('or').concat(s)
 }
 
 function equalp(p, q) {
@@ -147,19 +147,19 @@ function equalp(p, q) {
         } else {
             return false
         }
-    }
-    ;if (logic.symbolp(q)) {
+    };
+    if (logic.symbolp(q)) {
         return false
-    }
-    ;if (p.length != q.length) {
+    };
+    if (p.length != q.length) {
         return false
-    }
-    ;for (var i = 0; i < p.length; i++) {
+    };
+    for (var i = 0; i < p.length; i++) {
         if (!equalp(p[i], q[i])) {
             return false
         }
-    }
-    ;return true
+    };
+    return true
 }
 
 function empty() {
@@ -174,8 +174,8 @@ function rest(l) {
 function adjoin(x, s) {
     if (!findq(x, s)) {
         s.push(x)
-    }
-    ;return s
+    };
+    return s
 }
 
 function adjoinit(x, s) {
@@ -192,8 +192,8 @@ function findq(x, s) {
         if (x == s[i]) {
             return true
         }
-    }
-    ;return false
+    };
+    return false
 }
 
 function find(x, s) {
@@ -201,8 +201,8 @@ function find(x, s) {
         if (equalp(x, s[i])) {
             return true
         }
-    }
-    ;return false
+    };
+    return false
 }
 
 function append(l1, l2) {
@@ -213,17 +213,17 @@ function append(l1, l2) {
 function subst(x, y, z) {
     if (z === y) {
         return x
-    }
-    ;if (logic.symbolp(z)) {
+    };
+    if (logic.symbolp(z)) {
         return z
-    }
-    ;if (z[0] == 'forall' && z[1] === y) {
+    };
+    if (z[0] == 'forall' && z[1] === y) {
         return z
-    }
-    ;if (z[0] == 'exists' && z[1] === y) {
+    };
+    if (z[0] == 'exists' && z[1] === y) {
         return z
-    }
-    ;var exp = new Array(z.length);
+    };
+    var exp = new Array(z.length);
     for (var i = 0; i < z.length; i++) {
         exp[i] = subst(x, y, z[i])
     }
@@ -233,17 +233,17 @@ function subst(x, y, z) {
 function substit(x, y, z) {
     if (z === y) {
         return x
-    }
-    ;if (logic.symbolp(z)) {
+    };
+    if (logic.symbolp(z)) {
         return z
-    }
-    ;if (z[0] === 'forall' && (z[1] === y || amongp(z[1], x))) {
+    };
+    if (z[0] === 'forall' && (z[1] === y || amongp(z[1], x))) {
         return z
-    }
-    ;if (z[0] === 'exists' && (z[1] === y || amongp(z[1], x))) {
+    };
+    if (z[0] === 'exists' && (z[1] === y || amongp(z[1], x))) {
         return z
-    }
-    ;var exp = new Array(z.length);
+    };
+    var exp = new Array(z.length);
     for (var i = 0; i < z.length; i++) {
         exp[i] = subst(x, y, z[i])
     }
@@ -257,12 +257,12 @@ function substitute(p, q, r) {
         } else {
             return r
         }
-    }
-    ;var exp = empty();
+    };
+    var exp = empty();
     for (var i = 0; i < r.length; i++) {
         exp[exp.length] = substitute(p, q, r[i])
-    }
-    ;if (equalp(exp, p)) {
+    };
+    if (equalp(exp, p)) {
         return q
     } else {
         return exp
@@ -276,21 +276,21 @@ function substitutions(p, q, r) {
         } else {
             return logic.seq(r)
         }
-    }
-    ;if (r[0] === 'forall' && (amongp(r[1], p) || amongp(r[1], q))) {
+    };
+    if (r[0] === 'forall' && (amongp(r[1], p) || amongp(r[1], q))) {
         return logic.seq(r)
-    }
-    ;if (r[0] === 'exists' && (amongp(r[1], p) || amongp(r[1], q))) {
+    };
+    if (r[0] === 'exists' && (amongp(r[1], p) || amongp(r[1], q))) {
         return logic.seq(r)
-    }
-    ;return substitutionsexp(p, q, r, 0)
+    };
+    return substitutionsexp(p, q, r, 0)
 }
 
 function substitutionsexp(p, q, r, n) {
     if (n == r.length) {
         return logic.seq(empty())
-    }
-    ;var firsts = substitutions(p, q, r[n]);
+    };
+    var firsts = substitutions(p, q, r[n]);
     var rests = substitutionsexp(p, q, r, n + 1);
     var results = empty();
     for (var i = 0; i < firsts.length; i++) {
@@ -308,28 +308,28 @@ function substitutionsexp(p, q, r, n) {
 function substitutablep(x, y, z) {
     if (logic.symbolp(z)) {
         return true
-    }
-    ;if (z[0] === 'not') {
+    };
+    if (z[0] === 'not') {
         return substitutablep(x, y, z[1])
-    }
-    ;if (z[0] === 'and' || z[0] === 'or' || z[0] === 'implication') {
+    };
+    if (z[0] === 'and' || z[0] === 'or' || z[0] === 'implication') {
         for (var i = 1; i < z.length; i++) {
             if (!substitutablep(x, y, z[i])) {
                 return false
             }
-        }
-        ;return true
-    }
-    ;if (z[0] === 'equivalence') {
+        };
+        return true
+    };
+    if (z[0] === 'equivalence') {
         return substitutablep(x, y, z[1]) && substitutablep(x, y, z[2])
-    }
-    ;if (z[0] === 'forall') {
+    };
+    if (z[0] === 'forall') {
         return (z[1] === y || substitutablep(x, y, z[2]))
-    }
-    ;if (z[0] === 'exists') {
+    };
+    if (z[0] === 'exists') {
         return (z[1] === y || !amongp(z[1], x) && substitutablep(x, y, z[2]))
-    }
-    ;return true
+    };
+    return true
 }
 
 //------------------------------------------------------------------------------
@@ -360,21 +360,21 @@ function cdr(l) {
 function memberp(x, l) {
     if (nullp(l)) {
         return false
-    }
-    ;if (car(l) == x) {
+    };
+    if (car(l) == x) {
         return true
-    }
-    ;if (memberp(x, cdr(l))) {
+    };
+    if (memberp(x, cdr(l))) {
         return true
-    }
-    ;return false
+    };
+    return false
 }
 
 function amongp(x, y) {
     if (logic.symbolp(y)) {
         return x == y
-    }
-    ;for (var i = 0; i < y.length; i++) {
+    };
+    for (var i = 0; i < y.length; i++) {
         if (amongp(x, y[i])) {
             return true
         }
@@ -389,11 +389,11 @@ function acons(x, y, al) {
 function assoc(x, al) {
     if (nullp(al)) {
         return false
-    }
-    ;if (x == car(car(al))) {
+    };
+    if (x == car(car(al))) {
         return car(al)
-    }
-    ;return assoc(x, cdr(al))
+    };
+    return assoc(x, cdr(al))
 }
 
 function nreverse(l) {
@@ -432,97 +432,97 @@ function clauses(p) {
 function implicationsout(p) {
     if (logic.symbolp(p)) {
         return p
-    }
-    ;if (p[0] == 'not') {
+    };
+    if (p[0] == 'not') {
         return makenegation(implicationsout(p[1]))
-    }
-    ;if (p[0] == 'and') {
+    };
+    if (p[0] == 'and') {
         var result = logic.seq('and');
         for (var i = 1; i < p.length; i++) {
             result.push(implicationsout(p[i]))
-        }
-        ;return result
-    }
-    ;if (p[0] == 'or') {
+        };
+        return result
+    };
+    if (p[0] == 'or') {
         var result = logic.seq('or');
         for (var i = 1; i < p.length; i++) {
             result.push(implicationsout(p[i]))
-        }
-        ;return result
-    }
-    ;if (p[0] == 'implication') {
+        };
+        return result
+    };
+    if (p[0] == 'implication') {
         return makedisjunction(makenegation(implicationsout(p[1])), implicationsout(p[2]))
-    }
-    ;if (p[0] == 'equivalence') {
+    };
+    if (p[0] == 'equivalence') {
         return makeconjunction(makedisjunction(implicationsout(p[1]), makenegation(implicationsout(p[2]))), makedisjunction(makenegation(implicationsout(p[1])), implicationsout(p[2])))
-    }
-    ;if (p[0] == 'forall') {
+    };
+    if (p[0] == 'forall') {
         return logic.seq('forall', p[1], implicationsout(p[2]))
-    }
-    ;if (p[0] == 'exists') {
+    };
+    if (p[0] == 'exists') {
         return logic.seq('exists', p[1], implicationsout(p[2]))
-    }
-    ;return p
+    };
+    return p
 }
 
 function negationsin(p) {
     if (logic.symbolp(p)) {
         return p
-    }
-    ;if (p[0] == 'not') {
+    };
+    if (p[0] == 'not') {
         return negate(p[1])
-    }
-    ;if (p[0] == 'and') {
+    };
+    if (p[0] == 'and') {
         var result = logic.seq('and');
         for (var i = 1; i < p.length; i++) {
             result.push(negationsin(p[i]))
-        }
-        ;return result
-    }
-    ;if (p[0] == 'or') {
+        };
+        return result
+    };
+    if (p[0] == 'or') {
         var result = logic.seq('or');
         for (var i = 1; i < p.length; i++) {
             result.push(negationsin(p[i]))
-        }
-        ;return result
-    }
-    ;if (p[0] == 'forall') {
+        };
+        return result
+    };
+    if (p[0] == 'forall') {
         return makeuniversal(p[1], negationsin(p[2]))
-    }
-    ;if (p[0] == 'exists') {
+    };
+    if (p[0] == 'exists') {
         return makeexistential(p[1], negationsin(p[2]))
-    }
-    ;return p
+    };
+    return p
 }
 
 function negate(p) {
     if (logic.symbolp(p)) {
         return makenegation(p)
-    }
-    ;if (p[0] == 'not') {
+    };
+    if (p[0] == 'not') {
         return negationsin(p[1])
-    }
-    ;if (p[0] == 'and') {
+    };
+    if (p[0] == 'and') {
         var result = logic.seq('or');
         for (var i = 1; i < p.length; i++) {
             result.push(negate(p[i]))
-        }
-        ;return result
-    }
-    ;if (p[0] == 'or') {
+        };
+        return result
+    };
+    if (p[0] == 'or') {
         var result = logic.seq('and');
         for (var i = 1; i < p.length; i++) {
             result.push(negate(p[i]))
-        }
-        ;return result
-    }
-    ;if (p[0] == 'forall') {
+        };
+        return result
+    };
+    if (p[0] == 'forall') {
         return makeexistential(p[1], negate(p[2]))
-    }
-    ;if (p[0] == 'exists') {
+    };
+    if (p[0] == 'exists') {
         return makeuniversal(p[1], negate(p[2]))
-    }
-    ;return makenegation(p)
+    };
+    return makenegation(p)
 }
 
 function standardizer(p) {
@@ -534,26 +534,26 @@ function stdize(p, al, bl) {
         var dum = assoc(p, bl);
         if (dum) {
             return cdr(dum)
-        }
-        ;return p
-    }
-    ;if (logic.symbolp(p)) {
+        };
         return p
-    }
-    ;if (p[0] === 'forall' || p[0] === 'exists') {
+    };
+    if (logic.symbolp(p)) {
+        return p
+    };
+    if (p[0] === 'forall' || p[0] === 'exists') {
         if (find(p[1], al)) {
             var replacement = newvar();
             bl = acons(p[1], replacement, bl);
             return logic.seq(p[0], replacement, stdize(p[2], al, bl))
-        }
-        ;al.push(p[1]);
+        };
+        al.push(p[1]);
         return logic.seq(p[0], p[1], stdize(p[2], al, bl))
-    }
-    ;var out = logic.seq(p[0]);
+    };
+    var out = logic.seq(p[0]);
     for (var i = 1; i < p.length; i++) {
         out.push(stdize(p[i], al, bl))
-    }
-    ;return out
+    };
+    return out
 }
 
 function existsout(p) {
@@ -564,50 +564,50 @@ function freevariables(p, al, bl) {
     if (varp(p)) {
         if (memberp(p, al)) {
             return al
-        }
-        ;if (memberp(p, bl)) {
+        };
+        if (memberp(p, bl)) {
             return al
-        }
-        ;return cons(p, al)
-    }
-    ;if (logic.symbolp(p)) {
+        };
+        return cons(p, al)
+    };
+    if (logic.symbolp(p)) {
         return al
-    }
-    ;if (p[0] == 'forall') {
+    };
+    if (p[0] == 'forall') {
         return freevariables(p[2], al, cons(p[1], bl))
-    }
-    ;if (p[0] == 'exists') {
+    };
+    if (p[0] == 'exists') {
         return freevariables(p[2], al, cons(p[1], bl))
-    }
-    ;for (var i = 1; i < p.length; i++) {
+    };
+    for (var i = 1; i < p.length; i++) {
         al = freevariables(p[i], al, bl)
-    }
-    ;return al
+    };
+    return al
 }
 
 function freevars(p, al, bl) {
     if (varp(p)) {
         if (find(p, al)) {
             return al
-        }
-        ;if (memberp(p, bl)) {
+        };
+        if (memberp(p, bl)) {
             return al
-        }
-        ;return adjoin(p, al)
-    }
-    ;if (logic.symbolp(p)) {
+        };
+        return adjoin(p, al)
+    };
+    if (logic.symbolp(p)) {
         return al
-    }
-    ;if (p[0] == 'forall') {
+    };
+    if (p[0] == 'forall') {
         return freevars(p[2], al, cons(p[1], bl))
-    }
-    ;if (p[0] == 'exists') {
+    };
+    if (p[0] == 'exists') {
         return freevars(p[2], al, cons(p[1], bl))
-    }
-    ;for (var i = 1; i < p.length; i++) {
+    };
+    for (var i = 1; i < p.length; i++) {
         al = freevars(p[i], al, bl)
-    }
-    ;return al
+    };
+    return al
 }
 
 function disexistentialize(p, al, bl) {
@@ -618,38 +618,38 @@ function disexistentialize(p, al, bl) {
         } else {
             return p
         }
-    }
-    ;if (logic.symbolp(p)) {
+    };
+    if (logic.symbolp(p)) {
         return p
-    }
-    ;if (p[0] == 'not') {
+    };
+    if (p[0] == 'not') {
         return makenegation(disexistentialize(p[1], al, bl))
-    }
-    ;if (p[0] == 'and') {
+    };
+    if (p[0] == 'and') {
         var result = logic.seq('and');
         for (var i = 1; i < p.length; i++) {
             result.push(disexistentialize(p[i], al, bl))
-        }
-        ;return result
-    }
-    ;if (p[0] == 'or') {
+        };
+        return result
+    };
+    if (p[0] == 'or') {
         var result = logic.seq('or');
         for (var i = 1; i < p.length; i++) {
             result.push(disexistentialize(p[i], al, bl))
-        }
-        ;return result
-    }
-    ;if (p[0] == 'forall') {
+        };
+        return result
+    };
+    if (p[0] == 'forall') {
         return makeuniversal(p[1], disexistentialize(p[2], cons(p[1], al), bl))
-    }
-    ;if (p[0] == 'exists') {
+    };
+    if (p[0] == 'exists') {
         return disexistentialize(p[2], al, acons(p[1], skolemterm(al), bl))
-    }
-    ;var exp = empty();
+    };
+    var exp = empty();
     for (var i = 0; i < p.length; i++) {
         exp[exp.length] = disexistentialize(p[i], al, bl)
-    }
-    ;return exp
+    };
+    return exp
 }
 
 function skolemterm(al) {
@@ -664,41 +664,41 @@ function skolemterm(al) {
 function allsout(p) {
     if (logic.symbolp(p)) {
         return p
-    }
-    ;if (p[0] == 'not') {
+    };
+    if (p[0] == 'not') {
         return makenegation(allsout(p[1]))
-    }
-    ;if (p[0] == 'and') {
+    };
+    if (p[0] == 'and') {
         var result = logic.seq('and');
         for (var i = 1; i < p.length; i++) {
             result.push(allsout(p[i]))
-        }
-        ;return result
-    }
-    ;if (p[0] == 'or') {
+        };
+        return result
+    };
+    if (p[0] == 'or') {
         var result = logic.seq('or');
         for (var i = 1; i < p.length; i++) {
             result.push(allsout(p[i]))
-        }
-        ;return result
-    }
-    ;if (p[0] == 'forall') {
+        };
+        return result
+    };
+    if (p[0] == 'forall') {
         return allsout(p[2])
-    }
-    ;return p
+    };
+    return p
 }
 
 function distribute(p) {
     if (logic.symbolp(p)) {
         return p
-    }
-    ;if (p[0] == 'and') {
+    };
+    if (p[0] == 'and') {
         return distributeand(p)
-    }
-    ;if (p[0] == 'or') {
+    };
+    if (p[0] == 'or') {
         return distributeorn(p, 1)
-    }
-    ;return p
+    };
+    return p
 }
 
 function distributeand(p) {
@@ -719,63 +719,61 @@ function distributeand(p) {
 function distributeorn(p, n) {
     if (n == p.length - 1) {
         return distribute(p[n])
-    }
-    ;return disjoin(distribute(p[n]), distributeorn(p, n + 1))
+    };
+    return disjoin(distribute(p[n]), distributeorn(p, n + 1))
 }
 
 function disjoin(p, q) {
     if (logic.symbolp(p)) {
         if (logic.symbolp(q)) {
             return makedisjunction(p, q)
-        }
-        ;if (q[0] == 'or') {
+        };
+        if (q[0] == 'or') {
             return logic.seq('or').concat(logic.seq(p), q.slice(1, q.length))
-        }
-        ;if (q[0] == 'and') {
+        };
+        if (q[0] == 'and') {
             var exp = logic.seq('and');
             for (var i = 1; i < q.length; i++) {
                 exp[i] = disjoin(p, q[i])
-            }
-            ;return exp
-        }
-        ;return makedisjunction(p, q)
-    }
-    ;
+            };
+            return exp
+        };
+        return makedisjunction(p, q)
+    };
     if (p[0] == 'or') {
         if (logic.symbolp(q)) {
             p = p.slice(0, p.length);
             p.push(q);
             return p
-        }
-        ;if (q[0] == 'or') {
+        };
+        if (q[0] == 'or') {
             return p.concat(q.slice(1, q.length))
-        }
-        ;if (q[0] == 'and') {
+        };
+        if (q[0] == 'and') {
             var exp = logic.seq('and');
             for (var i = 1; i < q.length; i++) {
                 exp[i] = disjoin(p, q[i])
-            }
-            ;return exp
+            };
+            return exp
         }
         p = p.slice(0, p.length);
         p.push(q);
         return p
-    }
-    ;
+    };
     if (p[0] == 'and') {
         if (logic.symbolp(q)) {
             var exp = logic.seq('and');
             for (var i = 1; i < p.length; i++) {
                 exp[i] = disjoin(p[i], q)
-            }
-            ;return exp
-        }
-        ;if (q[0] == 'or') {
+            };
+            return exp
+        };
+        if (q[0] == 'or') {
             var exp = logic.seq('and');
             for (var i = 1; i < p.length; i++) {
                 exp[i] = disjoin(p[i], q)
-            }
-            ;return exp
+            };
+            return exp
         }
         if (q[0] == 'and') {
             var exp = logic.seq('and');
@@ -783,28 +781,28 @@ function disjoin(p, q) {
                 for (var j = 1; j < q.length; j++) {
                     exp[exp.length] = disjoin(p[i], q[j])
                 }
-            }
-            ;return exp
+            };
+            return exp
         }
         var exp = logic.seq('and');
         for (var i = 1; i < p.length; i++) {
             exp[i] = disjoin(p[i], q)
-        }
-        ;return exp
+        };
+        return exp
     }
 
     if (logic.symbolp(q)) {
         return makedisjunction(p, q)
-    }
-    ;if (q[0] == 'or') {
+    };
+    if (q[0] == 'or') {
         return logic.seq('or').concat(logic.seq(p), q.slice(1, q.length))
-    }
-    ;if (q[0] == 'and') {
+    };
+    if (q[0] == 'and') {
         var exp = logic.seq('and');
         for (var i = 1; i < q.length; i++) {
             exp[i] = disjoin(p, q[i])
-        }
-        ;return exp
+        };
+        return exp
     }
     return makedisjunction(p, q)
 }
@@ -812,41 +810,41 @@ function disjoin(p, q) {
 function operatorsout(p) {
     if (logic.symbolp(p)) {
         return logic.seq(clausify(p))
-    }
-    ;if (p[0] == 'and') {
+    };
+    if (p[0] == 'and') {
         var exp = empty();
         for (var i = 1; i < p.length; i++) {
             exp[exp.length] = clausify(p[i])
-        }
-        ;return exp
-    }
-    ;if (p[0] == 'or') {
+        };
+        return exp
+    };
+    if (p[0] == 'or') {
         return logic.seq(clausify(p))
-    }
-    ;;return logic.seq(clausify(p))
+    };;
+    return logic.seq(clausify(p))
 }
 
 function clausify(p) {
     if (logic.symbolp(p)) {
         return makeclause1(p)
-    }
-    ;if (p[0] == 'or') {
+    };
+    if (p[0] == 'or') {
         var exp = p.slice(1, p.length);
         exp.unshift('clause');
         return uniquify(exp)
-    }
-    ;if (p[0] == 'clause') {
+    };
+    if (p[0] == 'clause') {
         return p
-    }
-    ;return makeclause1(p)
+    };
+    return makeclause1(p)
 }
 
 function uniquify(ins) {
     var outs = logic.seq();
     for (var i = 0; i < ins.length; i++) {
         outs = adjoinit(ins[i], outs)
-    }
-    ;return outs
+    };
+    return outs
 }
 
 //------------------------------------------------------------------------------
@@ -861,7 +859,7 @@ function read(str) {
     }
 }
 
-logic.readdata = function(str) {
+logic.readdata = function (str) {
     try {
         return fastreaddata(str)
     } catch (err) {
@@ -937,24 +935,24 @@ function scan(str) {
         } else {
             throw 'error'
         }
-    }
-    ;return output
+    };
+    return output
 }
 
 function scanbothsym(cur) {
     if (input.length > cur + 1 && input.charCodeAt(cur + 1) === 61 && input.length > cur + 2 && input.charCodeAt(cur + 2) === 62) {
         output[output.length] = '<=>';
         return cur + 3
-    }
-    ;throw 'error'
+    };
+    throw 'error'
 }
 
 function scanthussym(cur) {
     if (input.length > cur + 1 && input.charCodeAt(cur + 1) === 62) {
         output[output.length] = '=>';
         return cur + 2
-    }
-    ;throw 'error'
+    };
+    throw 'error'
 }
 
 function scansymbol(cur) {
@@ -965,27 +963,27 @@ function scansymbol(cur) {
             cur++
         } else
             break
-    }
-    ;if (exp != '') {
+    };
+    if (exp != '') {
         output[output.length] = exp
-    }
-    ;return cur
+    };
+    return cur
 }
 
 function idcharp(charcode) {
     if (charcode >= 47 && charcode <= 56) {
         return true
-    }
-    ;if (charcode >= 65 && charcode <= 90) {
+    };
+    if (charcode >= 65 && charcode <= 90) {
         return true
-    }
-    ;if (charcode >= 97 && charcode <= 122) {
+    };
+    if (charcode >= 97 && charcode <= 122) {
         return true
-    }
-    ;if (charcode == 95) {
+    };
+    if (charcode == 95) {
         return true
-    }
-    ;return false
+    };
+    return false
 }
 
 //------------------------------------------------------------------------------
@@ -1006,15 +1004,15 @@ function parsedata(str) {
         } else {
             exp[exp.length] = parsexp('lparen', 'rparen')
         }
-    }
-    ;return exp
+    };
+    return exp
 }
 
 function parsexp(lop, rop) {
     if (current >= input.length) {
         throw 'error'
-    }
-    ;var left = parseprefix(rop);
+    };
+    var left = parseprefix(rop);
     while (current < input.length) {
         if (input[current] === 'lparen') {
             left = parseatom(left)
@@ -1025,8 +1023,8 @@ function parsexp(lop, rop) {
         } else {
             left = parseinfix(left, input[current], rop)
         }
-    }
-    ;return left
+    };
+    return left
 }
 
 function parseatom(left) {
@@ -1035,8 +1033,8 @@ function parseatom(left) {
     if (input[current] === 'rparen') {
         current++;
         return exp
-    }
-    ;while (current < input.length) {
+    };
+    while (current < input.length) {
         exp.push(parsexp('comma', 'rparen'));
         if (input[current] === 'rparen') {
             current++;
@@ -1046,29 +1044,29 @@ function parseatom(left) {
         } else {
             throw 'error'
         }
-    }
-    ;return exp
+    };
+    return exp
 }
 
 function parseprefix(rop) {
     var left = input[current];
     if (left === '~') {
         return parsenegation(rop)
-    }
-    ;if (left === '{') {
+    };
+    if (left === '{') {
         return parseclause()
-    }
-    ;if (left === '[') {
+    };
+    if (left === '[') {
         return parseskolem()
-    }
-    ;if (left === 'lparen') {
+    };
+    if (left === 'lparen') {
         return parseparenexp()
-    }
-    ;if (identifierp(left)) {
+    };
+    if (identifierp(left)) {
         current++;
         return left
-    }
-    ;throw 'error'
+    };
+    throw 'error'
 }
 
 function parsenegation(rop) {
@@ -1082,8 +1080,8 @@ function parseclause() {
     if (input[current] === '}') {
         current++;
         return exp
-    }
-    ;while (current < input.length) {
+    };
+    while (current < input.length) {
         exp.push(parsexp('comma', 'rparen'));
         if (input[current] === '}') {
             current++;
@@ -1093,20 +1091,20 @@ function parseclause() {
         } else {
             throw 'error'
         }
-    }
-    ;return exp
+    };
+    return exp
 }
 
 function parseskolem() {
     current++;
     if (input[current] === ']') {
         throw 'error'
-    }
-    ;var sk = parsexp('comma', 'comma');
+    };
+    var sk = parsexp('comma', 'comma');
     if (input[current] !== ']') {
         throw 'error'
-    }
-    ;current++;
+    };
+    current++;
     return logic.seq('skolem', sk)
 }
 
@@ -1120,20 +1118,20 @@ function parseparenexp() {
 function parseinfix(left, op, rop) {
     if (op == ':') {
         return parsequantifier(left, rop)
-    }
-    ;if (op == '&') {
+    };
+    if (op == '&') {
         return parseand(left, rop)
-    }
-    ;if (op == '|') {
+    };
+    if (op == '|') {
         return parseor(left, rop)
-    }
-    ;if (op == '=>') {
+    };
+    if (op == '=>') {
         return parseimplication(left, rop)
-    }
-    ;if (op == '<=>') {
+    };
+    if (op == '<=>') {
         return parseequivalence(left, rop)
-    }
-    ;throw 'error'
+    };
+    throw 'error'
 }
 
 function parsequantifier(left, rop) {
@@ -1141,11 +1139,11 @@ function parsequantifier(left, rop) {
     var variable = left.slice(1, left.length);
     if (left[0] === 'A' && varp(variable)) {
         return makeuniversal(variable, parsexp(':', rop))
-    }
-    ;if (left[0] === 'E' && varp(variable)) {
+    };
+    if (left[0] === 'E' && varp(variable)) {
         return makeexistential(variable, parsexp(':', rop))
-    }
-    ;throw 'error'
+    };
+    throw 'error'
 }
 
 function parseand(left, rop) {
@@ -1182,12 +1180,12 @@ function precedencep(lop, rop) {
     for (var i = 0; i < precedence.length; i++) {
         if (precedence[i] === rop) {
             return false
-        }
-        ;if (precedence[i] === lop) {
+        };
+        if (precedence[i] === lop) {
             return true
         }
-    }
-    ;return false
+    };
+    return false
 }
 
 function parenp(lop, op, rop) {
@@ -1206,12 +1204,12 @@ function smoothdata(data) {
 function smooth(p) {
     if (logic.symbolp(p)) {
         return p
-    }
-    ;var exp = p[0] + '(';
+    };
+    var exp = p[0] + '(';
     if (p.length > 1) {
         exp = exp + smooth(p[1])
-    }
-    ;for (var i = 2; i < p.length; i++) {
+    };
+    for (var i = 2; i < p.length; i++) {
         exp = exp + ',' + smooth(p[i])
     }
     exp = exp + ')';
@@ -1233,8 +1231,8 @@ function grindproof(proof) {
         exp = exp + '<td>' + grind(proof[i + 1]) + '</td>';
         exp = exp + '<td bgcolor="#eeeeee">' + proof[i + 2] + '</td>';
         exp = exp + '</tr>'
-    }
-    ;exp = exp + '</table>';
+    };
+    exp = exp + '</table>';
     return exp
 }
 
@@ -1256,45 +1254,45 @@ function grindem(data) {
     return exp
 }
 
-logic.grind = function(p) {
+logic.grind = function (p) {
     return grindit(p, 'lparen', 'rparen')
 }
 
 function grindit(p, lop, rop) {
     if (logic.symbolp(p)) {
         return p
-    }
-    ;if (p[0] == 'equal') {
+    };
+    if (p[0] == 'equal') {
         return grindequality(p)
-    }
-    ;if (p[0] == 'skolem') {
+    };
+    if (p[0] == 'skolem') {
         return grindskolem(p)
-    }
-    ;if (p[0] == 'not') {
+    };
+    if (p[0] == 'not') {
         return grindnegation(p, rop)
-    }
-    ;if (p[0] == 'and') {
+    };
+    if (p[0] == 'and') {
         return grindand(p, lop, rop)
-    }
-    ;if (p[0] == 'or') {
+    };
+    if (p[0] == 'or') {
         return grindor(p, lop, rop)
-    }
-    ;if (p[0] == 'implication') {
+    };
+    if (p[0] == 'implication') {
         return grindimplication(p, lop, rop)
-    }
-    ;if (p[0] == 'equivalence') {
+    };
+    if (p[0] == 'equivalence') {
         return grindequivalence(p, lop, rop)
-    }
-    ;if (p[0] == 'clause') {
+    };
+    if (p[0] == 'clause') {
         return grindclause(p)
-    }
-    ;if (p[0] == 'forall') {
+    };
+    if (p[0] == 'forall') {
         return grinduniversal(p, lop, rop)
-    }
-    ;if (p[0] == 'exists') {
+    };
+    if (p[0] == 'exists') {
         return grindexistential(p, lop, rop)
-    }
-    ;return grindatom(p)
+    };
+    return grindatom(p)
 }
 
 function grindequality(p) {
@@ -1306,8 +1304,8 @@ function grindatom(p) {
     var exp = p[0] + '(';
     if (n > 1) {
         exp += grind(p[1])
-    }
-    ;for (var i = 2; i < n; i++) {
+    };
+    for (var i = 2; i < n; i++) {
         exp = exp + ',' + grind(p[i])
     }
     exp += ')';
@@ -1326,54 +1324,54 @@ function grindand(p, lop, rop) {
     var exp = '';
     if (p.length == 1) {
         return 'false'
-    }
-    ;if (p.length == 2) {
+    };
+    if (p.length == 2) {
         return grind(p[1], lop, rop)
-    }
-    ;var parens = parenp(lop, '&', rop);
+    };
+    var parens = parenp(lop, '&', rop);
     if (parens) {
         lop = 'lparen';
         rop = 'rparen'
-    }
-    ;if (parens) {
+    };
+    if (parens) {
         exp = '('
-    }
-    ;exp = exp + grindit(p[1], lop, '&');
+    };
+    exp = exp + grindit(p[1], lop, '&');
     for (var i = 2; i < p.length - 1; i++) {
         exp = exp + ' & ' + grindit(p[i], '&', '&')
-    }
-    ;exp = exp + ' & ' + grindit(p[p.length - 1], '&', rop);
+    };
+    exp = exp + ' & ' + grindit(p[p.length - 1], '&', rop);
     if (parens) {
         exp = exp + ')'
-    }
-    ;return exp
+    };
+    return exp
 }
 
 function grindor(p, lop, rop) {
     var exp = '';
     if (p.length == 1) {
         return 'false'
-    }
-    ;if (p.length == 2) {
+    };
+    if (p.length == 2) {
         return grind(p[1], lop, rop)
-    }
-    ;var parens = parenp(lop, '|', rop);
+    };
+    var parens = parenp(lop, '|', rop);
     if (parens) {
         lop = 'lparen';
         rop = 'rparen'
-    }
-    ;if (parens) {
+    };
+    if (parens) {
         exp = '('
-    }
-    ;exp = exp + grindit(p[1], lop, '|');
+    };
+    exp = exp + grindit(p[1], lop, '|');
     for (var i = 2; i < p.length - 1; i++) {
         exp = exp + ' | ' + grindit(p[i], '|', '|')
-    }
-    ;exp = exp + ' | ' + grindit(p[p.length - 1], '|', rop);
+    };
+    exp = exp + ' | ' + grindit(p[p.length - 1], '|', rop);
     if (parens) {
         exp = exp + ')'
-    }
-    ;return exp
+    };
+    return exp
 }
 
 function grindimplication(p, lop, rop) {
@@ -1382,15 +1380,15 @@ function grindimplication(p, lop, rop) {
     if (parens) {
         lop = 'lparen';
         rop = 'rparen'
-    }
-    ;if (parens) {
+    };
+    if (parens) {
         exp = '('
-    }
-    ;exp = exp + grindit(p[1], lop, '=>') + ' => ' + grindit(p[2], '=>', rop);
+    };
+    exp = exp + grindit(p[1], lop, '=>') + ' => ' + grindit(p[2], '=>', rop);
     if (parens) {
         exp = exp + ')'
-    }
-    ;return exp
+    };
+    return exp
 }
 
 function grindequivalence(p, lop, rop) {
@@ -1399,15 +1397,15 @@ function grindequivalence(p, lop, rop) {
     if (parens) {
         lop = 'lparen';
         rop = 'rparen'
-    }
-    ;if (parens) {
+    };
+    if (parens) {
         exp = '('
-    }
-    ;exp = exp + grindit(p[1], lop, '<=>') + ' <=> ' + grindit(p[2], '<=>', rop);
+    };
+    exp = exp + grindit(p[1], lop, '<=>') + ' <=> ' + grindit(p[2], '<=>', rop);
     if (parens) {
         exp = exp + ')'
-    }
-    ;return exp
+    };
+    return exp
 }
 
 function grinduniversal(p, lop, rop) {
@@ -1422,11 +1420,11 @@ function grindclause(p) {
     var exp = '{';
     if (p.length > 1) {
         exp = exp + grind(p[1])
-    }
-    ;for (var i = 2; i < p.length; i++) {
+    };
+    for (var i = 2; i < p.length; i++) {
         exp = exp + ',' + grind(p[i])
-    }
-    ;exp = exp + '}';
+    };
+    exp = exp + '}';
     return exp
 }
 
@@ -1434,8 +1432,8 @@ function grindalist(al) {
     var exp = '';
     if (al == false) {
         return 'false'
-    }
-    ;for (var l = al; !nullp(l); l = cdr(l)) {
+    };
+    for (var l = al; !nullp(l); l = cdr(l)) {
         exp = exp + car(car(l)) + ' = ' + grind(cdr(car(l))) + '\n'
     }
     return exp
@@ -1460,11 +1458,11 @@ function displayproof(proof) {
             for (var j = 4; j < proof[i].length; j++) {
                 exp += ', ' + proof[i][j]
             }
-        }
-        ;exp += '</td>';
+        };
+        exp += '</td>';
         exp = exp + '</tr>'
-    }
-    ;exp = exp + '</table>';
+    };
+    exp = exp + '</table>';
     return exp
 }
 
@@ -1475,22 +1473,22 @@ function prettify(str) {
 function printseq(p) {
     if (p === true) {
         return 'true'
-    }
-    ;if (p === false) {
+    };
+    if (p === false) {
         return 'false'
-    }
-    ;if (typeof p == 'number') {
+    };
+    if (typeof p == 'number') {
         return p
-    }
-    ;if (typeof p == 'string') {
+    };
+    if (typeof p == 'string') {
         return '"' + p + '"'
-    }
-    ;var n = p.length;
+    };
+    var n = p.length;
     var exp = '(';
     if (n > 0) {
         exp += printseq(p[0])
-    }
-    ;for (var i = 1; i < n; i++) {
+    };
+    for (var i = 1; i < n; i++) {
         exp = exp + ' ' + printseq(p[i])
     }
     exp += ')';
@@ -1516,10 +1514,10 @@ function xmlproof() {
         exp += '    &lt;justification&gt;' + prettify(proof[i][2]) + '&lt;/justification&gt;<br/>\n';
         for (var j = 3; j < proof[i].length; j++) {
             exp += '    &lt;antecedent&gt;' + proof[i][j] + '&lt;/antecedent&gt;<br/>\n'
-        }
-        ;exp += '  &lt;/step&gt;<br/>\n'
-    }
-    ;exp += '&lt;/proof&gt;<br/>\n';
+        };
+        exp += '  &lt;/step&gt;<br/>\n'
+    };
+    exp += '&lt;/proof&gt;<br/>\n';
     return exp
 }
 

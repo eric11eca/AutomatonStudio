@@ -54,16 +54,81 @@
     margin: 0 5px;
 }
 
-input {
+textarea {
     width: 100%;
     min-height: 30px;
     border: none;
     background-color: rgb(0, 0, 0, .03);
 }
 
+textarea:hover,
+input:hover,
+textarea:active,
+input:active,
+textarea:focus,
+input:focus,
+button:focus,
+button:active,
+button:hover,
+label:focus,
+.btn:active,
+.btn.active {
+    outline: 0px !important;
+    -webkit-appearance: none;
+    box-shadow: none !important;
+}
+
+.proof {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+}
+
+.subproof {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    margin-right: 20px;
+}
+
+.subproof:hover {
+    background-color: aqua;
+}
+
+.tree {
+    margin-right: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.leaves {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: center;
+    border-bottom: black solid 1px;
+}
+
+.assumption {
+    margin-right: 10px;
+}
+
 .conclusion {
-    font-family: courier;
+    /*font-family: courier;*/
     font-size: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: auto;
+}
+
+.truth_tables {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -73,7 +138,7 @@ input {
 
 .conclusion table {
     height: 50%;
-    margin: 10px;
+    margin: 20px 0;
 }
 
 .conclusion tr td:last-child {

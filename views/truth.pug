@@ -8,13 +8,46 @@ block content
 		.truth-content
 			h1.intro Logic and Semantic Notebook
 			h2.intro-content
-				| A notebook of live coding for proporsitional logic, lambda calculus, set logic, formal semantics, and monotonicity tagging.
+				| A notebook of live coding for proporsitional logic, syllogistic logix (reasoning about the sizes of discrete sets), lambda calculus, set logic, formal semantics, and monotonicity based natural logic.
+			
+			.proof
+				.tree 
+					.leaves
+						.proof 
+							.tree
+								.leaves
+									.subproof
+										.tree 
+											.leaves
+												.assumption All x are y
+												.assumption All y are z
+											.root
+												.assumption All x are y
+										.rule BARBARA
+
+									.subproof
+										.tree 
+											.leaves
+												.assumption All x are y
+												.assumption All y are z
+											.root
+												.assumption All x are y
+										.rule BARBARA
+
+								.root 
+									.assumption All x are y
+							.rule BARBARA
+						.assumption All z are z
+					.root 
+						.assumption All a are x
+				.rule(style="margin-top: 40px") BARBARA
+
 			.card.cell
 				.card-header
 				.notebook.card-body
 					blockquote.blockquote.mb-0
 						p
-							input#input1
+							textarea#input1(onkeyDown='compileKeyDown(event, this.id)')
 						#buttonbar1.conclusion
 							.addNew
 								button#add1.add(type="button" class="btn btn-light" onclick='addNewCell(this.id)')

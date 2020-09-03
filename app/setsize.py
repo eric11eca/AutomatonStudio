@@ -802,8 +802,7 @@ def rule_filter(num):
                     mg[i, j] = 0
 
 
-def sdagger(Gamma,
-            phi):  ## works for Gamma and phi sentences in 'All' and 'At least'
+def sdagger(Gamma, phi):  ## works for Gamma and phi sentences in 'All' and 'At least'
 
     global variables
     global polarized_variables
@@ -813,7 +812,6 @@ def sdagger(Gamma,
     global Ms
     Ms = []
     make_eyes(Gamma)
-
     global edgeset_pre
 
     global zeros
