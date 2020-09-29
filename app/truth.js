@@ -16,11 +16,22 @@ let truth = (function () {
 					sentence = sentence[1].split('=>');
 					var premises = sentence[0].split(',');
 					var conclusion = sentence[1];
-					var subproof = {
+					var subproof1 = {
 						assumptions: ['All x are y', 'All y are z'],
 						conclusion: 'All x are z',
 						rule: 'BARBARA'
 					};
+					var subproof2 = {
+						assumptions: ['All x are y', 'All y are z'],
+						conclusion: 'All x are z',
+						rule: 'BARBARA'
+					};
+					var subproof = {
+						assumptions: [subproof1, subproof2],
+						conclusion: 'All x are g',
+						rule: 'BARBARA'
+					};
+
 					var proof = {
 						assumptions: [subproof, 'All z are g'],
 						conclusion: 'All x are g',

@@ -39,8 +39,24 @@
 
 .cell {
     position: relative;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
     width: 80%;
     margin-bottom: 20px;
+    overflow: hidden
+}
+
+.inputwrap {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.inputwrap>textarea {
+    min-height: 3em;
+    max-height: 50vh;
+    width: 100%;
 }
 
 .addNew {
@@ -55,8 +71,12 @@
 }
 
 textarea {
+    font-family: "Helvetica Neue",
+        Helvetica,
+        Arial,
+        sans-serif;
+    font-size: 14px;
     width: 100%;
-    min-height: 30px;
     border: none;
     background-color: rgb(0, 0, 0, .03);
 }
@@ -80,42 +100,40 @@ label:focus,
 
 .proof {
     display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    margin-right: 10px;
-}
-
-.subproof {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    margin-right: 20px;
-}
-
-.subproof:hover {
-    background-color: aqua;
-}
-
-.tree {
-    margin-right: 5px;
-    display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    margin-right: 10px;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
 }
 
 .leaves {
     display: flex;
     flex-direction: row;
     align-items: flex-end;
-    justify-content: center;
+    justify-content: flex-end;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+}
+
+.assumpbox {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: flex-end;
     border-bottom: black solid 1px;
 }
 
 .assumption {
     margin-right: 10px;
+    font-size: 18px;
+    font-weight: 400;
+}
+
+.rule {
+    font-size: 10px;
+    font-weight: 300;
 }
 
 .conclusion {

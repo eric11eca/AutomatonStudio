@@ -1,3 +1,18 @@
+var term_font = "";
+var nonterm_font = "";
+var color = false;
+var term_lines = false;
+color = true;
+term_lines = true;
+font_size = 12;
+vert_space = 55;
+hor_space = 20;
+term_font = term_font + font_size + "pt ";
+nonterm_font = nonterm_font + font_size + "pt ";
+term_font = term_font + 'sans-serif';
+nonterm_font = nonterm_font + 'sans-serif';
+
+
 function dosanitize(widget) {
   var data = window.event.clipboardData.getData('text');
   widget.value += sanitize(data);
@@ -19,6 +34,22 @@ function sanitize(x) {
 
 let notebook = document.querySelector(".notebook");
 let global_index = 1;
+
+document.addEventListener('input', function (event) {
+  if (event.target.tagName.toLowerCase() !== 'textarea') return;
+  autoExpand(event.target);
+}, false);
+
+var autoExpand = function (field) {
+  field.style.height = 'inherit';
+  var computed = window.getComputedStyle(field);
+  var height = parseInt(computed.getPropertyValue('border-top-width'), 10) +
+    parseInt(computed.getPropertyValue('padding-top'), 10) +
+    field.scrollHeight +
+    parseInt(computed.getPropertyValue('padding-bottom'), 10) +
+    parseInt(computed.getPropertyValue('border-bottom-width'), 10);
+  field.style.height = height + 'px';
+};
 
 function addNewCell(button_id) {
   var index = button_id[button_id.length - 1];
@@ -50,6 +81,28 @@ function compileLogic(button_id) {
   var index = button_id[button_id.length - 1];
   var premises = document.querySelector('#input' + index).value;
   if (premises == "") {
+    return;
+  }
+
+  let sentence = premises.split(':');
+
+  if (sentence[0] == "dependency") {
+    var truth_tables = document.getElementById('truth_tables' + index);
+    if (truth_tables != undefined) {
+      truth_tables.parentNode.removeChild(truth_tables);
+    }
+
+    truth_tables = document.createElement('div');
+    truth_tables.classList.add("truth_tables");
+    truth_tables.setAttribute('id', 'truth_tables' + index);
+    //truth_tables.innerHTML = '<canvas id="ID" width="100" height="100">'
+    //  .replace('ID', 'canvas' + index.toString());
+    //let tree = new Tree();
+    //tree.setCanvas($('#canvas' + index.toString()));
+    //tree.parse(sentence[1]);
+    var img = go(sentence[1], font_size, term_font, nonterm_font, vert_space, hor_space, color, term_lines);
+    truth_tables.appendChild(img);
+    document.querySelector('#buttonbar' + index).insertAdjacentHTML('beforeend', outerHTML(truth_tables));
     return;
   }
 
@@ -92,10 +145,6 @@ function outerHTML(node) {
   wrapper.appendChild(node);
   return wrapper.innerHTML;
 }
-
-
-
-
 
 function toggleinstructions(toggle) {
   if (toggle.innerHTML == 'Hide Instructions') {

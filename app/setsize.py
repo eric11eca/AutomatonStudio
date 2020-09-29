@@ -828,13 +828,13 @@ def sdagger(Gamma, phi):  ## works for Gamma and phi sentences in 'All' and 'At 
     global g
     global g_c
     global lis
-    global lis_c
+    global vertices_c
 
     g = DiGraph({var: Set([var]) for var in pvars})
     g_c = DiGraph({var: Set([var]) for var in pvars})
     lis = g.vertices()
     n = len(lis)
-    lis_c = g_c.vertices()
+    vertices_c = g_c.vertices()
     global neg_internal
     neg_internal = {i: lis.index(negation(lis[i])) for i in range(n)}
     dim = len(g.vertices())
@@ -916,8 +916,8 @@ def sdagger(Gamma, phi):  ## works for Gamma and phi sentences in 'All' and 'At 
                 print(table(flattened_tree))
 
     elif phi[0] == 'All':
-        i = lis.index(phi[1])
-        j = lis.index(phi[2])
+        i = vertices.index(phi[1])
+        j = vertices.index(phi[2])
         if mg[i, j] == 1:
             if verbosity >= 1:
                 does_it_follow()

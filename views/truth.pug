@@ -1,6 +1,6 @@
 extends layout
 append head
-	link(rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous")
+	link(rel="stylesheet", href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous")
 	link(rel="stylesheet", href="/assets/css/truth.css")
 	
 block content
@@ -11,42 +11,41 @@ block content
 				| A notebook of live coding for proporsitional logic, syllogistic logix (reasoning about the sizes of discrete sets), lambda calculus, set logic, formal semantics, and monotonicity based natural logic.
 			
 			.proof
-				.tree 
-					.leaves
+				.leaves
+					.assumpbox
 						.proof 
-							.tree
-								.leaves
-									.subproof
-										.tree 
-											.leaves
+							.leaves
+								.assumpbox
+									.proof
+										.leaves
+											.assumpbox
 												.assumption All x are y
 												.assumption All y are z
-											.root
-												.assumption All x are y
-										.rule BARBARA
-
-									.subproof
-										.tree 
-											.leaves
+											.rule BARBARA
+										.root
+											.assumption All x are y
+									.proof
+										.leaves
+											.assumpbox
 												.assumption All x are y
 												.assumption All y are z
-											.root
-												.assumption All x are y
-										.rule BARBARA
-
-								.root 
-									.assumption All x are y
-							.rule BARBARA
+											.rule BARBARA
+										.root
+											.assumption All x are y
+								.rule BARBARA
+							.root 
+								.assumption All x are y
 						.assumption All z are z
-					.root 
-						.assumption All a are x
-				.rule(style="margin-top: 40px") BARBARA
+					.rule BARBARA
+				.root 
+					.assumption All a are x
+				
 
 			.card.cell
 				.card-header
 				.notebook.card-body
 					blockquote.blockquote.mb-0
-						p
+						.inputwrap
 							textarea#input1(onkeyDown='compileKeyDown(event, this.id)')
 						#buttonbar1.conclusion
 							.addNew
@@ -54,18 +53,15 @@ block content
 									ion-icon(name="add-outline")
 								button#compile1.compile(type="button" class="btn btn-light" onclick='compileLogic(this.id)')
 									ion-icon(name="caret-forward-outline")
-			//.card.cell
-				.card-header
-				.card-body
-					blockquote.blockquote.mb-0
-						p
-							input
 
 block script
-	script(src="https://unpkg.com/ionicons@5.1.2/dist/ionicons.js")
-	script(src='https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js')
+	script(type='text/javascript' src="https://unpkg.com/ionicons@5.1.2/dist/ionicons.js")
+	script(type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js')
+	script(type='text/javascript' src="/js/base64.js")
+	script(type='text/javascript' src="/js/Canvas2Image.js")
+	script(type='text/javascript' src="/js/syntree.js")
 	script(type='text/javascript' src='/js/truth_view.js')
-	script(type='text/javascript' src='/lib/particles.min.js')
-	script(type='text/javascript' src='/js/partical.js')
+	
+
 					
 

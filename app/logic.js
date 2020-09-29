@@ -2,7 +2,7 @@ let logic = {};
 
 logic.symbolp = function (x) {
     return typeof x == 'string';
-}
+};
 
 function varp(x) {
     return typeof x === 'string' && x.length !== 0 && x[0] !== x[0].toLowerCase();
@@ -34,7 +34,7 @@ logic.seq = function () {
         exp[i] = arguments[i];
     }
     return exp;
-}
+};
 
 function makeatom(r, x, y) {
     var exp = new Array(3);
