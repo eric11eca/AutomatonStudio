@@ -340,16 +340,16 @@ cfg.LRParsing = function(grammar, target){
     var stackString = [];
     var iteratingIndex = 0;
     stack1.push(iteratingIndex);
-    for(var i = 0; i<target.length ;i++){
-        //console.log(stack1[stack1.length-1]);
-        console.log(table.row.indexOf(target.charAt(i)));
-        console.log(stack1);
+    var i = 0;
+    var operating = true;
+    while(operating){
         var func = table.tableContent[stack1[stack1.length-1]][table.row.indexOf(target.charAt(i))];
-        console.log(func);
+        //console.log(func);
         if(func == undefined){
             return false;
         }
-        if(util.areEquivalent(func,'accept')){
+        if(util.areEquivalent(func, 'accept')){
+            operating = false;
             break;
         }
         if(func.length != 2){
@@ -368,35 +368,13 @@ cfg.LRParsing = function(grammar, target){
             newExp = tempRule[0] + '(' + newExp + ')';
             outputArr.push(func.charAt(1));
             stackString.push(newExp);
-            i--;
         }else if (func.charAt(0).localeCompare('s')==0){
             stackString.push(target[i]);
             stack1.push(parseInt(func.charAt(1)));
+            i++;
+        }else{
+            throw new Error('Given grammar table incorrect');
         }
-        console.log(stackString);
-    }
-    console.log(111);
-    var operating = true;
-    while(operating){
-        var func2 = table.tableContent[stack1[stack1.length-1]][0];
-        if(util.areEquivalent(func2, 'accept')){
-            operating = false;
-            break;
-        }
-        var tempRule3 = table.rulesArr[parseInt(func2.charAt(1))];
-        var removeNum4 = tempRule3[1].length;
-            if(stack1.length <= removeNum4){
-                return false;
-            }
-            stack1.splice(stack1.length-removeNum4, removeNum4);
-            stack1.push(table.tableContent[stack1[stack1.length-1]][table.row.indexOf(tempRule[0])]);
-            outputArr.push(parseInt(func2.charAt(1)));
-            var singleItems = stackString.splice(stackString.length-removeNum, removeNum);
-            var newExp = singleItems.join('');
-            newExp = tempRule[0] + '(' + newExp + ')';
-            outputArr.push(func.charAt(1));
-            stackString.push(newExp);
-        
         console.log(stackString);
     }
     return {
