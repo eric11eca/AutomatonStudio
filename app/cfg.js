@@ -93,7 +93,7 @@ cfg.checkGrammar = function(grammar){
 cfg.checkSymbol = function(nonterminals, rules, symbol, looped, finites){
     for(var rule of rules){
         var currentRuleFalse = false;
-        if(rule[0].localeCompare(symbol)){
+        if(rule[0].localeCompare(symbol)==0){
             var rightside = rule[1];
             for(var i = 0; i<rightside.length;i++){
                 if(!(util.containsInSet(finites, rightside[i]) || !util.containsInSet(nonterminals, rightside[i]))){
@@ -185,7 +185,7 @@ cfg._eliminateEmpty = function(nonterminals, rules){
 
     }else{
         var temp2 = ruleItem2[1];
-        if(temp2.length == 1 && temp2[0].localeCompare("Epsilon")){
+        if(temp2.length == 1 && temp2[0].localeCompare("Epsilon")==0){
             rules.delete(ruleItem2);    
         }
     }
@@ -207,7 +207,7 @@ cfg.modifyRule = function(rule, arr, nonterminals, symbol, indexes){
         arr1.splice(i,1);
         var ruleNext = util.clone(rule);
         ruleNext.splice(arr1[i],1);
-        if(!util.containsInSet(arr, ruleNext) && !(ruleNext.length == 1 && ruleNext[0].localeCompare(symbol))){
+        if(!util.containsInSet(arr, ruleNext) && !(ruleNext.length == 1 && ruleNext[0].localeCompare(symbol) == 0)){
             arr.push(ruleNext);
             if(ruleNext.length>1 && arr1.length != 0){
             cfg.modifyRule(ruleNext, arr, nonterminals, symbol, arr1);
@@ -223,11 +223,11 @@ cfg.removeUnit = function(rules, nonterminals){
         ifUnitProductionExists = false;
         for(var rule1 of rules){
             var tempRule = util.clone(rule1[1]);
-            if(tempRule.length == 1 && !tempRule[0].localeCompare("Epsilon")){
+            if(tempRule.length == 1 && !tempRule[0].localeCompare("Epsilon")==0){
                 ifUnitProductionExists = true;
                 removedRules.push([rule1[0], tempRule]);
                 for(var j = 0; j< nonterminals.length;j++){
-                    if(nonterminals[j].localeCompare(tempRule[0])){
+                    if(nonterminals[j].localeCompare(tempRule[0])==0){
                         if(!util.contains(removedRules, [nonterminals[j], tempRule])){
                             rules.add([nonterminals[j], tempRule]);
                         }
@@ -334,18 +334,28 @@ cfg.LRParsing = function(grammar, target){
     }
     var outputArr = [];
     var table = grammar.parseTable;
+    console.log(table.tableContent);
+    console.log(table.row);
     var stack1 = [];
+    var stackString = [];
     var iteratingIndex = 0;
     stack1.push(iteratingIndex);
     for(var i = 0; i<target.length ;i++){
+        //console.log(stack1[stack1.length-1]);
+        console.log(table.row.indexOf(target.charAt(i)));
+        console.log(stack1);
         var func = table.tableContent[stack1[stack1.length-1]][table.row.indexOf(target.charAt(i))];
+        console.log(func);
         if(func == undefined){
             return false;
+        }
+        if(util.areEquivalent(func,'accept')){
+            break;
         }
         if(func.length != 2){
             throw new Error('Given grammar is incorrect');
         }
-        if(func.charAt(0).localeCompare('r')){
+        if(func.charAt(0).localeCompare('r')==0){
             var tempRule = table.rulesArr[parseInt(func.charAt(1))];
             var removeNum = tempRule[1].length;
             if(stack1.length - 1 < removeNum){
@@ -353,29 +363,46 @@ cfg.LRParsing = function(grammar, target){
             }
             stack1.splice(stack1.length-removeNum, removeNum);
             stack1.push(table.tableContent[stack1[stack1.length-1]][table.row.indexOf(tempRule[0])]);
+            var singleItems = stackString.splice(stackString.length-removeNum, removeNum);
+            var newExp = singleItems.join('');
+            newExp = tempRule[0] + '(' + newExp + ')';
             outputArr.push(func.charAt(1));
+            stackString.push(newExp);
             i--;
-        }else if (func.charAt(0).localeCompare('s')){
+        }else if (func.charAt(0).localeCompare('s')==0){
+            stackString.push(target[i]);
             stack1.push(parseInt(func.charAt(1)));
         }
+        console.log(stackString);
     }
+    console.log(111);
     var operating = true;
     while(operating){
         var func2 = table.tableContent[stack1[stack1.length-1]][0];
+        if(util.areEquivalent(func2, 'accept')){
+            operating = false;
+            break;
+        }
         var tempRule3 = table.rulesArr[parseInt(func2.charAt(1))];
         var removeNum4 = tempRule3[1].length;
-        if(func2.localeCompare('accept')){
-            operating = false;
-        }else{
             if(stack1.length <= removeNum4){
                 return false;
             }
             stack1.splice(stack1.length-removeNum4, removeNum4);
             stack1.push(table.tableContent[stack1[stack1.length-1]][table.row.indexOf(tempRule[0])]);
             outputArr.push(parseInt(func2.charAt(1)));
-        }
+            var singleItems = stackString.splice(stackString.length-removeNum, removeNum);
+            var newExp = singleItems.join('');
+            newExp = tempRule[0] + '(' + newExp + ')';
+            outputArr.push(func.charAt(1));
+            stackString.push(newExp);
+        
+        console.log(stackString);
     }
-    return outputArr;
+    return {
+        parseOrder: outputArr,
+        parseExpression: stackString[0]
+    };
 }
 
 cfg.generateParseTable = function(grammar){
@@ -383,38 +410,43 @@ cfg.generateParseTable = function(grammar){
     var acceptSymbolArr = ['$'];
     var row = acceptSymbolArr.concat(transitionTable.row);
     var acceptRule = ['#', [grammar.starting, '.']];
-    var extend_Grammar = cfg.generateExt_Grammar(grammar.rules, transitionTable, grammar.starting, grammar.alphabet.length);
+    var extend_Grammar = cfg.generateExt_Grammar(grammar.rules, transitionTable, grammar.starting, grammar.alphabet.size);
+    //console.log(extend_Grammar);
     var firstSetsGenerating = cfg.generateFirstSets(extend_Grammar.rules, extend_Grammar.nonterminalAlphabet);
     var followingSetsGenerating = cfg.generateFollowingSets(firstSetsGenerating, extend_Grammar.rules, extend_Grammar.nonterminalAlphabet, extend_Grammar.starting);
+    //console.log(followingSetsGenerating);
     var extend_Rules = extend_Grammar.rules;
     var column = transitionTable.column;
     var tableContent = transitionTable.tableContent;
     var tableParseContent = [];
     var mergedForms = cfg.mergeExtendRules (extend_Rules, followingSetsGenerating, new Set());
+    console.log(mergedForms);
     var rulesArr = [['#', [grammar.starting]]].concat(Array.from(grammar.rules));
+    console.log(tableContent);
+    console.log(transitionTable.row);
     for(var i = 0; i < column.length;i++){
         tableParseContent[i] = [];
         var reduceNeeds = cfg.lookForCertainItemSet(mergedForms, i);
-        if(util.contains(column[i], acceptRule )){
+        if(util.containsInSet(column[i], acceptRule )){
             tableParseContent[i].push("accept");
         }else{
             if(reduceNeeds != false && reduceNeeds.followingSet.has('$')){
-                tableParseContent[i].push('r'+ rulesArr.indexOf(reduceNeeds.rule));
+                tableParseContent[i].push('r'+ util.index(rulesArr, reduceNeeds.rule));
             }else{
                 tableParseContent[i].push(undefined);
             }
         }
         for(var j = 1;j<row.length; j++){
-            if(j<=grammar.alphabet.length){
+            if(j<=grammar.alphabet.size){
                 if(reduceNeeds != false && reduceNeeds.followingSet.has(row[j])){
-                    tableParseContent[i].push('r' + rulesArr.indexOf(reduceNeeds.rule));
-                }else if(tableContent[i][j] != undefined){
-                    tableParseContent[i].push('s' +tableContent[i][j]);
+                    tableParseContent[i].push('r' + util.index(rulesArr, reduceNeeds.rule));
+                }else if(tableContent[i][j-1] != undefined){
+                    tableParseContent[i].push('s' +tableContent[i][j-1]);
                 }else{
-                    tableParseContent.push(undefined);
+                    tableParseContent[i].push(undefined);
                 }
             }else{
-                tableParseContent[i].push(tableContent[i][j]);
+                tableParseContent[i].push(tableContent[i][j-1]);
             }
         }
     }
@@ -457,7 +489,7 @@ cfg.constructMergedRules = function(rule, rules, followSets, checked){
     outputForm.push(rightSideGivenRule[rightSideGivenRule.length-1].charAt(2));
     for(var ruleCurrent of rules){
         var rightSideCurrent = ruleCurrent[1];
-        if(rightSideCurrent[rightSideCurrent.length-1].charAt(2).localeCompare(rightSideGivenRule[rightSideGivenRule.length-1].charAt(2))){
+        if(rightSideCurrent[rightSideCurrent.length-1].charAt(2).localeCompare(rightSideGivenRule[rightSideGivenRule.length-1].charAt(2))==0){
             var originalRule = cfg.compareOriginalRuleFrom(rule, ruleCurrent);
             if(originalRule != false){
                 if(!(util.contains(checked, ruleCurrent) || util.areEquivalent(rule, ruleCurrent))){
@@ -472,24 +504,29 @@ cfg.constructMergedRules = function(rule, rules, followSets, checked){
             }
         }
     }
+    if(outputForm.length == 1){
+        var originalRule1 = cfg.compareOriginalRuleFrom(rule, rule);
+        outputForm.push(originalRule1);
+        outputForm.push(followSets[rule[0]]);
+    }
     return outputForm;
 }
 
 cfg.compareOriginalRuleFrom = function (ext_rule1, ext_rule2){
     var originalRuleOutput = [];
-    if(ext_rule1[0].charAt(1).localeCompare(ext_rule2[0].charAt(1))){
+    if(ext_rule1[0].charAt(1).localeCompare(ext_rule2[0].charAt(1))==0){
         originalRuleOutput.push(ext_rule1[0].charAt(1));
         var rightSideExt1 = ext_rule1[1];
         var rightSideExt2 = ext_rule2[1];
         if(rightSideExt1.length == rightSideExt2.length){
             for(var i = 0;i<rightSideExt2.length;i++){
-                if(!rightSideExt1[i].charAt(1).localeCompare(rightSideExt2[i].charAt(1))){
+                if(!rightSideExt1[i].charAt(1).localeCompare(rightSideExt2[i].charAt(1))==0){
                     return false;
                 }
-                if(orignalRuleOutput.length == 1){
-                    orignalRuleOutput[1] = [];
+                if(originalRuleOutput.length == 1){
+                    originalRuleOutput[1] = [];
                 }
-                orignalRuleOutput[1].push(rightSideExt1[i].charAt(1));
+                originalRuleOutput[1].push(rightSideExt1[i].charAt(1));
             }
         }
     }
@@ -502,26 +539,35 @@ cfg.compareOriginalRuleFrom = function (ext_rule1, ext_rule2){
 
 cfg.generateFollowingSets = function(firstSets, rules, nonterminals, startSymbol){
     var followingSets = [];
-    follwingSets[startSymbol] = new Set();
-    follwingSets[startSymbol].add('$');
+    followingSets[startSymbol] = new Set();
+    followingSets[startSymbol].add('$');
+    var arrayOfNonterminal = Array.from(nonterminals);
+    var equivalentRelations = new Array(arrayOfNonterminal.length);
+    for(var i = 0; i<arrayOfNonterminal.length; i++){
+        equivalentRelations[i] = new Array(arrayOfNonterminal.length);
+    }
     for(var rule of rules){
         var rightSide = rule[1];
         for(var i = 0;i<rightSide.length;i++){
-            if(util.contains(nonterminals, rightSide[i])){
+            if(nonterminals.has(rightSide[i])){
                 if(followingSets[rightSide[i]] == undefined){
                     followingSets[rightSide[i]] = new Set();
                 }
                 for(var j = i+1; j<rightSide.length;j++){
-                    if(util.contains(nonterminals, rightSide[j])){
+                    if(nonterminals.has(rightSide[j])){
                         if(firstSets[rightSide[j]] == undefined){
                             throw new Error ("first sets are not corresponding with following sets function");
                         }
-                        followingSets[rightSide[i]].add(firstSets[rightSide[j]]);
+                        cfg.loadFirsts(followingSets[rightSide[i]], firstSets[rightSide[j]]);
                         if(!util.contains(firstSets[rightSide[j]], "Epsilon")){
                             break;
+                        }else{
+                            if(j == rightSide.length-1){
+                                followingSets[rightSide[i]].add("Epsilon");
+                            }
                         }
                     }else{
-                        followingSets.push(rightSide[j]);
+                        followingSets[rightSide[i]].add(rightSide[j][1]);
                         break;
                     }
                 }
@@ -531,20 +577,69 @@ cfg.generateFollowingSets = function(firstSets, rules, nonterminals, startSymbol
 
     for(var rule1 of rules){
         var rightSide1 = rule1[1];
-        if(util.contains(nonterminals, rightSide1[rightSide1.length-1])){
+        if(nonterminals.has(rightSide1[rightSide1.length-1])){
             if(rule1[0] == undefined){
                 followingSets[rule1[0]] = new Set();
             }else{
-                followingSets[rightSide1[rightSide1.length-1]].add(followingSets[rule1[0]]);   
+                  cfg.loadFirsts(followingSets[rightSide1[rightSide1.length-1]], followingSets[rule1[0]]);
             }
         }
     }
-    for(var nonterminalIter1 of nonterminals){
-        if(followingSets[nonterminalIter1] == undefined){
-            throw new Error("Given grammar is incorrect");
+    for(var rule of rules){
+        var rightSide = rule[1];
+        for(var i = 0;i<rightSide.length;i++){
+            if(nonterminals.has(rightSide[i])){
+                if(followingSets[rightSide[i]] == undefined){
+                    followingSets[rightSide[i]] = new Set();
+                }
+                for(var j = i+1; j<rightSide.length;j++){
+                    if(nonterminals.has(rightSide[j])){
+                        if(firstSets[rightSide[j]] == undefined){
+                            throw new Error ("first sets are not corresponding with following sets function");
+                        }
+                        //cfg.loadFirsts(followingSets[rightSide[i]], firstSets[rightSide[j]]);
+                        if(!util.contains(firstSets[rightSide[j]], "Epsilon")){
+                            break;
+                        }else{
+                            if(j == rightSide.length-1){
+                                followingSets[rightSide[i]].add("Epsilon");
+                            }
+                        }
+                    }else{
+                        followingSets[rightSide[i]].add(rightSide[j][1]);
+                        break;
+                    }
+                }
+            }
         }
-        util.flat(followingSets[nonterminalIter1]);
     }
+
+    for(var rule1 of rules){
+        var rightSide1 = rule1[1];
+        if(nonterminals.has(rightSide1[rightSide1.length-1])){
+            if(rule1[0] == undefined){
+                followingSets[rule1[0]] = new Set();
+            }else{
+                  cfg.loadFirsts(followingSets[rightSide1[rightSide1.length-1]], followingSets[rule1[0]]);
+            }
+        }
+    }
+    return followingSets;
+
+    // for(var nonterminalIter1 of nonterminals){
+    //     if(followingSets[nonterminalIter1] == undefined){
+    //         console.log(followingSets);
+    //         throw new Error("Given grammar is incorrect");
+    //     }
+    //     var printIndex1 = 0;
+    //     for(var itemFollowingSet of followingSets[nonterminalIter1]){
+    //         if(printIndex1 == 1){
+    //             console.log(itemFollowingSet);
+    //         }
+    //             printIndex1++;
+    //     }
+    //     util.flat(followingSets[nonterminalIter1]);
+    // }
 }
 
 
@@ -558,13 +653,14 @@ cfg.generateFirstSets = function(rules, nonterminals){
             var tempSymbolRule = tempSymbolRules[i];
             var rightSides = tempSymbolRule[1];
             if(!util.contains(nonterminals, rightSides[0])){
-                if(rightSides[0].localeCompare("Epsilon") && rightSides.length != 1){
+                if(rightSides[0].localeCompare("Epsilon")==0 && rightSides.length != 1){
                     throw new Error ("wrong right side of rule");
                 }
                 if(firstSets[nonterminal] == undefined){
-                    firstSets[nonterminal] = [rightSides[0]];
+                    firstSets[nonterminal] = new Set();
+                    firstSets[nonterminal].add(rightSides[0]);
                 }else{
-                    firstSets[nonterminal].push(rightSides[0]);
+                    firstSets[nonterminal].add(rightSides[0]);
                 }
             }
         }
@@ -598,7 +694,7 @@ cfg.generateFirst = function(symbolRules, symbol, nonterminals, firstSets){
                     }
                 }
             }else{
-                if(i==0){
+                if(i==0){ 
                     if(firstSets[symbol] == undefined || !firstSets[symbol].has(rightSide1[0]) ){
                         throw new Error ('func cfg.generateFirst receives wrong firstSets'); 
                     }
@@ -614,7 +710,7 @@ cfg.generateFirst = function(symbolRules, symbol, nonterminals, firstSets){
 
 cfg.loadFirsts = function(firstSet, loadingSet){
     for(var loadingItem of loadingSet){
-        if(!loadingItem.localeCompare("Epsilon")){
+        if(!loadingItem.localeCompare("Epsilon")==0){
             firstSet.add(loadingItem);
         }
     }
@@ -639,13 +735,15 @@ cfg.generateExt_Grammar = function (rules, transitionTable, startSymbol, startIn
     var column = transitionTable.column;
     var content = transitionTable.tableContent;
     var ext_Grammar = cfg.createCFG();
-    ext_rules.push(cfg.constructExt_Rule(['#',[startSymbol]], 0, row.indexOf(startSymbol)));
+    ext_rules.push(cfg.constructExt_Rule(['#',[startSymbol]], 0, row.indexOf(startSymbol), content, row));
+    var first_rule = ext_rules[0];
+    cfg.addRule(ext_Grammar, first_rule[0], first_rule[1]);
     for (var i = startIndex; i<row.length;i++){
         var ruleSet = cfg.gatherRuleSet(rules, row[i]);
         for(var j = 0;j<column.length;j++){
             if(content[j][i] != undefined){
                 for (var ruleIter of ruleSet){
-                    var ruleToAdd = cfg.constructExt_Rule(ruleIter, j, i);
+                    var ruleToAdd = cfg.constructExt_Rule(ruleIter, j, i, content, row);
                     ext_rules.push(ruleToAdd);
                     cfg.addRule(ext_Grammar, ruleToAdd[0], ruleToAdd[1]);
                 }
@@ -674,7 +772,7 @@ cfg.constructExt_Rule = function(rule, rowIndex, columnIndex, tableContent, row)
 cfg.gatherRuleSet = function (rules, symbol){
     var ruleSet = new Set();
     for(var ruleItem2 of rules){
-        if(ruleItem2[0].localeCompare(symbol)){
+        if(ruleItem2[0].localeCompare(symbol)==0){
             ruleSet.add(ruleItem2);
         }
     }
@@ -683,13 +781,14 @@ cfg.gatherRuleSet = function (rules, symbol){
 
 cfg.generateTransitionTable = function(grammar){
     var itemSets = [];
-    var initSet = cfg.generateZeroSet (['#', ['.', grammar.starting]], grammar.alphabet, symbolLooped, grammar.rules);
+    var orderedRules = cfg.orderRules(grammar.rules);
+    var initSet = cfg.generateZeroSet (['#', ['.', grammar.starting]], grammar.alphabet, new Set(), orderedRules);
     itemSets.push(initSet);
     var symbolArray = Array.from(grammar.alphabet);
-    symbolArray.concat(Array.from(grammar.nonterminalAlphabet));
+    symbolArray = symbolArray.concat(Array.from(grammar.nonterminalAlphabet));
     var outputTable = [];
     for(var i = 0;i<itemSets.length;i++){
-        outputTable.push(cfg.generateTransitionRow(itemSets[i], Array.from(grammar.alphabet).concat(Array.from(grammar.nonterminalAlphabet)), itemSets));    
+        outputTable.push(cfg.generateTransitionRow(itemSets[i], Array.from(grammar.alphabet).concat(Array.from(grammar.nonterminalAlphabet)), itemSets, grammar.alphabet, orderedRules));
     }
     return {
         row: symbolArray,
@@ -698,54 +797,68 @@ cfg.generateTransitionTable = function(grammar){
     };
 }
 
-cfg.generateTransitionRow = function (itemSet, symbols, itemSets){
+cfg.getItemSetIndex = function(itemSets, targetItemSet){
+    var numResult = 0;
+    for(var itemSet1 of itemSets){
+        if(util.areEquivalent(itemSet1, targetItemSet)){
+            return numResult;
+        }
+        numResult++;
+    }
+    return false;
+}
+
+cfg.generateTransitionRow = function (itemSet, symbols, itemSets, alphabet, orderedRules){
     var output = [];
-    for (var i = 0; i< symbols;i++){
-        var tempResult = cfg.itemSetSimulate(itemSet, symbols[i]);
-        if(util.areEquivalent(tempResult, [])){
-            rowElement.push(undefined);
+    for (var i = 0; i< symbols.length;i++){ 
+        var tempResult = cfg.itemSetSimulate(itemSet, symbols[i], alphabet, orderedRules);
+        if(tempResult.size == 0){
+            output.push(undefined);
         }else{
             if(!util.contains(itemSets, tempResult)){
                 itemSets.push(tempResult);
                 output.push(itemSets.length-1);
             }else{
-                output.push(itemSets.indexOf(tempResult));
+                output.push(cfg.getItemSetIndex(itemSets, tempResult));
             }
         }
         
     }
+    return output;
 }
 
 cfg.generateZeroSet = function(rule, alphabet, looped, rules){
     var startSymbol = cfg.findNextSymbol(rule[1]);
-    var result = [];
-    if(util.contains(looped, startSymbol)){
-        result.push(rule);
-        return result;
-    }else{
-        looped.push(startSymbol);
-    }
-    if(util.contains(alphabet, startSymbol)){
-        result.push(rule);
-        return result;
-    }else{
-        for(var ruleInSet1 of rules){
-            if(ruleInSet1[0].localeCompare(startSymbol)){
-                var rightSideCopy = util.clone(ruleInSet1[1]);
-                var dot = ['.'];
-                result = result.concat(cfg.generateZeroSet (dot.concat(rightSideCopy), alphabet, looped, rules));
-            }
-        }
-
-    }
+    var result = new Set();
+    result.add(rule);
+    looped.add(rule[0]);
+    cfg.itemSetAddRules(startSymbol, result, looped, alphabet, rules);
     return result;
 }
 
+cfg.itemSetAddRules = function(symbol, itemSet, looped, alphabet, orderedRules) {
+    if(symbol == undefined || alphabet.has(symbol)){
+        return;
+    }
+    var symbolRules = orderedRules[symbol];
+    looped.add(symbol);
+    for(var i = 0;i< orderedRules[symbol].length;i++){
+        var symbolRule = symbolRules[i];
+        var rightSideRule = symbolRule[1];
+        symbolRule = util.clone(symbolRule);
+        symbolRule[1] = ['.'].concat(symbolRule[1]);
+        itemSet.add(symbolRule);
+        if(!looped.has(rightSideRule[0]) && !alphabet.has(rightSideRule[0])){
+            cfg.itemSetAddRules(rightSideRule[0], itemSet, looped, alphabet, orderedRules);
+        }
+    }
+};
+
 cfg.findNextSymbol =  function(ruleRightSide){
     for(var i = 0;i< ruleRightSide.length;i++){
-        if(ruleRightSide[i].localeCompare('.')){
+        if(ruleRightSide[i].localeCompare('.')==0){
             if(ruleRightSide.length == (i+1)){
-                throw new Error('No next Symbol');
+                return undefined;
             }else{
                 return ruleRightSide[i+1];
             }
@@ -754,26 +867,34 @@ cfg.findNextSymbol =  function(ruleRightSide){
     throw new Error('No dot symbol');
 }
 
-cfg.itemSetSimulate = function(itemSet, input){
-    var output = [];
-    for(var i = 0;i<itemSet.length;i++){
-        var tempRule = itemSet[i];
-        if(input.localeCompare(cfg.findNextSymbol(tempRule[1]))){
-            output.push(tempRule);
+cfg.itemSetSimulate = function(itemSet, input, alphabet, orderedRules){
+    var output = new Set();
+    var looping = new Set();
+    for(var itemRule of itemSet){
+        var itemRuleSymbol = cfg.findNextSymbol(itemRule[1]);
+        if(input.localeCompare(itemRuleSymbol)==0){
+            var ruleMovedDot = cfg.moveDot(itemRule);
+            output.add(ruleMovedDot.rule);
+            cfg.itemSetAddRules(ruleMovedDot.nextSymbol, output, looping, alphabet, orderedRules);
         }
     }
-    return cfg.moveDot(output);
+    return output;
 }
 
-cfg.moveDot = function(itemSet){
-    var output = [];
-    for(var i = 0; i<itemSet.length;i++){
-        var target = util.clone(itemSet[i]);
-        var tempRule = target[1].splice(target[1].indexOf('.')+2,0,'.');
-        tempRule.splice(tempRule.indexOf('.'),1);
-        output.push(tempRule);
+cfg.moveDot = function(itemRule){
+    var target = util.clone(itemRule);
+    target[1].splice(target[1].indexOf('.')+2,0,'.');
+    target[1].splice(target[1].indexOf('.'),1);
+    if(target[1].indexOf('.')+1 == target[1].length){
+        return {
+            nextSymbol: undefined,
+            rule: target
+        }
     }
-    return output;
+    return {
+        nextSymbol: target[1][target[1].indexOf('.')+1],
+        rule: target
+    };
 }
 
 exports.data = cfg;
@@ -786,5 +907,5 @@ names[name1] = 5;
 //console.log(cfg.createCFG());
 var logs = new Set();
 logs['c'] = 2;
-console.log(logs['c']);
-console.log(logs['a']);
+//console.log(logs['c']);
+//console.log(logs['a']);

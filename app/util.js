@@ -38,6 +38,20 @@ util.areEquivalent = function (object1, object2) {
 		return true;
 	}
 
+	if (object1 instanceof Set && object2 instanceof Set){
+		for(var itemInSet1 of object1){
+			if(!util.containsInSet(object2, itemInSet1)){
+				return false;
+			}
+		}
+		for(var itemInSet2 of object2){
+			if(!util.containsInSet(object1, itemInSet2)){
+				return false;
+			}
+		}
+		return true;
+	}
+
 	if (object1 instanceof Date && object2 instanceof Date) {
 		return object1.getTime() === object2.getTime();
 	}
@@ -85,7 +99,6 @@ util.areEquivalent = function (object1, object2) {
 			return false;
 		}
 	}
-
 	return true;
 };
 
@@ -179,6 +192,23 @@ util.containsSet = function (arr1, obj) {
 	}
 	return false;
 };
+
+
+util.flat = function(set){
+	var result = new Set();
+	util.flat_operating(set, result);
+	return result;
+}
+
+util.flat_operating = function(set, resultSet){
+	for(var itemInSet1 of set){
+		if(itemInSet1 instanceof Set){
+			util.flat_operating(itemInSet1, resultSet);
+		}else{
+			resultSet.add(set);
+		}
+	}
+}
 
 util.returnEqualSet = function (arr, obj) {
 	for (var i = 0; i < arr.length; i++) {
