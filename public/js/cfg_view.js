@@ -14,6 +14,8 @@ var isDividerXDragged = false;
 let generate = document.querySelector('#run');
 let cfgInput = document.querySelector('#cfg-input');
 let result = document.querySelector('#cfg-right');
+let search = document.querySelector('#searchString');
+let searhInput = document.querySelector('#inputstring');
 
 document.addEventListener('mousedown', function (e) {
   if (e.target === divider_x) {
@@ -53,7 +55,7 @@ function divider_horizontal_handler(e, isleft) {
   box.style.flexGrow = 0;
 }
 
-generate.addEventListener('click', function (e) {
+search.addEventListener('click', function (e) {
     e.preventDefault();
     if(cfgInput.value == ""){
       return;
@@ -70,7 +72,7 @@ generate.addEventListener('click', function (e) {
     }).then((response) => {
       //console.log(response);
       if(!response.ok){
-        throw new Error("Unable to generate context-free grammar");
+        throw new Error("Unable to search the given string");
       }
       response.text().then(text => {
         //console.log(text);
@@ -82,4 +84,36 @@ generate.addEventListener('click', function (e) {
       //console.log(err);
     });
     
+});
+
+generate.addEventListener('click', function (e) {
+  e.preventDefault();
+  // if(searchInput.value == ""){
+  //   return;
+  // }
+  result.innerHTML = "";
+  
+  
+  fetch('/cfg/searchString', {
+    method: "POST",
+    headers: {
+      "Accept": "application/json",
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({searchInput: searchInput.value})
+  }).then((response) => {
+    //console.log(response);
+    if(!response.ok){
+      throw new Error("Unable to generate context-free grammar");
+    }
+    response.text().then(text => {
+      //console.log(text);
+      result.innerHTML = text;
+    });
+
+    return result;
+  }).catch((err) => {
+    //console.log(err);
+  });
+  
 });
