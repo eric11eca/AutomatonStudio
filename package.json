@@ -38,7 +38,7 @@
     "math": "0.0.3",
     "mathjs": "^7.2.0",
     "morgan": "^1.10.0",
-    "pug": "^3.0.0",
+    "pug": "^3.0.1",
     "stats.js": "^0.17.0"
   },
   "devDependencies": {
