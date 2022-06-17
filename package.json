@@ -42,7 +42,7 @@
     "stats.js": "^0.17.0"
   },
   "devDependencies": {
-    "electron": "^9.1.0",
+    "electron": "^15.5.5",
     "electron-packager": "^15.0.0",
     "electron-winstaller": "^4.0.1",
     "electron-wix-msi": "^2.2.0"
